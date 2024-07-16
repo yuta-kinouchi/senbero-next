@@ -1,0 +1,25 @@
+# Ignore Next.js build artifacts
+.next/
+out/
+
+# Ignore Node.js artifacts
+node_modules/
+npm-debug.log*
+
+# Ignore environment variables file (ensure secrets are not committed)
+.env.local
+
+# Ignore IDE/Editor specific files
+.vscode/
+.idea/
+
+# Ignore build logs and other generated files
+*.log
+*.json
+*.lock
+*.swp
+*.swo
+*.DS_Store
+
+# Ignore local npm cache
+.npm/
