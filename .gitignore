@@ -1,25 +1,36 @@
-# Ignore Next.js build artifacts
-.next/
-out/
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
-# Ignore Node.js artifacts
-node_modules/
+# dependencies
+/node_modules
+/.pnp
+.pnp.js
+.yarn/install-state.gz
+
+# testing
+/coverage
+
+# next.js
+/.next/
+/out/
+
+# production
+/build
+
+# misc
+.DS_Store
+*.pem
+
+# debug
 npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
 
-# Ignore environment variables file (ensure secrets are not committed)
-.env.local
+# local env files
+.env*.local
 
-# Ignore IDE/Editor specific files
-.vscode/
-.idea/
+# vercel
+.vercel
 
-# Ignore build logs and other generated files
-*.log
-*.json
-*.lock
-*.swp
-*.swo
-*.DS_Store
-
-# Ignore local npm cache
-.npm/
+# typescript
+*.tsbuildinfo
+next-env.d.ts
