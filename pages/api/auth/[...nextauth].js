@@ -1,39 +1,46 @@
-// pages/api/auth/[...nextauth].js
-import NextAuth from 'next-auth'
-import Providers from 'next-auth/providers'
+import { PrismaAdapter } from '@next-auth/prisma-adapter';
+import { PrismaClient } from '@prisma/client';
+import bcrypt from 'bcrypt';
+import NextAuth from 'next-auth';
+import CredentialsProvider from 'next-auth/providers/credentials';
+
+const prisma = new PrismaClient();
 
 export default NextAuth({
+  adapter: PrismaAdapter(prisma),
   providers: [
-    Providers.Credentials({
+    CredentialsProvider({
       name: 'Credentials',
       credentials: {
-        email: { label: "Email", type: "text", placeholder: "jsmith@example.com" },
+        email: { label: "Email", type: "text" },
         password: { label: "Password", type: "password" }
       },
-      async authorize(credentials, req) {
-        // Here you should check the credentials against your database
-        // This is just a simple example
-        if (credentials.email === "user@example.com" && credentials.password === "password") {
-          return { id: 1, name: "J Smith", email: "jsmith@example.com" }
-        } else {
-          return null
+      async authorize(credentials) {
+        const user = await prisma.user.findUnique({
+          where: { email: credentials.email }
+        });
+
+        if (user && bcrypt.compareSync(credentials.password, user.password)) {
+          return { id: user.id, name: user.name, email: user.email };
         }
+        return null;
       }
     })
   ],
-  callbacks: {
-    async jwt(token, user) {
-      if (user) {
-        token.id = user.id
-      }
-      return token
-    },
-    async session(session, token) {
-      session.user.id = token.id
-      return session
-    }
+  database: process.env.DATABASE_URL,
+  session: {
+    strategy: 'jwt',
   },
-  pages: {
-    signIn: '/auth/signin',
-  }
-})
+  callbacks: {
+    async jwt({ token, user }) {
+      if (user) {
+        token.id = user.id;
+      }
+      return token;
+    },
+    async session({ session, token }) {
+      session.user.id = token.id;
+      return session;
+    },
+  },
+});
