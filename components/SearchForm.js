@@ -1,7 +1,6 @@
 import SportsBarRoundedIcon from "@mui/icons-material/SportsBarRounded";
-import { Box, Container, Typography, useMediaQuery } from "@mui/material";
+import { Box, Button, Container, Typography, useMediaQuery } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
-import React from "react";
 
 const SearchForm = () => {
   const theme = useTheme();
@@ -89,6 +88,23 @@ const SearchForm = () => {
         >
           ※このアプリは位置情報を使用します。機能を利用する際には位置情報の使用許可が必要になります。
         </Typography>
+      </Box>
+      <Box
+        display="flex"
+        justifyContent="center"
+        sx={{ marginTop: "20px" }}
+      >
+        <Button
+          variant="contained"
+          color="primary"
+          sx={{
+            fontSize: isMobile ? "14px" : "16px",
+            padding: isMobile ? "8px 16px" : "12px 24px",
+            borderRadius: "8px",
+          }}
+        >
+          検索する
+        </Button>
       </Box>
     </Container>
   );
