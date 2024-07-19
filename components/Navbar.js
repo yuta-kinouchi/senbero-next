@@ -16,25 +16,25 @@ const Navbar = () => {
   };
 
   return (
-    <AppBar position="static">
+    <AppBar position="static" style={{ backgroundColor: 'white' }}>
       <Toolbar>
-        <IconButton edge="start" color="inherit" aria-label="menu" onClick={handleMenuToggle}>
-          <SportsBarIcon />
+        <IconButton href="/" edge="start" color="inherit" aria-label="menu" onClick={handleMenuToggle}>
+          <SportsBarIcon style={{ color: 'black' }} />
         </IconButton>
-        <Typography variant="h6" style={{ flexGrow: 1 }}>
-          MyApp
+        <Typography variant="h6" style={{ flexGrow: 1, color: 'black' }}>
+          せんべろCheers
         </Typography>
         {session ? (
           <>
-            <Typography variant="subtitle1" style={{ marginRight: '1rem' }}>
+            <Typography variant="subtitle1" style={{ marginRight: '1rem', color: 'black' }}>
               {session.user.name}
             </Typography>
             <Button color="inherit" onClick={handleLogout}>ログアウト</Button>
           </>
         ) : (
           <>
-            <Button href="/login" color="inherit">ログイン</Button>
-            <Button href="/register" color="inherit">新規登録</Button>
+            <Button href="/login" color="inherit" style={{ color: 'black' }}>ログイン</Button>
+            <Button href="/register" color="inherit" style={{ color: 'black' }}>新規登録</Button>
           </>
         )}
       </Toolbar>
