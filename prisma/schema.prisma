@@ -14,8 +14,100 @@ datasource db {
 }
 
 model User {
-  id       Int      @id @default(autoincrement())
-  name     String
-  email    String   @unique
-  password String
+  user_id       Int       @id @default(autoincrement()) @map("user_id")
+  user_name     String    @map("user_name")
+  email         String    @unique
+  hashed_password String  @map("hashed_password")
+  birth_day     DateTime? @map("birth_day")
+  gender        Int?
+  deleted_at    DateTime? @map("deleted_at")
+  created_at    DateTime  @default(now()) @map("created_at")
+  updated_at    DateTime  @updatedAt @map("updated_at")
+  
+  posts         Post[]
+}
+
+model Restaurant {
+  restaurant_id Int       @id @default(autoincrement()) @map("restaurant_id")
+  name          String
+  phone_number   String
+  country        String
+  state          String
+  city           String
+  address_line1  String
+  address_line2  String
+  latitude       Float
+  longitude      Float
+  capacity       Int
+  home_page      String
+  description    String
+  special_rule   String
+  morning_available Boolean
+  daytime_available Boolean
+  has_set        Boolean
+  senbero_description String
+  has_chinchiro  Boolean
+  chinchiro_description String
+  outside_available Boolean
+  outside_description String
+  is_standing    Boolean
+  standing_description String
+  is_kakuuchi    Boolean
+  is_cash_on     Boolean
+  has_charge     Boolean
+  charge_description String
+  has_tv         Boolean
+  smoking_allowed Boolean
+  has_happy_hour Boolean
+  deleted_at     DateTime? @map("deleted_at")
+  created_at     DateTime  @default(now()) @map("created_at")
+  updated_at     DateTime  @updatedAt @map("updated_at")
+  
+  operating_hours OperatingHour[]
+  posts           Post[]
+}
+
+model OperatingHour {
+  id                 Int      @id @default(autoincrement()) @map("id")
+  restaurant_id      Int      @map("restaurant_id")
+  day_of_week        String   @map("day_of_week")
+  start_time         DateTime @map("start_time")
+  end_time           DateTime @map("end_time")
+  happy_hour_start   DateTime @map("happy_hour_start")
+  happy_hour_end     DateTime @map("happy_hour_end")
+  created_at         DateTime @default(now()) @map("created_at")
+  updated_at         DateTime @updatedAt @map("updated_at")
+  
+  restaurant         Restaurant @relation(fields: [restaurant_id], references: [restaurant_id])
+}
+
+model Post {
+  post_id       Int       @id @default(autoincrement()) @map("post_id")
+  user_id       Int       @map("user_id")
+  restaurant_id Int       @map("restaurant_id")
+  visit_time    DateTime  @map("visit_time")
+  number_of_visitors Int
+  price         Int
+  detail        String
+  deleted_at    DateTime? @map("deleted_at")
+  created_at    DateTime  @default(now()) @map("created_at")
+  updated_at    DateTime  @updatedAt @map("updated_at")
+  
+  user          User      @relation(fields: [user_id], references: [user_id])
+  restaurant    Restaurant @relation(fields: [restaurant_id], references: [restaurant_id])
+  photos        Photo[]
+}
+
+model Photo {
+  photo_id      Int       @id @default(autoincrement()) @map("photo_id")
+  post_id       Int       @map("post_id")
+  category      Int
+  price         Int
+  name          String
+  memo          String
+  deleted_at    DateTime? @map("deleted_at")
+  created_at    DateTime  @default(now()) @map("created_at")
+  updated_at    DateTime  @updatedAt @map("updated_at")
+  
+  post          Post      @relation(fields: [post_id], references: [post_id])
 }
