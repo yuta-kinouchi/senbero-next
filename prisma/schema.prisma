@@ -39,26 +39,26 @@ model Restaurant {
   latitude       Float
   longitude      Float
   capacity       Int
-  home_page      String
-  description    String
-  special_rule   String
-  morning_available Boolean
-  daytime_available Boolean
-  has_set        Boolean
-  senbero_description String
-  has_chinchiro  Boolean
-  chinchiro_description String
-  outside_available Boolean
-  outside_description String
-  is_standing    Boolean
-  standing_description String
-  is_kakuuchi    Boolean
-  is_cash_on     Boolean
-  has_charge     Boolean
-  charge_description String
-  has_tv         Boolean
-  smoking_allowed Boolean
-  has_happy_hour Boolean
+  home_page      String?
+  description    String?
+  special_rule   String?
+  morning_available Boolean?
+  daytime_available Boolean?
+  has_set        Boolean?
+  senbero_description String?
+  has_chinchiro  Boolean?
+  chinchiro_description String?
+  outside_available Boolean?
+  outside_description String?
+  is_standing    Boolean?
+  standing_description String?
+  is_kakuuchi    Boolean?
+  is_cash_on     Boolean?
+  has_charge     Boolean?
+  charge_description String?
+  has_tv         Boolean?
+  smoking_allowed Boolean?
+  has_happy_hour Boolean?
   deleted_at     DateTime? @map("deleted_at")
   created_at     DateTime  @default(now()) @map("created_at")
   updated_at     DateTime  @updatedAt @map("updated_at")
@@ -70,7 +70,7 @@ model Restaurant {
 model OperatingHour {
   id                 Int      @id @default(autoincrement()) @map("id")
   restaurant_id      Int      @map("restaurant_id")
-  day_of_week        String   @map("day_of_week")
+  day_of_week        Int   @map("day_of_week")
   start_time         DateTime @map("start_time")
   end_time           DateTime @map("end_time")
   happy_hour_start   DateTime @map("happy_hour_start")
