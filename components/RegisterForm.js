@@ -1,8 +1,10 @@
+import GoogleIcon from '@mui/icons-material/Google';
 import {
   Alert,
   Box,
   Button,
   Container,
+  Divider,
   TextField,
   Typography,
 } from '@mui/material';
@@ -29,7 +31,6 @@ export default function RegisterForm() {
       });
 
       if (res.ok) {
-        // 登録成功後、自動的にログインを試みる
         const result = await signIn('credentials', {
           redirect: false,
           email,
@@ -40,7 +41,7 @@ export default function RegisterForm() {
           setError('登録は成功しましたが、ログインに失敗しました。ログインページに移動します。');
           setTimeout(() => router.push('/login'), 3000);
         } else {
-          router.push('/'); // ログイン成功後のリダイレクト先
+          router.push('/');
         }
       } else {
         const data = await res.json();
@@ -49,6 +50,10 @@ export default function RegisterForm() {
     } catch (error) {
       setError(error.message);
     }
+  };
+
+  const handleGoogleSignIn = () => {
+    signIn('google', { callbackUrl: '/' });
   };
 
   return (
@@ -62,16 +67,16 @@ export default function RegisterForm() {
         }}
       >
         <Typography component="h1" variant="h5">
-          Register
+          新規登録
         </Typography>
         {error && <Alert severity="error" sx={{ mt: 2, width: '100%' }}>{error}</Alert>}
-        <Box component="form" onSubmit={handleSubmit} noValidate sx={{ mt: 1 }}>
+        <Box component="form" onSubmit={handleSubmit} noValidate sx={{ mt: 1, width: '100%' }}>
           <TextField
             margin="normal"
             required
             fullWidth
             id="name"
-            label="Name"
+            label="名前"
             name="name"
             autoComplete="name"
             autoFocus
@@ -83,7 +88,7 @@ export default function RegisterForm() {
             required
             fullWidth
             id="email"
-            label="Email Address"
+            label="メールアドレス"
             name="email"
             autoComplete="email"
             value={email}
@@ -94,7 +99,7 @@ export default function RegisterForm() {
             required
             fullWidth
             name="password"
-            label="Password"
+            label="パスワード"
             type="password"
             id="password"
             autoComplete="new-password"
@@ -107,9 +112,19 @@ export default function RegisterForm() {
             variant="contained"
             sx={{ mt: 3, mb: 2 }}
           >
-            Register
+            登録
           </Button>
         </Box>
+        <Divider sx={{ width: '100%', my: 2 }}>または</Divider>
+        <Button
+          fullWidth
+          variant="outlined"
+          startIcon={<GoogleIcon />}
+          onClick={handleGoogleSignIn}
+          sx={{ mt: 1, mb: 2 }}
+        >
+          Googleアカウントで登録
+        </Button>
       </Box>
     </Container>
   );

@@ -1,4 +1,4 @@
-import MenuIcon from '@mui/icons-material/Menu';
+import SportsBarIcon from '@mui/icons-material/SportsBar';
 import { AppBar, Button, IconButton, Toolbar, Typography } from '@mui/material';
 import { signOut, useSession } from "next-auth/react";
 import { useState } from 'react';
@@ -19,7 +19,7 @@ const Navbar = () => {
     <AppBar position="static">
       <Toolbar>
         <IconButton edge="start" color="inherit" aria-label="menu" onClick={handleMenuToggle}>
-          <MenuIcon />
+          <SportsBarIcon />
         </IconButton>
         <Typography variant="h6" style={{ flexGrow: 1 }}>
           MyApp
