@@ -1,12 +1,7 @@
+import { PrismaClient } from '@prisma/client';
 import { hash } from 'bcryptjs';
 
-// 仮想的なデータベース操作の関数
-async function saveUser(user) {
-  // ここで実際のデータベース操作を行います
-  // この例では、単に成功したと仮定します
-  console.log('User saved:', user);
-  return true;
-}
+const prisma = new PrismaClient();
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -21,25 +16,43 @@ export default async function handler(req, res) {
       return res.status(400).json({ message: 'Missing fields' });
     }
 
+    // メールアドレスの形式チェック
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return res.status(400).json({ message: 'Invalid email format' });
+    }
+
+    // パスワードの強度チェック
+    if (password.length < 8) {
+      return res.status(400).json({ message: 'Password must be at least 8 characters long' });
+    }
+
+    // ユーザーの存在チェック
+    const existingUser = await prisma.user.findUnique({
+      where: { email: email },
+    });
+
+    if (existingUser) {
+      return res.status(400).json({ message: 'User already exists' });
+    }
+
     // パスワードのハッシュ化
     const hashedPassword = await hash(password, 12);
 
     // ユーザーの保存
-    const user = {
-      name,
-      email,
-      password: hashedPassword,
-    };
+    const user = await prisma.user.create({
+      data: {
+        name,
+        email,
+        password: hashedPassword,
+      },
+    });
 
-    const saved = await saveUser(user);
-
-    if (saved) {
-      res.status(201).json({ message: 'User registered successfully' });
-    } else {
-      res.status(500).json({ message: 'Error saving user' });
-    }
+    res.status(201).json({ message: 'User registered successfully', userId: user.id });
   } catch (error) {
     console.error('Registration error:', error);
     res.status(500).json({ message: 'Internal server error' });
+  } finally {
+    await prisma.$disconnect();
   }
 }

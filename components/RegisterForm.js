@@ -1,10 +1,12 @@
 import {
+  Alert,
   Box,
   Button,
   Container,
   TextField,
-  Typography
+  Typography,
 } from '@mui/material';
+import { signIn } from 'next-auth/react';
 import { useRouter } from 'next/router';
 import { useState } from 'react';
 
@@ -12,20 +14,40 @@ export default function RegisterForm() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
   const router = useRouter();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const response = await fetch('/api/register', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name, email, password }),
-    });
+    setError('');
 
-    if (response.ok) {
-      router.push('/login');
-    } else {
-      // エラー処理
+    try {
+      const res = await fetch('/api/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, email, password }),
+      });
+
+      if (res.ok) {
+        // 登録成功後、自動的にログインを試みる
+        const result = await signIn('credentials', {
+          redirect: false,
+          email,
+          password,
+        });
+
+        if (result.error) {
+          setError('登録は成功しましたが、ログインに失敗しました。ログインページに移動します。');
+          setTimeout(() => router.push('/login'), 3000);
+        } else {
+          router.push('/'); // ログイン成功後のリダイレクト先
+        }
+      } else {
+        const data = await res.json();
+        throw new Error(data.message || 'Registration failed');
+      }
+    } catch (error) {
+      setError(error.message);
     }
   };
 
@@ -42,6 +64,7 @@ export default function RegisterForm() {
         <Typography component="h1" variant="h5">
           Register
         </Typography>
+        {error && <Alert severity="error" sx={{ mt: 2, width: '100%' }}>{error}</Alert>}
         <Box component="form" onSubmit={handleSubmit} noValidate sx={{ mt: 1 }}>
           <TextField
             margin="normal"
