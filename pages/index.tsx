@@ -1,10 +1,13 @@
 import Navbar from '../components/Navbar';
+import SearchForm from '../components/SearchForm';
+import styles from '../styles/HomePage.module.css';
+
 
 const HomePage = () => {
   return (
-    <div>
+    <div className={styles.container}>
       <Navbar />
-      <h1>トップページ</h1>
+      <SearchForm />
     </div>
   );
 };
