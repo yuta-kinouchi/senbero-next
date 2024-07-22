@@ -30,7 +30,7 @@ model User {
 model Restaurant {
   restaurant_id Int       @id @default(autoincrement()) @map("restaurant_id")
   name          String
-  phone_number   String
+  phone_number   String?
   country        String
   state          String
   city           String
@@ -38,7 +38,7 @@ model Restaurant {
   address_line2  String
   latitude       Float
   longitude      Float
-  capacity       Int
+  capacity       Int?
   home_page      String?
   description    String?
   special_rule   String?
@@ -73,8 +73,8 @@ model OperatingHour {
   day_of_week        Int   @map("day_of_week")
   start_time         DateTime @map("start_time")
   end_time           DateTime @map("end_time")
-  happy_hour_start   DateTime @map("happy_hour_start")
-  happy_hour_end     DateTime @map("happy_hour_end")
+  happy_hour_start   DateTime? @map("happy_hour_start")
+  happy_hour_end     DateTime? @map("happy_hour_end")
   created_at         DateTime @default(now()) @map("created_at")
   updated_at         DateTime @updatedAt @map("updated_at")
   
