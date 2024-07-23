@@ -11,6 +11,22 @@ function getCurrentMySQLDateTime() {
   return new Date().toISOString().slice(0, 19).replace('T', ' ');
 }
 
+function formatDateTime(timeString) {
+  // Assuming a default date since only time is provided
+  const defaultDate = '1970-01-01'; // Unix epoch start date
+  const dateTimeString = `${defaultDate}T${timeString}:00.000Z`; // Adding seconds and timezone for full ISO string
+
+  console.log("Original time string:", timeString);
+  console.log("Full datetime string:", dateTimeString);
+
+  const date = new Date(dateTimeString);
+  if (isNaN(date.getTime())) {
+    return null;
+  }
+
+  return date.toISOString().slice(0, 19).replace('T', ' ');
+}
+
 export default async function handler(req, res) {
   console.log("API route handler started");
 
@@ -138,10 +154,10 @@ export default async function handler(req, res) {
         const operatingHoursValues = [
           restaurantId,
           row.day_of_week || null,
-          row.open_time || null,
-          row.close_time || null,
-          row.drink_last_order_time || null,
-          row.food_last_order_time || null,
+          formatDateTime(row.open_time) || null,
+          formatDateTime(row.close_time) || null,
+          formatDateTime(row.drink_last_order_time) || null,
+          formatDateTime(row.food_last_order_time) || null,
           isValidDate(row.created_at) ? row.created_at : currentDateTime,
           isValidDate(row.updated_at) ? row.updated_at : currentDateTime
         ];
@@ -149,23 +165,20 @@ export default async function handler(req, res) {
         console.log("-------");
         console.log("Restaurant ID:", restaurantId);
         console.log("Operating Hours Values:", operatingHoursValues);
+        console.log(row)
 
-        if (operatingHoursValues.every(value => value !== null)) {
-          const operatingHoursSql = `
-            INSERT INTO operating_hours (
-              restaurant_id, day_of_week, start_time, end_time, 
-              drink_last_order_time, food_last_order_time, created_at, updated_at
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-          `;
+        const operatingHoursSql = `
+          INSERT INTO OperatingHour (
+            restaurant_id, day_of_week, open_time, close_time, 
+            drink_last_order_time, food_last_order_time, created_at, updated_at
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        `;
 
-          try {
-            await query({ query: operatingHoursSql, values: operatingHoursValues });
-            console.log(`Inserted operating hours for restaurantID: ${restaurantId}, day: ${row.day_of_week}`);
-          } catch (dbError) {
-            console.error(`Database error inserting operating hours for restaurantID: ${restaurantId}:`, dbError);
-          }
-        } else {
-          console.warn(`Skipping operating hours insertion for restaurantID: due to null values`);
+        try {
+          await query({ query: operatingHoursSql, values: operatingHoursValues });
+          console.log(`Inserted operating hours for restaurantID: ${restaurantId}, day: ${row.day_of_week}`);
+        } catch (dbError) {
+          console.error(`Database error inserting operating hours for restaurantID: ${restaurantId}:`, dbError);
         }
       }
     }
