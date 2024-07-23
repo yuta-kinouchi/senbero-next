@@ -1,15 +1,14 @@
-import Navbar from '../components/Navbar';
-import SearchForm from '../components/SearchForm';
-import styles from '../styles/HomePage.module.css';
+import Navbar from '../components/Navbar'
+import SearchForm from '../components/SearchForm'
+import styles from '../styles/HomePage.module.css'
 
-
-const HomePage = () => {
+const HomePage: React.FC = () => {
   return (
     <div className={styles.container}>
       <Navbar />
       <SearchForm />
     </div>
-  );
-};
+  )
+}
 
-export default HomePage;
+export default HomePage

@@ -1,5 +1,5 @@
-import LoginForm from '../components/LoginForm';
-import Navbar from '../components/Navbar';
+import LoginForm from '../components/LoginForm'
+import Navbar from '../components/Navbar'
 
 export default function Login() {
   return (
@@ -7,5 +7,5 @@ export default function Login() {
       <Navbar />
       <LoginForm />
     </div>
-  );
+  )
 }

@@ -5,57 +5,57 @@ import {
   CircularProgress,
   Container,
   TextField,
-  Typography,
-} from '@mui/material';
-import { signIn, useSession } from 'next-auth/react';
-import { useRouter } from 'next/router';
-import { useEffect, useState } from 'react';
+  Typography
+} from '@mui/material'
+import { signIn, useSession } from 'next-auth/react'
+import { useRouter } from 'next/router'
+import { useEffect, useState } from 'react'
 
 export default function LoginForm() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-  const router = useRouter();
-  const { data: session, status } = useSession();
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [error, setError] = useState('')
+  const [isLoading, setIsLoading] = useState(false)
+  const router = useRouter()
+  const { data: session, status } = useSession()
 
   useEffect(() => {
     if (status === 'authenticated') {
-      router.push('/');
+      router.push('/')
     }
-  }, [status, router]);
+  }, [status, router])
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError('');
-    setIsLoading(true);
+    e.preventDefault()
+    setError('')
+    setIsLoading(true)
 
     try {
       const result = await signIn('credentials', {
         redirect: false,
         email,
-        password,
-      });
+        password
+      })
 
       if (result.error) {
-        setError('Invalid email or password');
+        setError('Invalid email or password')
       } else {
-        router.push('/');
+        router.push('/')
       }
     } catch (error) {
-      setError('An unexpected error occurred');
-      console.error('Login error:', error);
+      setError('An unexpected error occurred')
+      console.error('Login error:', error)
     } finally {
-      setIsLoading(false);
+      setIsLoading(false)
     }
-  };
+  }
 
   if (status === 'loading') {
-    return <CircularProgress />;
+    return <CircularProgress />
   }
 
   if (status === 'authenticated') {
-    return null; // 既に認証済みの場合、useEffectでリダイレクトされるため何も表示しない
+    return null // 既に認証済みの場合、useEffectでリダイレクトされるため何も表示しない
   }
 
   return (
@@ -65,7 +65,7 @@ export default function LoginForm() {
           marginTop: 8,
           display: 'flex',
           flexDirection: 'column',
-          alignItems: 'center',
+          alignItems: 'center'
         }}
       >
         <Typography component="h1" variant="h5">
@@ -83,7 +83,7 @@ export default function LoginForm() {
             autoComplete="email"
             autoFocus
             value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            onChange={(e) => { setEmail(e.target.value) }}
           />
           <TextField
             margin="normal"
@@ -95,7 +95,7 @@ export default function LoginForm() {
             id="password"
             autoComplete="current-password"
             value={password}
-            onChange={(e) => setPassword(e.target.value)}
+            onChange={(e) => { setPassword(e.target.value) }}
           />
           <Button
             type="submit"
@@ -109,5 +109,5 @@ export default function LoginForm() {
         </Box>
       </Box>
     </Container>
-  );
+  )
 }

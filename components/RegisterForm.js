@@ -1,4 +1,4 @@
-import GoogleIcon from '@mui/icons-material/Google';
+import GoogleIcon from '@mui/icons-material/Google'
 import {
   Alert,
   Box,
@@ -6,55 +6,55 @@ import {
   Container,
   Divider,
   TextField,
-  Typography,
-} from '@mui/material';
-import { signIn } from 'next-auth/react';
-import { useRouter } from 'next/router';
-import { useState } from 'react';
+  Typography
+} from '@mui/material'
+import { signIn } from 'next-auth/react'
+import { useRouter } from 'next/router'
+import { useState } from 'react'
 
 export default function RegisterForm() {
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
-  const router = useRouter();
+  const [name, setName] = useState('')
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [error, setError] = useState('')
+  const router = useRouter()
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError('');
+    e.preventDefault()
+    setError('')
 
     try {
       const res = await fetch('/api/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, email, password }),
-      });
+        body: JSON.stringify({ name, email, password })
+      })
 
       if (res.ok) {
         const result = await signIn('credentials', {
           redirect: false,
           email,
-          password,
-        });
+          password
+        })
 
         if (result.error) {
-          setError('登録は成功しましたが、ログインに失敗しました。ログインページに移動します。');
-          setTimeout(() => router.push('/login'), 3000);
+          setError('登録は成功しましたが、ログインに失敗しました。ログインページに移動します。')
+          setTimeout(async () => await router.push('/login'), 3000)
         } else {
-          router.push('/');
+          router.push('/')
         }
       } else {
-        const data = await res.json();
-        throw new Error(data.message || 'Registration failed');
+        const data = await res.json()
+        throw new Error(data.message || 'Registration failed')
       }
     } catch (error) {
-      setError(error.message);
+      setError(error.message)
     }
-  };
+  }
 
   const handleGoogleSignIn = () => {
-    signIn('google', { callbackUrl: '/' });
-  };
+    signIn('google', { callbackUrl: '/' })
+  }
 
   return (
     <Container component="main" maxWidth="xs">
@@ -63,7 +63,7 @@ export default function RegisterForm() {
           marginTop: 8,
           display: 'flex',
           flexDirection: 'column',
-          alignItems: 'center',
+          alignItems: 'center'
         }}
       >
         <Typography component="h1" variant="h5">
@@ -81,7 +81,7 @@ export default function RegisterForm() {
             autoComplete="name"
             autoFocus
             value={name}
-            onChange={(e) => setName(e.target.value)}
+            onChange={(e) => { setName(e.target.value) }}
           />
           <TextField
             margin="normal"
@@ -92,7 +92,7 @@ export default function RegisterForm() {
             name="email"
             autoComplete="email"
             value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            onChange={(e) => { setEmail(e.target.value) }}
           />
           <TextField
             margin="normal"
@@ -104,7 +104,7 @@ export default function RegisterForm() {
             id="password"
             autoComplete="new-password"
             value={password}
-            onChange={(e) => setPassword(e.target.value)}
+            onChange={(e) => { setPassword(e.target.value) }}
           />
           <Button
             type="submit"
@@ -127,5 +127,5 @@ export default function RegisterForm() {
         </Button>
       </Box>
     </Container>
-  );
+  )
 }

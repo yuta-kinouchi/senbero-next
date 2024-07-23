@@ -1,36 +1,36 @@
-import { useState } from 'react';
+import { useState } from 'react'
 
 export default function SeedPage() {
-  const [result, setResult] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
+  const [result, setResult] = useState('')
+  const [isLoading, setIsLoading] = useState(false)
 
   const runSeeder = async () => {
-    setIsLoading(true);
-    setResult('');
+    setIsLoading(true)
+    setResult('')
     try {
-      console.log("Sending request to /api/seed");
+      console.log('Sending request to /api/seed')
       const response = await fetch('/api/seed', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-      console.log("Response received", response);
+          'Content-Type': 'application/json'
+        }
+      })
+      console.log('Response received', response)
 
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        throw new Error(`HTTP error! status: ${response.status}`)
       }
 
-      const data = await response.json();
-      console.log("Data parsed", data);
-      setResult(data.message || 'Seeding completed');
+      const data = await response.json()
+      console.log('Data parsed', data)
+      setResult(data.message || 'Seeding completed')
     } catch (error) {
-      console.error("Error occurred", error);
-      setResult(`Error: ${error.message}`);
+      console.error('Error occurred', error)
+      setResult(`Error: ${error.message}`)
     } finally {
-      setIsLoading(false);
+      setIsLoading(false)
     }
-  };
+  }
 
   return (
     <div>
@@ -40,5 +40,5 @@ export default function SeedPage() {
       </button>
       {result && <p>{result}</p>}
     </div>
-  );
+  )
 }

@@ -1,10 +1,10 @@
-import SportsBarRoundedIcon from "@mui/icons-material/SportsBarRounded";
-import { Box, Button, Container, Typography, useMediaQuery } from "@mui/material";
-import { useTheme } from "@mui/material/styles";
+import SportsBarRoundedIcon from '@mui/icons-material/SportsBarRounded'
+import { Box, Button, Container, Typography, useMediaQuery } from '@mui/material'
+import { useTheme } from '@mui/material/styles'
 
 const SearchForm = () => {
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+  const theme = useTheme()
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'))
 
   return (
     <Container fixed>
@@ -12,27 +12,27 @@ const SearchForm = () => {
         align="center"
         variant="h5"
         sx={{
-          color: "white",
-          margin: "48px 0px 24px 0px",
-          fontSize: isMobile ? "20px" : "24px",
+          color: 'white',
+          margin: '48px 0px 24px 0px',
+          fontSize: isMobile ? '20px' : '24px'
         }}
       >
         せんべろ好きのための検索サイト
       </Typography>
       <Box
         display="flex"
-        flexDirection={isMobile ? "column" : "row"}
+        flexDirection={isMobile ? 'column' : 'row'}
         justifyContent="center"
         alignItems="center"
       >
-        <SportsBarRoundedIcon style={{ fontSize: 80, color: "white" }} />
+        <SportsBarRoundedIcon style={{ fontSize: 80, color: 'white' }} />
         <Typography
           variant="h2"
           sx={{
-            color: "white",
-            fontSize: isMobile ? "28px" : "48px",
-            marginLeft: isMobile ? "0px" : "10px",
-            marginTop: isMobile ? "10px" : "0px",
+            color: 'white',
+            fontSize: isMobile ? '28px' : '48px',
+            marginLeft: isMobile ? '0px' : '10px',
+            marginTop: isMobile ? '10px' : '0px'
           }}
         >
           せんべろCheers
@@ -42,9 +42,9 @@ const SearchForm = () => {
         align="center"
         variant="h4"
         sx={{
-          color: "white",
-          margin: "60px 0px 12px 0px",
-          fontSize: isMobile ? "20px" : "32px",
+          color: 'white',
+          margin: '60px 0px 12px 0px',
+          fontSize: isMobile ? '20px' : '32px'
         }}
       >
         イマココ検索とは？
@@ -52,9 +52,9 @@ const SearchForm = () => {
       <Typography
         align="center"
         sx={{
-          color: "white",
-          fontSize: isMobile ? "14px" : "18px",
-          margin: "0px 0px 48px 0px",
+          color: 'white',
+          fontSize: isMobile ? '14px' : '18px',
+          margin: '0px 0px 48px 0px'
         }}
       >
         次のお店はどこにしようか？
@@ -72,18 +72,18 @@ const SearchForm = () => {
       </Typography>
       <Box
         sx={{
-          backgroundColor: "lightyellow",
-          border: "1px solid yellow",
-          padding: "16px",
-          marginTop: "20px",
-          marginBottom: "20px",
-          borderRadius: "8px",
+          backgroundColor: 'lightyellow',
+          border: '1px solid yellow',
+          padding: '16px',
+          marginTop: '20px',
+          marginBottom: '20px',
+          borderRadius: '8px'
         }}
       >
         <Typography
           align="center"
           sx={{
-            fontSize: isMobile ? "12px" : "16px",
+            fontSize: isMobile ? '12px' : '16px'
           }}
         >
           ※このアプリは位置情報を使用します。機能を利用する際には位置情報の使用許可が必要になります。
@@ -92,22 +92,22 @@ const SearchForm = () => {
       <Box
         display="flex"
         justifyContent="center"
-        sx={{ marginTop: "20px" }}
+        sx={{ marginTop: '20px' }}
       >
         <Button
           variant="contained"
           color="primary"
           sx={{
-            fontSize: isMobile ? "14px" : "16px",
-            padding: isMobile ? "8px 16px" : "12px 24px",
-            borderRadius: "8px",
+            fontSize: isMobile ? '14px' : '16px',
+            padding: isMobile ? '8px 16px' : '12px 24px',
+            borderRadius: '8px'
           }}
         >
           検索する
         </Button>
       </Box>
     </Container>
-  );
-};
+  )
+}
 
-export default SearchForm;
+export default SearchForm
