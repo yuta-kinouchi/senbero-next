@@ -11,6 +11,22 @@ function getCurrentMySQLDateTime() {
   return new Date().toISOString().slice(0, 19).replace('T', ' ');
 }
 
+function formatDateTime(timeString) {
+  // Assuming a default date since only time is provided
+  const defaultDate = '1970-01-01'; // Unix epoch start date
+  const dateTimeString = `${defaultDate}T${timeString}:00.000Z`; // Adding seconds and timezone for full ISO string
+
+  console.log("Original time string:", timeString);
+  console.log("Full datetime string:", dateTimeString);
+
+  const date = new Date(dateTimeString);
+  if (isNaN(date.getTime())) {
+    return null;
+  }
+
+  return date.toISOString().slice(0, 19).replace('T', ' ');
+}
+
 export default async function handler(req, res) {
   console.log("API route handler started");
 
@@ -47,80 +63,101 @@ export default async function handler(req, res) {
     for (const row of results) {
       const currentDateTime = getCurrentMySQLDateTime();
 
-      // Insert restaurant
-      const restaurantValues = {
-        name: row.name || null,
-        phone_number: row.phone_number || null,
-        country: row.country || null,
-        state: row.state || null,
-        city: row.city || null,
-        address_line1: row.address_line1 || null,
-        address_line2: row.address_line2 || null,
-        latitude: parseFloat(row.latitude) || null,
-        longitude: parseFloat(row.longitude) || null,
-        capacity: parseInt(row.capacity) || null,
-        home_page: row.home_page || null,
-        description: row.description || null,
-        special_rule: row.special_rule || null,
-        morning_available: row.morning_available === 'FALSE' ? false : true,
-        daytime_available: row.daytime_available === 'FALSE' ? false : true,
-        has_set: row.has_set === 'FALSE' ? false : true,
-        senbero_description: row.senbero_description || null,
-        has_chinchiro: row.has_chinchiro === 'FALSE' ? false : true,
-        chinchiro_description: row.chinchiro_description || null,
-        outside_available: row.outside_available === 'FALSE' ? false : true,
-        outside_description: row.outside_description || null,
-        is_standing: row.is_standing === 'FALSE' ? false : true,
-        standing_description: row.standing_description || null,
-        is_kakuuchi: row.is_kakuuchi === 'FALSE' ? false : true,
-        is_cash_on: row.is_cash_on === 'FALSE' ? false : true,
-        has_charge: row.has_charge === 'FALSE' ? false : true,
-        charge_description: row.charge_description || null,
-        has_tv: row.has_tv === 'FALSE' ? false : true,
-        smoking_allowed: row.smoking_allowed === 'FALSE' ? false : true,
-        has_happy_hour: row.has_happy_hour === 'FALSE' ? false : true,
-        deleted_at: null,
-        created_at: isValidDate(row.created_at) ? row.created_at : currentDateTime,
-        updated_at: isValidDate(row.updated_at) ? row.updated_at : currentDateTime
-      };
+      // Check if restaurant already exists
+      let restaurantId = row.restaurant_id;
+      let restaurantExists = false;
 
-      const restaurantSql = `
-        INSERT INTO restaurant (
-          name, phone_number, country, state, city, 
-          address_line1, address_line2, latitude, longitude, capacity, 
-          home_page, description, special_rule, morning_available, 
-          daytime_available, has_set, senbero_description, has_chinchiro, 
-          chinchiro_description, outside_available, outside_description, 
-          is_standing, standing_description, is_kakuuchi, is_cash_on, 
-          has_charge, charge_description, has_tv, smoking_allowed, 
-          has_happy_hour, deleted_at, created_at, updated_at
-        ) VALUES (
-          ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 
-          ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
-        )
-      `;
+      if (restaurantId) {
+        try {
+          const existingRestaurant = await query({
+            query: 'SELECT restaurant_id FROM restaurant WHERE restaurant_id = ?',
+            values: [restaurantId],
+          });
 
-      const restaurantInsertValues = Object.values(restaurantValues);
+          if (existingRestaurant.length > 0) {
+            restaurantExists = true;
+            console.log(`Restaurant ID ${restaurantId} already exists.`);
+          }
+        } catch (dbError) {
+          console.error(`Database error checking restaurant ID ${restaurantId}:`, dbError);
+          continue;
+        }
+      }
 
-      let restaurantId;
-      try {
-        const result = await query({ query: restaurantSql, values: restaurantInsertValues });
-        restaurantId = result.insertId;
-        console.log(`Inserted restaurant: ${restaurantValues.name} (ID: ${restaurantId})`);
-      } catch (dbError) {
-        console.error(`Database error inserting restaurant ${restaurantValues.name}:`, dbError);
-        continue;
+      // Insert restaurant if it doesn't exist
+      if (!restaurantExists) {
+        const restaurantValues = [
+          row.restaurant_id || null,
+          row.name || null,
+          row.phone_number || null,
+          row.country || null,
+          row.state || null,
+          row.city || null,
+          row.address_line1 || null,
+          row.address_line2 || null,
+          parseFloat(row.latitude) || null,
+          parseFloat(row.longitude) || null,
+          parseInt(row.capacity) || null,
+          row.home_page || null,
+          row.description || null,
+          row.special_rule || null,
+          row.morning_available === 'FALSE' ? false : true,
+          row.daytime_available === 'FALSE' ? false : true,
+          row.has_set === 'FALSE' ? false : true,
+          row.senbero_description || null,
+          row.has_chinchiro === 'FALSE' ? false : true,
+          row.chinchiro_description || null,
+          row.outside_available === 'FALSE' ? false : true,
+          row.outside_description || null,
+          row.is_standing === 'FALSE' ? false : true,
+          row.standing_description || null,
+          row.is_kakuuchi === 'FALSE' ? false : true,
+          row.is_cash_on === 'FALSE' ? false : true,
+          row.has_charge === 'FALSE' ? false : true,
+          row.charge_description || null,
+          row.has_tv === 'FALSE' ? false : true,
+          row.smoking_allowed === 'FALSE' ? false : true,
+          row.has_happy_hour === 'FALSE' ? false : true,
+          null,
+          isValidDate(row.created_at) ? row.created_at : currentDateTime,
+          isValidDate(row.updated_at) ? row.updated_at : currentDateTime
+        ];
+
+        const restaurantSql = `
+          INSERT INTO restaurant (
+            restaurant_id, name, phone_number, country, state, city, 
+            address_line1, address_line2, latitude, longitude, capacity, 
+            home_page, description, special_rule, morning_available, 
+            daytime_available, has_set, senbero_description, has_chinchiro, 
+            chinchiro_description, outside_available, outside_description, 
+            is_standing, standing_description, is_kakuuchi, is_cash_on, 
+            has_charge, charge_description, has_tv, smoking_allowed, 
+            has_happy_hour, deleted_at, created_at, updated_at
+          ) VALUES (
+            ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 
+            ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
+          )
+        `;
+
+        try {
+          const result = await query({ query: restaurantSql, values: restaurantValues });
+          restaurantId = result.insertId;
+          console.log(`Inserted restaurant: ${restaurantValues[1]} (ID: ${restaurantId})`);
+        } catch (dbError) {
+          console.error(`Database error inserting restaurant ${restaurantValues[1]}:`, dbError);
+          continue;
+        }
       }
 
       // Insert operating hours
-      if (row.day_of_week) {
+      if (row.day_of_week && restaurantId) {
         const operatingHoursValues = [
           restaurantId,
           row.day_of_week || null,
-          row.open_time || null,
-          row.close_time || null,
-          row.drink_last_order_time || null,
-          row.food_last_order_time || null,
+          formatDateTime(row.open_time) || null,
+          formatDateTime(row.close_time) || null,
+          formatDateTime(row.drink_last_order_time) || null,
+          formatDateTime(row.food_last_order_time) || null,
           isValidDate(row.created_at) ? row.created_at : currentDateTime,
           isValidDate(row.updated_at) ? row.updated_at : currentDateTime
         ];
@@ -128,23 +165,20 @@ export default async function handler(req, res) {
         console.log("-------");
         console.log("Restaurant ID:", restaurantId);
         console.log("Operating Hours Values:", operatingHoursValues);
+        console.log(row)
 
-        if (operatingHoursValues.every(value => value !== null)) {
-          const operatingHoursSql = `
-            INSERT INTO operating_hours (
-              restaurant_id, day_of_week, start_time, end_time, 
-              drink_last_order_time, food_last_order_time, created_at, updated_at
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-          `;
+        const operatingHoursSql = `
+          INSERT INTO OperatingHour (
+            restaurant_id, day_of_week, open_time, close_time, 
+            drink_last_order_time, food_last_order_time, created_at, updated_at
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        `;
 
-          try {
-            await query({ query: operatingHoursSql, values: operatingHoursValues });
-            console.log(`Inserted operating hours for restaurant: ${restaurantValues.name}, day: ${row.day_of_week}`);
-          } catch (dbError) {
-            console.error(`Database error inserting operating hours for restaurant ${restaurantValues.name}:`, dbError);
-          }
-        } else {
-          console.warn(`Skipping operating hours insertion for restaurant ${restaurantValues.name} due to null values`);
+        try {
+          await query({ query: operatingHoursSql, values: operatingHoursValues });
+          console.log(`Inserted operating hours for restaurantID: ${restaurantId}, day: ${row.day_of_week}`);
+        } catch (dbError) {
+          console.error(`Database error inserting operating hours for restaurantID: ${restaurantId}:`, dbError);
         }
       }
     }
