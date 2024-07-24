@@ -1,7 +1,8 @@
-import { CircularProgress, Container } from '@mui/material';
+import { CircularProgress } from '@mui/material';
 import { useEffect, useState } from 'react';
 import Navbar from '../components/Navbar';
 import RestaurantList from '../components/RestaurantList';
+import styles from '../styles/HomePage.module.css';
 
 const RestaurantListPage = () => {
   const [restaurants, setRestaurants] = useState([]);
@@ -28,14 +29,14 @@ const RestaurantListPage = () => {
 
   if (loading) {
     return (
-      <Container style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+      <div className={styles.container}>
         <Navbar />
         <CircularProgress />
-      </Container>
+      </div>
     );
   }
   return (
-    <div>
+    <div className={styles.container}>
       <Navbar />
       <RestaurantList restaurants={restaurants} />
     </div>
