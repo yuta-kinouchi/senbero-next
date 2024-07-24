@@ -1,10 +1,18 @@
 import SportsBarRoundedIcon from "@mui/icons-material/SportsBarRounded";
 import { Box, Button, Container, Typography, useMediaQuery } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
+import { useRouter } from 'next/router';
+
+
 
 const SearchForm = () => {
+  const router = useRouter();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+
+  const handleSearch = () => {
+    router.push('/restaurant-list');
+  };
 
   return (
     <Container fixed>
@@ -97,6 +105,7 @@ const SearchForm = () => {
         <Button
           variant="contained"
           color="primary"
+          onClick={handleSearch}
           sx={{
             fontSize: isMobile ? "14px" : "16px",
             padding: isMobile ? "8px 16px" : "12px 24px",
