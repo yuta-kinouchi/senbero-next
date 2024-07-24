@@ -15,7 +15,7 @@ datasource db {
 
 model User {
   user_id       Int       @id @default(autoincrement()) @map("user_id")
-  user_name     String    @map("user_name")
+  name     String    @map("user_name")
   email         String    @unique
   hashed_password String  @map("hashed_password")
   birth_day     DateTime? @map("birth_day")
