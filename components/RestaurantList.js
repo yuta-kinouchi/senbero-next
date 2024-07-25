@@ -10,12 +10,19 @@ import {
   Stack,
   Typography
 } from '@mui/material';
+import { useRouter } from 'next/router';
 
 const RestaurantList = ({ restaurants }) => {
+  const router = useRouter();
+
+  const handleCardClick = (id) => {
+    router.push(`/restaurants/${id}`);
+  };
   return (
     <Container>
       {restaurants.length > 0 ? (
-        <Stack spacing={3}>
+        <Stack spacing={3} sx={{ paddingTop: 5, paddingBottom: 5 }}
+        >
           {restaurants.map((restaurant) => (
             <Card
               key={restaurant.id}
@@ -25,6 +32,7 @@ const RestaurantList = ({ restaurants }) => {
                 marginBottom: 2,
                 overflow: 'hidden',
               }}
+              onClick={() => handleCardClick(restaurant.restaurant_id)}
             >
               <CardMedia
                 component="img"
