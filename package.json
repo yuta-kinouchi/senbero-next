@@ -19,6 +19,7 @@
     "bcrypt": "^5.1.1",
     "bcryptjs": "^2.4.3",
     "csv-parser": "^3.0.0",
+    "date-fns": "^3.6.0",
     "mysql2": "^3.10.3",
     "next": "14.2.5",
     "next-auth": "^4.24.7",
