@@ -15,8 +15,8 @@ import { useRouter } from 'next/router';
 const RestaurantList = ({ restaurants }) => {
   const router = useRouter();
 
-  const handleCardClick = (id) => {
-    router.push(`/restaurants/${id}`);
+  const handleCardClick = (restaurant_id) => {
+    router.push(`/restaurants/${restaurant_id}`);
   };
 
   return (
@@ -25,14 +25,14 @@ const RestaurantList = ({ restaurants }) => {
         <Stack spacing={3} sx={{ paddingTop: 5, paddingBottom: 5 }}>
           {restaurants.map((restaurant) => (
             <Card
-              key={restaurant.id}
+              key={restaurant.restaurant_id}
               sx={{
                 display: 'flex',
                 flexDirection: 'row',
                 marginBottom: 2,
                 overflow: 'hidden',
               }}
-              onClick={() => handleCardClick(restaurant.id)}
+              onClick={() => handleCardClick(restaurant.restaurant_id)}
             >
               <CardMedia
                 component="img"
