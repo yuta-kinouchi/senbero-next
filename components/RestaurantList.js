@@ -18,11 +18,11 @@ const RestaurantList = ({ restaurants }) => {
   const handleCardClick = (id) => {
     router.push(`/restaurants/${id}`);
   };
+
   return (
     <Container>
       {restaurants.length > 0 ? (
-        <Stack spacing={3} sx={{ paddingTop: 5, paddingBottom: 5 }}
-        >
+        <Stack spacing={3} sx={{ paddingTop: 5, paddingBottom: 5 }}>
           {restaurants.map((restaurant) => (
             <Card
               key={restaurant.id}
@@ -32,7 +32,7 @@ const RestaurantList = ({ restaurants }) => {
                 marginBottom: 2,
                 overflow: 'hidden',
               }}
-              onClick={() => handleCardClick(restaurant.restaurant_id)}
+              onClick={() => handleCardClick(restaurant.id)}
             >
               <CardMedia
                 component="img"
@@ -49,9 +49,9 @@ const RestaurantList = ({ restaurants }) => {
                     <Box display="flex" alignItems="center">
                       <AccessTime sx={{ marginRight: 1 }} />
                       <Typography variant="body2">
-                        営業時間：~ {restaurant.close_time}
+                        営業時間：~ {new Date(restaurant.close_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                         {restaurant.food_last_order_time
-                          ? ` （L.O ${restaurant.food_last_order_time}）`
+                          ? ` （L.O ${new Date(restaurant.food_last_order_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}）`
                           : ""}
                       </Typography>
                     </Box>

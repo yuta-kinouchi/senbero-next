@@ -2,16 +2,40 @@ import SportsBarRoundedIcon from "@mui/icons-material/SportsBarRounded";
 import { Box, Button, Container, Typography, useMediaQuery } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
 import { useRouter } from 'next/router';
-
-
+import { useState } from 'react';
 
 const SearchForm = () => {
   const router = useRouter();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+  const [position, setPosition] = useState({ latitude: null, longitude: null });
 
   const handleSearch = () => {
-    router.push('/restaurant-list');
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          setPosition({
+            latitude: position.coords.latitude,
+            longitude: position.coords.longitude,
+          });
+
+          // 位置情報をクエリパラメータとして次のページに送信
+          router.push({
+            pathname: '/restaurant-list',
+            query: {
+              latitude: position.coords.latitude,
+              longitude: position.coords.longitude
+            },
+          });
+        },
+        (error) => {
+          console.error('Error getting location:', error);
+          alert('位置情報の取得に失敗しました。位置情報を許可してください。');
+        }
+      );
+    } else {
+      alert('位置情報がサポートされていません。');
+    }
   };
 
   return (
