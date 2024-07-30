@@ -31,8 +31,8 @@ export default async function handler(req, res) {
         );
 
         if (todayOperatingHours) {
-          const openTime = todayOperatingHours.open_time;
-          const closeTime = todayOperatingHours.close_time;
+          const openTime = new Date(todayOperatingHours.open_time);
+          const closeTime = new Date(todayOperatingHours.close_time);
 
           const openHours = openTime.getUTCHours();
           const openMinutes = openTime.getUTCMinutes();
@@ -41,8 +41,8 @@ export default async function handler(req, res) {
           const closeMinutes = closeTime.getUTCMinutes();
 
           const isOpen = (
-            (currentHours > openHours || (currentHours === openHours && currentMinutes >= openMinutes)) &&
-            (currentHours < closeHours || (currentHours === closeHours && currentMinutes <= closeMinutes))
+            (currentHours + 10 >= openHours || (currentHours === openHours && currentMinutes >= openMinutes)) &&
+            (currentHours + 10 < closeHours || (currentHours === closeHours && currentMinutes <= closeMinutes))
           );
 
           if (isOpen) {
@@ -80,7 +80,7 @@ export default async function handler(req, res) {
 function getDistanceFromLatLonInKm(lat1, lon1, lat2, lon2) {
   const R = 6371; // 地球の半径（キロメートル）
   const dLat = deg2rad(lat2 - lat1); // 緯度の差をラジアンに変換
-  const dLon = deg2rad(lon1 - lon2); // 経度の差をラジアンに変換
+  const dLon = deg2rad(lon2 - lon1); // 経度の差をラジアンに変換
   const a =
     Math.sin(dLat / 2) * Math.sin(dLat / 2) +
     Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) *
