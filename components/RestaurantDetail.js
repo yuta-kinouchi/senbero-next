@@ -9,15 +9,15 @@ import {
   LocationOn,
   OutdoorGrill,
   Phone,
-  Restaurant,
   SmokingRooms,
-  Tv,
+  Tv
 } from '@mui/icons-material';
 import {
   Box,
   Button,
   Card,
   CardContent,
+  CardMedia,
   Chip,
   CircularProgress,
   Container,
@@ -76,33 +76,40 @@ const RestaurantDetail = () => {
       <Card>
         <CardContent>
           <Typography variant="h4" component="h1" gutterBottom>
-            <Restaurant sx={{ mr: 1, verticalAlign: 'middle' }} />
             {restaurant.name}
           </Typography>
-
           <Grid container spacing={2}>
+            {/* Image section */}
             <Grid item xs={12} sm={6}>
-              <Typography variant="body1">
-                <Phone sx={{ mr: 1, verticalAlign: 'middle' }} />
-                {restaurant.phone_number || 'N/A'}
-              </Typography>
+              <CardMedia
+                component="img"
+                sx={{ width: '100%', borderRadius: 2 }}
+                image="https://stat.ameba.jp/user_images/20190221/17/as1069/60/9b/j/o1080060714360002934.jpg"
+                alt="Restaurant Image"
+              />
             </Grid>
+
+            {/* Information section */}
             <Grid item xs={12} sm={6}>
-              <Typography variant="body1">
-                <LocationOn sx={{ mr: 1, verticalAlign: 'middle' }} />
-                {`${restaurant.address_line1}, ${restaurant.address_line2}, ${restaurant.city}, ${restaurant.state}, ${restaurant.country}`}
-              </Typography>
-            </Grid>
-            {restaurant.home_page && (
-              <Grid item xs={12}>
+              <CardContent>
                 <Typography variant="body1">
-                  <Language sx={{ mr: 1, verticalAlign: 'middle' }} />
-                  <a href={restaurant.home_page} target="_blank" rel="noopener noreferrer">
-                    {restaurant.home_page}
-                  </a>
+                  <Phone sx={{ mr: 1, verticalAlign: 'middle' }} />
+                  {restaurant.phone_number || 'N/A'}
                 </Typography>
-              </Grid>
-            )}
+                <Typography variant="body1">
+                  <LocationOn sx={{ mr: 1, verticalAlign: 'middle' }} />
+                  {`${restaurant.address_line1}, ${restaurant.address_line2}, ${restaurant.city}, ${restaurant.state}, ${restaurant.country}`}
+                </Typography>
+                {restaurant.home_page && (
+                  <Typography variant="body1">
+                    <Language sx={{ mr: 1, verticalAlign: 'middle' }} />
+                    <a href={restaurant.home_page} target="_blank" rel="noopener noreferrer">
+                      {restaurant.home_page}
+                    </a>
+                  </Typography>
+                )}
+              </CardContent>
+            </Grid>
           </Grid>
 
           <Divider sx={{ my: 2 }} />
