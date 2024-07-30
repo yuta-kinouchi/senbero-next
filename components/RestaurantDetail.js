@@ -9,7 +9,6 @@ import {
   LocationOn,
   OutdoorGrill,
   Phone,
-  Restaurant,
   SmokingRooms,
   Tv,
 } from '@mui/icons-material';
@@ -18,249 +17,243 @@ import {
   Button,
   Card,
   CardContent,
+  CardMedia,
   Chip,
-  CircularProgress,
   Container,
   Divider,
   Grid,
+  Tab,
+  Tabs,
   Typography,
 } from '@mui/material';
-import { useRouter } from 'next/router';
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 
-const RestaurantDetail = () => {
-  const [restaurant, setRestaurant] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const router = useRouter();
-  const { id } = router.query;
+const RestaurantDetail = ({ restaurant }) => {
+  const [tabIndex, setTabIndex] = useState(0);
 
-  useEffect(() => {
-    if (id) {
-      fetchRestaurantDetail(id);
-    }
-  }, [id]);
-
-  const fetchRestaurantDetail = async (restaurantId) => {
-    try {
-      const response = await fetch(`/api/restaurants/${restaurantId}`);
-      if (!response.ok) {
-        throw new Error('Restaurant not found');
-      }
-      const data = await response.json();
-      setRestaurant(data);
-      setLoading(false);
-    } catch (error) {
-      console.error('Error fetching restaurant:', error);
-      setLoading(false);
-    }
+  const handleTabChange = (event, newValue) => {
+    setTabIndex(newValue);
   };
-
-  if (loading) {
-    return (
-      <Box display="flex" justifyContent="center" alignItems="center" minHeight="100vh">
-        <CircularProgress />
-      </Box>
-    );
-  }
-
-  if (!restaurant) {
-    return (
-      <Typography variant="h6" align="center">
-        Restaurant not found
-      </Typography>
-    );
-  }
 
   return (
     <Container maxWidth="md" sx={{ py: 4 }}>
       <Card>
         <CardContent>
           <Typography variant="h4" component="h1" gutterBottom>
-            <Restaurant sx={{ mr: 1, verticalAlign: 'middle' }} />
             {restaurant.name}
           </Typography>
 
           <Grid container spacing={2}>
+            {/* Image section */}
             <Grid item xs={12} sm={6}>
-              <Typography variant="body1">
-                <Phone sx={{ mr: 1, verticalAlign: 'middle' }} />
-                {restaurant.phone_number || 'N/A'}
-              </Typography>
+              <CardMedia
+                component="img"
+                sx={{ width: '100%', borderRadius: 2 }}
+                image="https://stat.ameba.jp/user_images/20190221/17/as1069/60/9b/j/o1080060714360002934.jpg"
+                alt="Restaurant Image"
+              />
             </Grid>
+
+            {/* Information section */}
             <Grid item xs={12} sm={6}>
-              <Typography variant="body1">
-                <LocationOn sx={{ mr: 1, verticalAlign: 'middle' }} />
-                {`${restaurant.address_line1}, ${restaurant.address_line2}, ${restaurant.city}, ${restaurant.state}, ${restaurant.country}`}
-              </Typography>
-            </Grid>
-            {restaurant.home_page && (
-              <Grid item xs={12}>
+              <CardContent>
                 <Typography variant="body1">
-                  <Language sx={{ mr: 1, verticalAlign: 'middle' }} />
-                  <a href={restaurant.home_page} target="_blank" rel="noopener noreferrer">
-                    {restaurant.home_page}
-                  </a>
+                  <LocationOn sx={{ mr: 1, verticalAlign: 'middle' }} />
+                  {restaurant.state}{restaurant.city}{restaurant.address_line1}{restaurant.address_line2}
                 </Typography>
-              </Grid>
-            )}
+                <Typography variant="body1">
+                  <Phone sx={{ mr: 1, verticalAlign: 'middle' }} />
+                  {restaurant.phone_number || 'N/A'}
+                </Typography>
+                {restaurant.home_page && (
+                  <Typography variant="body1">
+                    <Language sx={{ mr: 1, verticalAlign: 'middle' }} />
+                    <a href={restaurant.home_page} target="_blank" rel="noopener noreferrer">
+                      {restaurant.home_page}
+                    </a>
+                  </Typography>
+                )}
+              </CardContent>
+            </Grid>
           </Grid>
 
           <Divider sx={{ my: 2 }} />
 
-          <Typography variant="h6" gutterBottom>
-            <Description sx={{ mr: 1, verticalAlign: 'middle' }} />
-            Description
-          </Typography>
-          <Typography variant="body1" paragraph>
-            {restaurant.description || 'No description available.'}
-          </Typography>
+          <Tabs value={tabIndex} onChange={handleTabChange} aria-label="restaurant details tabs">
+            <Tab label="せんべろ情報" />
+            <Tab label="投稿" />
+          </Tabs>
 
-          <Divider sx={{ my: 2 }} />
-
-          <Typography variant="h6" gutterBottom>
-            <EventSeat sx={{ mr: 1, verticalAlign: 'middle' }} />
-            Capacity and Seating
-          </Typography>
-          <Typography variant="body1">
-            Capacity: {restaurant.capacity || 'N/A'}
-          </Typography>
-          <Box mt={1}>
-            <Chip
-              icon={<DirectionsWalk />}
-              label={restaurant.is_standing ? 'Standing Available' : 'No Standing'}
-              color={restaurant.is_standing ? 'primary' : 'default'}
-              sx={{ mr: 1, mb: 1 }}
-            />
-            {restaurant.is_standing && (
-              <Typography variant="body2">
-                {restaurant.standing_description}
+          {tabIndex === 0 && (
+            <Box>
+              <Typography variant="h6" gutterBottom>
+                <Description sx={{ mr: 1, verticalAlign: 'middle' }} />
+                Description
               </Typography>
-            )}
-          </Box>
+              <Typography variant="body1" paragraph>
+                {restaurant.description || 'No description available.'}
+              </Typography>
 
-          <Divider sx={{ my: 2 }} />
+              <Divider sx={{ my: 2 }} />
 
-          <Typography variant="h6" gutterBottom>
-            <AccessTime sx={{ mr: 1, verticalAlign: 'middle' }} />
-            Availability
-          </Typography>
-          <Box>
-            <Chip
-              label="Morning"
-              color={restaurant.morning_available ? 'primary' : 'default'}
-              sx={{ mr: 1, mb: 1 }}
-            />
-            <Chip
-              label="Daytime"
-              color={restaurant.daytime_available ? 'primary' : 'default'}
-              sx={{ mr: 1, mb: 1 }}
-            />
-          </Box>
+              <Typography variant="h6" gutterBottom>
+                <EventSeat sx={{ mr: 1, verticalAlign: 'middle' }} />
+                Capacity and Seating
+              </Typography>
+              <Typography variant="body1">
+                Capacity: {restaurant.capacity || 'N/A'}
+              </Typography>
+              <Box mt={1}>
+                <Chip
+                  icon={<DirectionsWalk />}
+                  label={restaurant.is_standing ? 'Standing Available' : 'No Standing'}
+                  color={restaurant.is_standing ? 'primary' : 'default'}
+                  sx={{ mr: 1, mb: 1 }}
+                />
+                {restaurant.is_standing && (
+                  <Typography variant="body2">
+                    {restaurant.standing_description}
+                  </Typography>
+                )}
+              </Box>
 
-          <Divider sx={{ my: 2 }} />
+              <Divider sx={{ my: 2 }} />
 
-          <Typography variant="h6" gutterBottom>
-            <LocalBar sx={{ mr: 1, verticalAlign: 'middle' }} />
-            Special Features
-          </Typography>
-          <Box>
-            <Chip
-              label="Set Menu"
-              color={restaurant.has_set ? 'primary' : 'default'}
-              sx={{ mr: 1, mb: 1 }}
-            />
-            <Chip
-              label="Senbero"
-              color={restaurant.senbero_description ? 'primary' : 'default'}
-              sx={{ mr: 1, mb: 1 }}
-            />
-            <Chip
-              label="Chinchiro"
-              color={restaurant.has_chinchiro ? 'primary' : 'default'}
-              sx={{ mr: 1, mb: 1 }}
-            />
-            <Chip
-              label="Happy Hour"
-              color={restaurant.has_happy_hour ? 'primary' : 'default'}
-              sx={{ mr: 1, mb: 1 }}
-            />
-          </Box>
-          {restaurant.senbero_description && (
-            <Typography variant="body2" mt={1}>
-              Senbero: {restaurant.senbero_description}
-            </Typography>
+              <Typography variant="h6" gutterBottom>
+                <AccessTime sx={{ mr: 1, verticalAlign: 'middle' }} />
+                Availability
+              </Typography>
+              <Box>
+                <Chip
+                  label="Morning"
+                  color={restaurant.morning_available ? 'primary' : 'default'}
+                  sx={{ mr: 1, mb: 1 }}
+                />
+                <Chip
+                  label="Daytime"
+                  color={restaurant.daytime_available ? 'primary' : 'default'}
+                  sx={{ mr: 1, mb: 1 }}
+                />
+              </Box>
+
+              <Divider sx={{ my: 2 }} />
+
+              <Typography variant="h6" gutterBottom>
+                <LocalBar sx={{ mr: 1, verticalAlign: 'middle' }} />
+                Special Features
+              </Typography>
+              <Box>
+                <Chip
+                  label="Set Menu"
+                  color={restaurant.has_set ? 'primary' : 'default'}
+                  sx={{ mr: 1, mb: 1 }}
+                />
+                <Chip
+                  label="Senbero"
+                  color={restaurant.senbero_description ? 'primary' : 'default'}
+                  sx={{ mr: 1, mb: 1 }}
+                />
+                <Chip
+                  label="Chinchiro"
+                  color={restaurant.has_chinchiro ? 'primary' : 'default'}
+                  sx={{ mr: 1, mb: 1 }}
+                />
+                <Chip
+                  label="Happy Hour"
+                  color={restaurant.has_happy_hour ? 'primary' : 'default'}
+                  sx={{ mr: 1, mb: 1 }}
+                />
+              </Box>
+              {restaurant.senbero_description && (
+                <Typography variant="body2" mt={1}>
+                  Senbero: {restaurant.senbero_description}
+                </Typography>
+              )}
+              {restaurant.chinchiro_description && (
+                <Typography variant="body2" mt={1}>
+                  Chinchiro: {restaurant.chinchiro_description}
+                </Typography>
+              )}
+
+              <Divider sx={{ my: 2 }} />
+
+              <Typography variant="h6" gutterBottom>
+                <OutdoorGrill sx={{ mr: 1, verticalAlign: 'middle' }} />
+                Outdoor Seating
+              </Typography>
+              <Chip
+                label={restaurant.outside_available ? 'Available' : 'Not Available'}
+                color={restaurant.outside_available ? 'primary' : 'default'}
+                sx={{ mr: 1, mb: 1 }}
+              />
+              {restaurant.outside_description && (
+                <Typography variant="body2" mt={1}>
+                  {restaurant.outside_description}
+                </Typography>
+              )}
+
+              <Divider sx={{ my: 2 }} />
+
+              <Typography variant="h6" gutterBottom>
+                <AttachMoney sx={{ mr: 1, verticalAlign: 'middle' }} />
+                Payment and Charges
+              </Typography>
+              <Box>
+                <Chip
+                  label={restaurant.is_cash_on ? 'Cash Only' : 'Card Accepted'}
+                  color={restaurant.is_cash_on ? 'secondary' : 'default'}
+                  sx={{ mr: 1, mb: 1 }}
+                />
+                <Chip
+                  label={restaurant.has_charge ? 'Cover Charge' : 'No Cover Charge'}
+                  color={restaurant.has_charge ? 'secondary' : 'default'}
+                  sx={{ mr: 1, mb: 1 }}
+                />
+              </Box>
+              {restaurant.charge_description && (
+                <Typography variant="body2" mt={1}>
+                  Charge details: {restaurant.charge_description}
+                </Typography>
+              )}
+
+              <Divider sx={{ my: 2 }} />
+
+              <Typography variant="h6" gutterBottom>
+                Other Information
+              </Typography>
+              <Box>
+                <Chip
+                  icon={<Tv />}
+                  label={restaurant.has_tv ? 'TV Available' : 'No TV'}
+                  color={restaurant.has_tv ? 'primary' : 'default'}
+                  sx={{ mr: 1, mb: 1 }}
+                />
+                <Chip
+                  icon={<SmokingRooms />}
+                  label={restaurant.smoking_allowed ? 'Smoking Allowed' : 'No Smoking'}
+                  color={restaurant.smoking_allowed ? 'secondary' : 'default'}
+                  sx={{ mr: 1, mb: 1 }}
+                />
+              </Box>
+              {restaurant.special_rule && (
+                <Typography variant="body2" mt={2}>
+                  Special Rules: {restaurant.special_rule}
+                </Typography>
+              )}
+            </Box>
           )}
-          {restaurant.chinchiro_description && (
-            <Typography variant="body2" mt={1}>
-              Chinchiro: {restaurant.chinchiro_description}
-            </Typography>
-          )}
 
-          <Divider sx={{ my: 2 }} />
-
-          <Typography variant="h6" gutterBottom>
-            <OutdoorGrill sx={{ mr: 1, verticalAlign: 'middle' }} />
-            Outdoor Seating
-          </Typography>
-          <Chip
-            label={restaurant.outside_available ? 'Available' : 'Not Available'}
-            color={restaurant.outside_available ? 'primary' : 'default'}
-            sx={{ mr: 1, mb: 1 }}
-          />
-          {restaurant.outside_description && (
-            <Typography variant="body2" mt={1}>
-              {restaurant.outside_description}
-            </Typography>
-          )}
-
-          <Divider sx={{ my: 2 }} />
-
-          <Typography variant="h6" gutterBottom>
-            <AttachMoney sx={{ mr: 1, verticalAlign: 'middle' }} />
-            Payment and Charges
-          </Typography>
-          <Box>
-            <Chip
-              label={restaurant.is_cash_on ? 'Cash Only' : 'Card Accepted'}
-              color={restaurant.is_cash_on ? 'secondary' : 'default'}
-              sx={{ mr: 1, mb: 1 }}
-            />
-            <Chip
-              label={restaurant.has_charge ? 'Cover Charge' : 'No Cover Charge'}
-              color={restaurant.has_charge ? 'secondary' : 'default'}
-              sx={{ mr: 1, mb: 1 }}
-            />
-          </Box>
-          {restaurant.charge_description && (
-            <Typography variant="body2" mt={1}>
-              Charge details: {restaurant.charge_description}
-            </Typography>
-          )}
-
-          <Divider sx={{ my: 2 }} />
-
-          <Typography variant="h6" gutterBottom>
-            Other Information
-          </Typography>
-          <Box>
-            <Chip
-              icon={<Tv />}
-              label={restaurant.has_tv ? 'TV Available' : 'No TV'}
-              color={restaurant.has_tv ? 'primary' : 'default'}
-              sx={{ mr: 1, mb: 1 }}
-            />
-            <Chip
-              icon={<SmokingRooms />}
-              label={restaurant.smoking_allowed ? 'Smoking Allowed' : 'No Smoking'}
-              color={restaurant.smoking_allowed ? 'secondary' : 'default'}
-              sx={{ mr: 1, mb: 1 }}
-            />
-          </Box>
-
-          {restaurant.special_rule && (
-            <Typography variant="body2" mt={2}>
-              Special Rules: {restaurant.special_rule}
-            </Typography>
+          {tabIndex === 1 && (
+            <Box>
+              {/* Posts section */}
+              <Typography variant="h6" gutterBottom>
+                Posts
+              </Typography>
+              {/* Add your posts content here */}
+              <Typography variant="body1">
+                No posts available.
+              </Typography>
+            </Box>
           )}
 
           <Box mt={3}>
