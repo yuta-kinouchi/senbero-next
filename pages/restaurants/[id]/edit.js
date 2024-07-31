@@ -40,6 +40,16 @@ const RestaurantEditPage = () => {
     setRestaurant(prev => ({ ...prev, [name]: value }));
   };
 
+  const handleCheckboxChange = (event) => {
+    const { name, checked } = event.target;
+    handleInputChange({
+      target: {
+        name,
+        value: checked,
+      },
+    });
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -57,8 +67,6 @@ const RestaurantEditPage = () => {
       const updatedRestaurant = await response.json();
       setRestaurant(updatedRestaurant);
       setSuccessMessage('Restaurant updated successfully!');
-      // Optionally, you can redirect to the detail page after a short delay
-      // setTimeout(() => router.push(`/restaurants/${id}`), 2000);
     } catch (error) {
       console.error('Error:', error);
       setError(error.message);
@@ -92,6 +100,7 @@ const RestaurantEditPage = () => {
             restaurant={restaurant}
             handleInputChange={handleInputChange}
             handleSubmit={handleSubmit}
+            handleCheckboxChange={handleCheckboxChange}
           />
         )}
       </Container>
