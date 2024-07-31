@@ -1,13 +1,15 @@
-import { Box, Button, CircularProgress, TextField, Typography } from '@mui/material';
+import { Alert, CircularProgress, Container, Snackbar } from '@mui/material';
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
 import Navbar from '../../../components/Navbar';
+import RestaurantEdit from '../../../components/RestaurantEdit';
 import styles from '../../../styles/HomePage.module.css';
 
 const RestaurantEditPage = () => {
   const [restaurant, setRestaurant] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [successMessage, setSuccessMessage] = useState('');
   const router = useRouter();
   const { id } = router.query;
 
@@ -52,7 +54,11 @@ const RestaurantEditPage = () => {
       if (!response.ok) {
         throw new Error('Failed to update restaurant');
       }
-      router.push(`/restaurants/${id}`);
+      const updatedRestaurant = await response.json();
+      setRestaurant(updatedRestaurant);
+      setSuccessMessage('Restaurant updated successfully!');
+      // Optionally, you can redirect to the detail page after a short delay
+      // setTimeout(() => router.push(`/restaurants/${id}`), 2000);
     } catch (error) {
       console.error('Error:', error);
       setError(error.message);
@@ -61,80 +67,47 @@ const RestaurantEditPage = () => {
     }
   };
 
-  if (loading) {
-    return (
-      <div className={styles.container}>
-        <Navbar />
-        <div className={styles.loadingContainer}>
-          <CircularProgress />
-        </div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className={styles.container}>
-        <Navbar />
-        <div className={styles.errorContainer}>
-          <p>Error: {error}</p>
-        </div>
-      </div>
-    );
-  }
+  const handleCloseSnackbar = (event, reason) => {
+    if (reason === 'clickaway') {
+      return;
+    }
+    setSuccessMessage('');
+    setError(null);
+  };
 
   return (
     <div className={styles.container}>
       <Navbar />
-      {restaurant ? (
-        <Box component="form" onSubmit={handleSubmit} sx={{ mt: 3 }}>
-          <Typography variant="h4" component="h1" gutterBottom>
-            Edit Restaurant: {restaurant.name}
-          </Typography>
-          <TextField
-            fullWidth
-            margin="normal"
-            name="name"
-            label="Name"
-            value={restaurant.name}
-            onChange={handleInputChange}
+      <Container maxWidth="md" sx={{ mt: 4 }}>
+        {loading ? (
+          <div className={styles.loadingContainer}>
+            <CircularProgress />
+          </div>
+        ) : error ? (
+          <div className={styles.errorContainer}>
+            <p>Error: {error}</p>
+          </div>
+        ) : (
+          <RestaurantEdit
+            restaurant={restaurant}
+            handleInputChange={handleInputChange}
+            handleSubmit={handleSubmit}
           />
-          <TextField
-            fullWidth
-            margin="normal"
-            name="address_line1"
-            label="Address Line 1"
-            value={restaurant.address_line1}
-            onChange={handleInputChange}
-          />
-          <TextField
-            fullWidth
-            margin="normal"
-            name="phone_number"
-            label="Phone Number"
-            value={restaurant.phone_number}
-            onChange={handleInputChange}
-          />
-          <TextField
-            fullWidth
-            margin="normal"
-            name="description"
-            label="Description"
-            multiline
-            rows={4}
-            value={restaurant.description}
-            onChange={handleInputChange}
-          />
-          {/* Add more fields as needed */}
-          <Button type="submit" variant="contained" color="primary" sx={{ mt: 2 }}>
-            Update Restaurant
-          </Button>
-        </Box>
-      ) : (
-        <div className={styles.notFoundContainer}>
-          <p>Restaurant not found</p>
-        </div>
-      )}
+        )}
+      </Container>
+      <Snackbar
+        open={!!successMessage || !!error}
+        autoHideDuration={6000}
+        onClose={handleCloseSnackbar}
+      >
+        <Alert
+          onClose={handleCloseSnackbar}
+          severity={successMessage ? "success" : "error"}
+          sx={{ width: '100%' }}
+        >
+          {successMessage || error}
+        </Alert>
+      </Snackbar>
     </div>
   );
 };
