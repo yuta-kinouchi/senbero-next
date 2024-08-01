@@ -1,7 +1,13 @@
+import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import { Box, Button, Card, CardContent, Checkbox, FormControlLabel, Grid, TextField, Typography } from '@mui/material';
-import React from 'react';
+import React, { useState } from 'react';
+
 
 const RestaurantEdit = ({ restaurant, handleInputChange, handleSubmit, handleCheckboxChange }) => {
+  const [formData, setFormData] = useState(restaurant || {});
+  const [imagePreview, setImagePreview] = useState(null);
+  const [imageFile, setImageFile] = useState(null);
+
   if (!restaurant) {
     return (
       <Card>
@@ -12,13 +18,31 @@ const RestaurantEdit = ({ restaurant, handleInputChange, handleSubmit, handleChe
     );
   }
 
-  // Helper function to handle null values
   const getValue = (value) => value === null ? '' : value;
+
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setImageFile(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleFormSubmit = (e) => {
+    e.preventDefault();
+    const updatedFormData = { ...restaurant, imageFile };
+    console.log('Form Data before submission:', updatedFormData);
+    handleSubmit(updatedFormData);
+  };
 
   return (
     <Card>
       <CardContent>
-        <Box component="form" onSubmit={handleSubmit} sx={{ mt: 3 }}>
+        <Box component="form" onSubmit={handleFormSubmit} sx={{ mt: 3 }}>
           <Typography variant="h4" component="h1" gutterBottom>
             Edit Restaurant: {restaurant.name}
           </Typography>
@@ -32,6 +56,32 @@ const RestaurantEdit = ({ restaurant, handleInputChange, handleSubmit, handleChe
                 value={getValue(restaurant.name)}
                 onChange={handleInputChange}
               />
+            </Grid>
+            <Grid item xs={12}>
+              <Typography variant="h6" gutterBottom>
+                Restaurant Image
+              </Typography>
+              <input
+                accept="image/*"
+                style={{ display: 'none' }}
+                id="raised-button-file"
+                type="file"
+                onChange={handleFileChange}
+              />
+              <label htmlFor="raised-button-file">
+                <Button
+                  variant="outlined"
+                  component="span"
+                  startIcon={<CloudUploadIcon />}
+                >
+                  Upload Image
+                </Button>
+              </label>
+              {imagePreview && (
+                <Box mt={2}>
+                  <img src={imagePreview} alt="Restaurant preview" style={{ maxWidth: '100%', maxHeight: '200px' }} />
+                </Box>
+              )}
             </Grid>
             <Grid item xs={12} sm={6}>
               <TextField

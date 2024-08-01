@@ -32,6 +32,7 @@ import { useRouter } from 'next/router';
 import React, { useState } from 'react';
 
 const RestaurantDetail = ({ restaurant }) => {
+  console.log(restaurant)
   const router = useRouter();
   const [tabIndex, setTabIndex] = useState(0);
 
@@ -71,7 +72,7 @@ const RestaurantDetail = ({ restaurant }) => {
                 <CardMedia
                   component="img"
                   sx={{ width: '100%', borderRadius: 2 }}
-                  image="https://stat.ameba.jp/user_images/20190221/17/as1069/60/9b/j/o1080060714360002934.jpg"
+                  image={restaurant.restaurant_image}
                   alt="Restaurant Image"
                 />
               </Grid>

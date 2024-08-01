@@ -8,14 +8,31 @@ resource "aws_s3_bucket" "nextjs_uploads" {
   bucket = "senbero-next" 
 }
 
-# バケットの公開アクセスをブロック
-resource "aws_s3_bucket_public_access_block" "nextjs_uploads" {
+# オブジェクト所有権の設定
+resource "aws_s3_bucket_ownership_controls" "nextjs_uploads" {
   bucket = aws_s3_bucket.nextjs_uploads.id
 
-  block_public_acls       = true
-  block_public_policy     = true
-  ignore_public_acls      = true
-  restrict_public_buckets = true
+  rule {
+    object_ownership = "BucketOwnerPreferred"
+  }
+}
+
+
+# バケットポリシーの追加
+resource "aws_s3_bucket_policy" "allow_public_read" {
+  bucket = aws_s3_bucket.nextjs_uploads.id
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Sid       = "PublicReadGetObject"
+        Effect    = "Allow"
+        Principal = "*"
+        Action    = "s3:GetObject"
+        Resource  = "${aws_s3_bucket.nextjs_uploads.arn}/*"
+      },
+    ]
+  })
 }
 
 # バケットのCORS設定
@@ -29,6 +46,14 @@ resource "aws_s3_bucket_cors_configuration" "nextjs_uploads" {
     expose_headers  = ["ETag"]
     max_age_seconds = 3000
   }
+}
+
+# バケットのACLを公開読み取り可能に設定
+resource "aws_s3_bucket_acl" "nextjs_uploads" {
+  depends_on = [aws_s3_bucket_ownership_controls.nextjs_uploads]
+
+  bucket = aws_s3_bucket.nextjs_uploads.id
+  acl    = "public-read"
 }
 
 # IAMユーザーの作成（S3アクセス用）
@@ -65,3 +90,4 @@ resource "aws_iam_user_policy" "nextjs_s3_policy" {
 resource "aws_iam_access_key" "nextjs_s3_key" {
   user = aws_iam_user.nextjs_s3_user.name
 }
+

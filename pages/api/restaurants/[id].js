@@ -54,6 +54,7 @@ export default async function handler(req, res) {
         has_tv,
         smoking_allowed,
         special_rule,
+        restaurant_image,
       } = req.body;
 
       const updatedRestaurant = await prisma.restaurant.update({
@@ -88,6 +89,7 @@ export default async function handler(req, res) {
           has_tv,
           smoking_allowed,
           special_rule,
+          restaurant_image,
           updated_at: new Date(),
         },
       });
