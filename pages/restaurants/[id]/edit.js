@@ -66,7 +66,12 @@ const RestaurantEditPage = () => {
       }
       const updatedRestaurant = await response.json();
       setRestaurant(updatedRestaurant);
-      setSuccessMessage('Restaurant updated successfully!');
+      setSuccessMessage('レストランの編集に成功しました。詳細ページへ移動します。');
+
+      // 成功メッセージを表示した後、詳細ページにリダイレクト
+      setTimeout(() => {
+        router.push(`/restaurants/${id}`);
+      }, 3000); // 1.5秒後にリダイレクト
     } catch (error) {
       console.error('Error:', error);
       setError(error.message);
