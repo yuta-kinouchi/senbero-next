@@ -34,7 +34,7 @@ const RestaurantList = ({ restaurants }) => {
                 <CardMedia
                   component="img"
                   sx={{ width: 180 }}
-                  image="https://stat.ameba.jp/user_images/20190221/17/as1069/60/9b/j/o1080060714360002934.jpg"
+                  image={restaurant.restaurant_image}
                   alt="Restaurant Image"
                 />
                 <Box sx={{ flex: 1, padding: 2 }}>
