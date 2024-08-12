@@ -14,13 +14,15 @@ function getCurrentMySQLDateTime() {
 function formatDateTime(timeString) {
   // Assuming a default date since only time is provided
   const defaultDate = '1970-01-01'; // Unix epoch start date
-  const dateTimeString = `${defaultDate}T${timeString}:00.000Z`; // Adding seconds and timezone for full ISO string
+  const dateTimeString = `${defaultDate}T${timeString}.000Z`; // Adding seconds and timezone for full ISO string
 
   console.log("Original time string:", timeString);
   console.log("Full datetime string:", dateTimeString);
 
   const date = new Date(dateTimeString);
+  console.log(date)
   if (isNaN(date.getTime())) {
+    console.log(date)
     return null;
   }
 
@@ -66,6 +68,7 @@ export default async function handler(req, res) {
       // Check if restaurant already exists
       let restaurantId = row.restaurant_id;
       let restaurantExists = false;
+      console.log(restaurantId)
 
       if (restaurantId) {
         try {
