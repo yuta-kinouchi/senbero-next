@@ -1,10 +1,9 @@
 import {
   AttachMoney,
-  DirectionsWalk,
-  OutdoorGrill,
   SmokingRooms,
   Tv
 } from '@mui/icons-material';
+import CasinoIcon from '@mui/icons-material/Casino';
 import SportsBarRoundedIcon from "@mui/icons-material/SportsBarRounded";
 import {
   Box,
@@ -36,14 +35,6 @@ const RestaurantFeatures = ({ restaurant }) => (
   <Box>
 
     <FeatureItem
-      icon={DirectionsWalk}
-      label="立ち飲み"
-      isActive={restaurant.is_standing}
-      description={restaurant.standing_description}
-    />
-    <Divider />
-
-    <FeatureItem
       icon={SportsBarRoundedIcon}
       label="せんべろセット"
       isActive={Boolean(restaurant.has_set)}
@@ -53,6 +44,36 @@ const RestaurantFeatures = ({ restaurant }) => (
 
     <FeatureItem
       icon={SportsBarRoundedIcon}
+      label="立ち飲み"
+      isActive={restaurant.is_standing}
+      description={restaurant.standing_description}
+    />
+    <Divider />
+
+    <FeatureItem
+      icon={SportsBarRoundedIcon}
+      label="外飲み"
+      isActive={restaurant.outside_available}
+      description={restaurant.outside_description}
+    />
+    <Divider />
+
+    <FeatureItem
+      icon={SportsBarRoundedIcon}
+      label="朝飲み"
+      isActive={restaurant.morning_available}
+    />
+    <Divider />
+
+    <FeatureItem
+      icon={SportsBarRoundedIcon}
+      label="昼飲み"
+      isActive={restaurant.daytime_available}
+    />
+    <Divider />
+
+    <FeatureItem
+      icon={CasinoIcon}
       label="チンチロ"
       isActive={restaurant.has_chinchiro}
       description={restaurant.chinchiro_description}
@@ -67,10 +88,9 @@ const RestaurantFeatures = ({ restaurant }) => (
     <Divider />
 
     <FeatureItem
-      icon={OutdoorGrill}
-      label="外飲み"
-      isActive={restaurant.outside_available}
-      description={restaurant.outside_description}
+      icon={SportsBarRoundedIcon}
+      label="角打ち"
+      isActive={restaurant.is_kakuuchi}
     />
     <Divider />
 

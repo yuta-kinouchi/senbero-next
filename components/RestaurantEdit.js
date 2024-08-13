@@ -1,12 +1,15 @@
 import {
   AttachMoney,
-  DirectionsWalk,
+  Casino as CasinoIcon,
+  CloudUpload as CloudUploadIcon,
+  LocalBar as LocalBarIcon,
+  NightlifeTwoTone as NightlifeTwoToneIcon,
   OutdoorGrill,
   SmokingRooms,
-  SportsBar,
+  SportsBarRounded as SportsBarRoundedIcon,
   Tv,
+  WbSunny as WbSunnyIcon,
 } from '@mui/icons-material';
-import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import {
   Box,
   Button,
@@ -70,6 +73,14 @@ const RestaurantEdit = ({ restaurant, handleInputChange, handleSubmit, handleChe
     handleSubmit(updatedFormData);
   };
 
+  const handleFeatureChange = (name) => (event) => {
+    handleCheckboxChange(event, name);
+  };
+
+  const handleFeatureDescriptionChange = (name) => (event) => {
+    handleInputChange(event, name);
+  };
+
   return (
     <Card>
       <CardContent>
@@ -87,7 +98,7 @@ const RestaurantEdit = ({ restaurant, handleInputChange, handleSubmit, handleChe
                 name="name"
                 label="Name"
                 value={restaurant.name || ''}
-                onChange={handleInputChange}
+                onChange={(e) => handleInputChange(e, 'name')}
               />
             </Grid>
             <Grid item xs={12} sm={6}>
@@ -97,7 +108,7 @@ const RestaurantEdit = ({ restaurant, handleInputChange, handleSubmit, handleChe
                 name="phone_number"
                 label="Phone Number"
                 value={restaurant.phone_number || ''}
-                onChange={handleInputChange}
+                onChange={(e) => handleInputChange(e, 'phone_number')}
               />
             </Grid>
             <Grid item xs={12}>
@@ -109,7 +120,7 @@ const RestaurantEdit = ({ restaurant, handleInputChange, handleSubmit, handleChe
                 multiline
                 rows={4}
                 value={restaurant.description || ''}
-                onChange={handleInputChange}
+                onChange={(e) => handleInputChange(e, 'description')}
               />
             </Grid>
 
@@ -150,40 +161,22 @@ const RestaurantEdit = ({ restaurant, handleInputChange, handleSubmit, handleChe
           </Typography>
 
           <FeatureEditItem
-            icon={DirectionsWalk}
-            label="立ち飲み"
-            isActive={restaurant.is_standing}
-            description={restaurant.standing_description}
-            onChangeActive={(e) => handleCheckboxChange(e, 'is_standing')}
-            onChangeDescription={(e) => handleInputChange(e, 'standing_description')}
-          />
-          <Divider />
-
-          <FeatureEditItem
-            icon={SportsBar}
+            icon={SportsBarRoundedIcon}
             label="せんべろセット"
             isActive={restaurant.has_set}
             description={restaurant.senbero_description}
-            onChangeActive={(e) => handleCheckboxChange(e, 'has_set')}
-            onChangeDescription={(e) => handleInputChange(e, 'senbero_description')}
+            onChangeActive={handleFeatureChange('has_set')}
+            onChangeDescription={handleFeatureDescriptionChange('senbero_description')}
           />
           <Divider />
 
           <FeatureEditItem
-            icon={SportsBar}
-            label="チンチロ"
-            isActive={restaurant.has_chinchiro}
-            description={restaurant.chinchiro_description}
-            onChangeActive={(e) => handleCheckboxChange(e, 'has_chinchiro')}
-            onChangeDescription={(e) => handleInputChange(e, 'chinchiro_description')}
-          />
-          <Divider />
-
-          <FeatureEditItem
-            icon={SportsBar}
-            label="ハッピーアワー"
-            isActive={restaurant.has_happy_hour}
-            onChangeActive={(e) => handleCheckboxChange(e, 'has_happy_hour')}
+            icon={LocalBarIcon}
+            label="立ち飲み"
+            isActive={restaurant.is_standing}
+            description={restaurant.standing_description}
+            onChangeActive={handleFeatureChange('is_standing')}
+            onChangeDescription={handleFeatureDescriptionChange('standing_description')}
           />
           <Divider />
 
@@ -192,8 +185,50 @@ const RestaurantEdit = ({ restaurant, handleInputChange, handleSubmit, handleChe
             label="外飲み"
             isActive={restaurant.outside_available}
             description={restaurant.outside_description}
-            onChangeActive={(e) => handleCheckboxChange(e, 'outside_available')}
-            onChangeDescription={(e) => handleInputChange(e, 'outside_description')}
+            onChangeActive={handleFeatureChange('outside_available')}
+            onChangeDescription={handleFeatureDescriptionChange('outside_description')}
+          />
+          <Divider />
+
+          <FeatureEditItem
+            icon={WbSunnyIcon}
+            label="朝飲み"
+            isActive={restaurant.morning_available}
+            onChangeActive={handleFeatureChange('morning_available')}
+          />
+          <Divider />
+
+          <FeatureEditItem
+            icon={NightlifeTwoToneIcon}
+            label="昼飲み"
+            isActive={restaurant.daytime_available}
+            onChangeActive={handleFeatureChange('daytime_available')}
+          />
+          <Divider />
+
+          <FeatureEditItem
+            icon={CasinoIcon}
+            label="チンチロ"
+            isActive={restaurant.has_chinchiro}
+            description={restaurant.chinchiro_description}
+            onChangeActive={handleFeatureChange('has_chinchiro')}
+            onChangeDescription={handleFeatureDescriptionChange('chinchiro_description')}
+          />
+          <Divider />
+
+          <FeatureEditItem
+            icon={SportsBarRoundedIcon}
+            label="ハッピーアワー"
+            isActive={restaurant.has_happy_hour}
+            onChangeActive={handleFeatureChange('has_happy_hour')}
+          />
+          <Divider />
+
+          <FeatureEditItem
+            icon={LocalBarIcon}
+            label="角打ち"
+            isActive={restaurant.is_kakuuchi}
+            onChangeActive={handleFeatureChange('is_kakuuchi')}
           />
           <Divider />
 
@@ -201,7 +236,7 @@ const RestaurantEdit = ({ restaurant, handleInputChange, handleSubmit, handleChe
             icon={AttachMoney}
             label="キャッシュオン"
             isActive={restaurant.is_cash_on}
-            onChangeActive={(e) => handleCheckboxChange(e, 'is_cash_on')}
+            onChangeActive={handleFeatureChange('is_cash_on')}
           />
           <Divider />
 
@@ -210,8 +245,8 @@ const RestaurantEdit = ({ restaurant, handleInputChange, handleSubmit, handleChe
             label="チャージ"
             isActive={restaurant.has_charge}
             description={restaurant.charge_description}
-            onChangeActive={(e) => handleCheckboxChange(e, 'has_charge')}
-            onChangeDescription={(e) => handleInputChange(e, 'charge_description')}
+            onChangeActive={handleFeatureChange('has_charge')}
+            onChangeDescription={handleFeatureDescriptionChange('charge_description')}
           />
           <Divider />
 
@@ -219,7 +254,7 @@ const RestaurantEdit = ({ restaurant, handleInputChange, handleSubmit, handleChe
             icon={Tv}
             label="TV設置"
             isActive={restaurant.has_tv}
-            onChangeActive={(e) => handleCheckboxChange(e, 'has_tv')}
+            onChangeActive={handleFeatureChange('has_tv')}
           />
           <Divider />
 
@@ -227,7 +262,7 @@ const RestaurantEdit = ({ restaurant, handleInputChange, handleSubmit, handleChe
             icon={SmokingRooms}
             label="喫煙"
             isActive={restaurant.smoking_allowed}
-            onChangeActive={(e) => handleCheckboxChange(e, 'smoking_allowed')}
+            onChangeActive={handleFeatureChange('smoking_allowed')}
           />
 
           <TextField
@@ -236,7 +271,7 @@ const RestaurantEdit = ({ restaurant, handleInputChange, handleSubmit, handleChe
             name="special_rule"
             label="Special Rule"
             value={restaurant.special_rule || ''}
-            onChange={handleInputChange}
+            onChange={(e) => handleInputChange(e, 'special_rule')}
           />
 
           <Button type="submit" variant="contained" color="primary" sx={{ mt: 3 }}>
