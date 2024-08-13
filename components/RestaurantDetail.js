@@ -1,35 +1,31 @@
 import {
-  AccessTime,
-  AttachMoney,
   Description,
-  DirectionsWalk,
   Edit,
   EventSeat,
   Language,
-  LocalBar,
   LocationOn,
-  OutdoorGrill,
-  Phone,
-  SmokingRooms,
-  Tv,
+  Phone
 } from '@mui/icons-material';
+import ChatBubbleOutlineIcon from '@mui/icons-material/ChatBubbleOutline';
+import SportsBarRoundedIcon from "@mui/icons-material/SportsBarRounded";
 import {
   Box,
   Button,
   Card,
   CardContent,
   CardMedia,
-  Chip,
   Container,
   Divider,
   Grid,
   IconButton,
   Tab,
   Tabs,
-  Typography,
+  Typography
 } from '@mui/material';
 import { useRouter } from 'next/router';
 import React, { useState } from 'react';
+import RestaurantFeatures from './RestaurantFeatures';
+
 
 const RestaurantDetail = ({ restaurant }) => {
   console.log(restaurant)
@@ -88,6 +84,10 @@ const RestaurantDetail = ({ restaurant }) => {
                     <Phone sx={{ mr: 1, verticalAlign: 'middle' }} />
                     {restaurant.phone_number || 'N/A'}
                   </Typography>
+                  <Typography variant="body1">
+                    <EventSeat sx={{ mr: 1, verticalAlign: 'middle' }} />
+                    {restaurant.capacity || 'N/A'}
+                  </Typography>
                   {restaurant.home_page && (
                     <Typography variant="body1">
                       <Language sx={{ mr: 1, verticalAlign: 'middle' }} />
@@ -96,173 +96,31 @@ const RestaurantDetail = ({ restaurant }) => {
                       </a>
                     </Typography>
                   )}
+                  <Typography variant="body1">
+                    <Description sx={{ mr: 1, verticalAlign: 'middle' }} />
+                    {restaurant.description || 'N/A'}
+                  </Typography>
                 </CardContent>
               </Grid>
             </Grid>
 
             <Divider sx={{ my: 2 }} />
-
             <Tabs value={tabIndex} onChange={handleTabChange} aria-label="restaurant details tabs">
-              <Tab label="せんべろ情報" />
-              <Tab label="投稿" />
+              <Tab
+                icon={<SportsBarRoundedIcon />}
+                iconPosition="start"
+                label="せんべろ情報"
+              />
+              <Tab
+                icon={<ChatBubbleOutlineIcon />}
+                iconPosition="start"
+                label="投稿"
+              />
             </Tabs>
 
             {tabIndex === 0 && (
               <Box>
-                <Typography variant="h6" gutterBottom>
-                  <Description sx={{ mr: 1, verticalAlign: 'middle' }} />
-                  Description
-                </Typography>
-                <Typography variant="body1" paragraph>
-                  {restaurant.description || 'No description available.'}
-                </Typography>
-
-                <Divider sx={{ my: 2 }} />
-
-                <Typography variant="h6" gutterBottom>
-                  <EventSeat sx={{ mr: 1, verticalAlign: 'middle' }} />
-                  Capacity and Seating
-                </Typography>
-                <Typography variant="body1">
-                  Capacity: {restaurant.capacity || 'N/A'}
-                </Typography>
-                <Box mt={1}>
-                  <Chip
-                    icon={<DirectionsWalk />}
-                    label={restaurant.is_standing ? 'Standing Available' : 'No Standing'}
-                    color={restaurant.is_standing ? 'primary' : 'default'}
-                    sx={{ mr: 1, mb: 1 }}
-                  />
-                  {restaurant.is_standing && (
-                    <Typography variant="body2">
-                      {restaurant.standing_description}
-                    </Typography>
-                  )}
-                </Box>
-
-                <Divider sx={{ my: 2 }} />
-
-                <Typography variant="h6" gutterBottom>
-                  <AccessTime sx={{ mr: 1, verticalAlign: 'middle' }} />
-                  Availability
-                </Typography>
-                <Box>
-                  <Chip
-                    label="Morning"
-                    color={restaurant.morning_available ? 'primary' : 'default'}
-                    sx={{ mr: 1, mb: 1 }}
-                  />
-                  <Chip
-                    label="Daytime"
-                    color={restaurant.daytime_available ? 'primary' : 'default'}
-                    sx={{ mr: 1, mb: 1 }}
-                  />
-                </Box>
-
-                <Divider sx={{ my: 2 }} />
-
-                <Typography variant="h6" gutterBottom>
-                  <LocalBar sx={{ mr: 1, verticalAlign: 'middle' }} />
-                  Special Features
-                </Typography>
-                <Box>
-                  <Chip
-                    label="Set Menu"
-                    color={restaurant.has_set ? 'primary' : 'default'}
-                    sx={{ mr: 1, mb: 1 }}
-                  />
-                  <Chip
-                    label="Senbero"
-                    color={restaurant.senbero_description ? 'primary' : 'default'}
-                    sx={{ mr: 1, mb: 1 }}
-                  />
-                  <Chip
-                    label="Chinchiro"
-                    color={restaurant.has_chinchiro ? 'primary' : 'default'}
-                    sx={{ mr: 1, mb: 1 }}
-                  />
-                  <Chip
-                    label="Happy Hour"
-                    color={restaurant.has_happy_hour ? 'primary' : 'default'}
-                    sx={{ mr: 1, mb: 1 }}
-                  />
-                </Box>
-                {restaurant.senbero_description && (
-                  <Typography variant="body2" mt={1}>
-                    Senbero: {restaurant.senbero_description}
-                  </Typography>
-                )}
-                {restaurant.chinchiro_description && (
-                  <Typography variant="body2" mt={1}>
-                    Chinchiro: {restaurant.chinchiro_description}
-                  </Typography>
-                )}
-
-                <Divider sx={{ my: 2 }} />
-
-                <Typography variant="h6" gutterBottom>
-                  <OutdoorGrill sx={{ mr: 1, verticalAlign: 'middle' }} />
-                  Outdoor Seating
-                </Typography>
-                <Chip
-                  label={restaurant.outside_available ? 'Available' : 'Not Available'}
-                  color={restaurant.outside_available ? 'primary' : 'default'}
-                  sx={{ mr: 1, mb: 1 }}
-                />
-                {restaurant.outside_description && (
-                  <Typography variant="body2" mt={1}>
-                    {restaurant.outside_description}
-                  </Typography>
-                )}
-
-                <Divider sx={{ my: 2 }} />
-
-                <Typography variant="h6" gutterBottom>
-                  <AttachMoney sx={{ mr: 1, verticalAlign: 'middle' }} />
-                  Payment and Charges
-                </Typography>
-                <Box>
-                  <Chip
-                    label={restaurant.is_cash_on ? 'Cash Only' : 'Card Accepted'}
-                    color={restaurant.is_cash_on ? 'secondary' : 'default'}
-                    sx={{ mr: 1, mb: 1 }}
-                  />
-                  <Chip
-                    label={restaurant.has_charge ? 'Cover Charge' : 'No Cover Charge'}
-                    color={restaurant.has_charge ? 'secondary' : 'default'}
-                    sx={{ mr: 1, mb: 1 }}
-                  />
-                </Box>
-                {restaurant.charge_description && (
-                  <Typography variant="body2" mt={1}>
-                    Charge details: {restaurant.charge_description}
-                  </Typography>
-                )}
-
-                <Divider sx={{ my: 2 }} />
-
-                <Typography variant="h6" gutterBottom>
-                  Other Information
-                </Typography>
-                <Box>
-                  <Chip
-                    icon={<Tv />}
-                    label={restaurant.has_tv ? 'TV Available' : 'No TV'}
-                    color={restaurant.has_tv ? 'primary' : 'default'}
-                    sx={{ mr: 1, mb: 1 }}
-                  />
-                  <Chip
-                    icon={<SmokingRooms />}
-                    label={restaurant.smoking_allowed ? 'Smoking Allowed' : 'No Smoking'}
-                    color={restaurant.smoking_allowed ? 'secondary' : 'default'}
-                    sx={{ mr: 1, mb: 1 }}
-                  />
-                </Box>
-                {restaurant.special_rule && (
-                  <Typography variant="body2" mt={2}>
-                    Special Rules: {restaurant.special_rule}
-                  </Typography>
-                )}
+                <RestaurantFeatures restaurant={restaurant} />
               </Box>
             )}
 
@@ -284,7 +142,9 @@ const RestaurantDetail = ({ restaurant }) => {
                 variant="contained"
                 color="primary"
                 startIcon={<LocationOn />}
-                href={`https://www.google.com/maps/search/?api=1&query=${restaurant.latitude},${restaurant.longitude}`}
+                href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+                  restaurant.name
+                )}`}
                 target="_blank"
                 rel="noopener noreferrer"
               >
