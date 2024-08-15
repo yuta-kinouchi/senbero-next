@@ -74,7 +74,7 @@ const RestaurantEdit = ({ restaurant, handleInputChange, handleSubmit, handleChe
   };
 
   const handleFeatureChange = (name) => (event) => {
-    handleCheckboxChange(event, name);
+    handleCheckboxChange(name)(event);
   };
 
   const handleFeatureDescriptionChange = (name) => (event) => {

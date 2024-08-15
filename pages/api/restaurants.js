@@ -41,8 +41,8 @@ export default async function handler(req, res) {
           const closeMinutes = closeTime.getUTCMinutes();
 
           const isOpen = (
-            (currentHours >= openHours || (currentHours === openHours && currentMinutes >= openMinutes)) &&
-            (currentHours < closeHours || (currentHours === closeHours && currentMinutes <= closeMinutes))
+            (currentHours + 10 >= openHours || (currentHours === openHours && currentMinutes >= openMinutes)) &&
+            (currentHours + 10 < closeHours || (currentHours === closeHours && currentMinutes <= closeMinutes))
           );
 
           if (isOpen) {

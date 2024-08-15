@@ -42,14 +42,9 @@ const RestaurantEditPage = () => {
     setRestaurant(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleCheckboxChange = (event) => {
-    const { name, checked } = event.target;
-    handleInputChange({
-      target: {
-        name,
-        value: checked,
-      },
-    });
+  const handleCheckboxChange = (name) => (event) => {
+    const { checked } = event.target;
+    setRestaurant(prev => ({ ...prev, [name]: checked }));
   };
 
   const cleanObject = (obj) => {
