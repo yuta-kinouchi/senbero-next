@@ -1,41 +1,112 @@
 import SportsBarRoundedIcon from "@mui/icons-material/SportsBarRounded";
-import { Box, Button, Container, Typography, useMediaQuery } from "@mui/material";
+import {
+  Alert,
+  Box, Button,
+  Checkbox,
+  Container, Dialog, DialogActions, DialogContent, DialogContentText,
+  DialogTitle,
+  FormControlLabel,
+  Snackbar,
+  Typography, useMediaQuery
+} from "@mui/material";
 import { useTheme } from "@mui/material/styles";
 import { useRouter } from 'next/router';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 const SearchForm = () => {
   const router = useRouter();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
-  const [position, setPosition] = useState({ latitude: null, longitude: null });
+  const [isSearching, setIsSearching] = useState(false);
+  const [openFeatureDialog, setOpenFeatureDialog] = useState(false);
+  const [openLocationDialog, setOpenLocationDialog] = useState(false);
+  const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'info' });
+  const [locationPermission, setLocationPermission] = useState('prompt');
+  const [features, setFeatures] = useState({
+    morning_available: false,
+    daytime_available: false,
+    has_set: false,
+    has_chinchiro: false,
+    outside_available: false,
+    is_standing: false,
+    is_kakuuchi: false,
+    is_cash_on: false,
+    has_charge: false,
+    has_tv: false,
+    smoking_allowed: false,
+    has_happy_hour: false,
+  });
+
+  useEffect(() => {
+    checkLocationPermission();
+  }, []);
+
+  const checkLocationPermission = async () => {
+    if (navigator.permissions && navigator.permissions.query) {
+      try {
+        const result = await navigator.permissions.query({ name: 'geolocation' });
+        setLocationPermission(result.state);
+        result.onchange = () => setLocationPermission(result.state);
+      } catch (error) {
+        console.error('Error checking location permission:', error);
+      }
+    }
+  };
 
   const handleSearch = () => {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          setPosition({
-            latitude: position.coords.latitude,
-            longitude: position.coords.longitude,
-          });
-
-          // 位置情報をクエリパラメータとして次のページに送信
-          router.push({
-            pathname: '/restaurant-list',
-            query: {
-              latitude: position.coords.latitude,
-              longitude: position.coords.longitude
-            },
-          });
-        },
-        (error) => {
-          console.error('Error getting location:', error);
-          alert('位置情報の取得に失敗しました。位置情報を許可してください。');
-        }
-      );
-    } else {
-      alert('位置情報がサポートされていません。');
+    if (locationPermission === 'denied') {
+      setOpenLocationDialog(true);
+      return;
     }
+    router.push('/restaurant-list');
+  };
+
+  const handleFeatureDialogOpen = () => {
+    setOpenFeatureDialog(true);
+  };
+
+  const handleFeatureDialogClose = () => {
+    setOpenFeatureDialog(false);
+  };
+
+  const handleFeatureChange = (event) => {
+    setFeatures({ ...features, [event.target.name]: event.target.checked });
+  };
+
+  const handleFeatureSearch = async () => {
+    const selectedFeatures = Object.entries(features)
+      .filter(([key, value]) => value)
+      .map(([key]) => key);
+
+    try {
+      const response = await fetch('/api/search-by-features', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ features: selectedFeatures }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to search by features');
+      }
+
+      router.push('/restaurant-list');
+    } catch (error) {
+      console.error('Error searching by features:', error);
+      alert('エラーが発生しました。もう一度お試しください。');
+    }
+
+    handleFeatureDialogClose();
+  };
+
+  const handleSnackbarClose = (event, reason) => {
+    if (reason === 'clickaway') return;
+    setSnackbar({ ...snackbar, open: false });
+  };
+
+  const handleLocationDialogClose = () => {
+    setOpenLocationDialog(false);
   };
 
   return (
@@ -134,11 +205,102 @@ const SearchForm = () => {
             fontSize: isMobile ? "14px" : "16px",
             padding: isMobile ? "8px 16px" : "12px 24px",
             borderRadius: "8px",
+            marginRight: "10px",
           }}
         >
           検索する
         </Button>
+        <Button
+          variant="outlined"
+          color="primary"
+          onClick={handleFeatureDialogOpen}
+          sx={{
+            fontSize: isMobile ? "14px" : "16px",
+            padding: isMobile ? "8px 16px" : "12px 24px",
+            borderRadius: "8px",
+          }}
+        >
+          特徴から検索
+        </Button>
       </Box>
+
+      <Dialog open={openFeatureDialog} onClose={handleFeatureDialogClose}>
+        <DialogTitle>特徴から検索</DialogTitle>
+        <DialogContent>
+          <FormControlLabel
+            control={<Checkbox checked={features.morning_available} onChange={handleFeatureChange} name="morning_available" />}
+            label="朝飲み"
+          />
+          <FormControlLabel
+            control={<Checkbox checked={features.daytime_available} onChange={handleFeatureChange} name="daytime_available" />}
+            label="昼飲み"
+          />
+          <FormControlLabel
+            control={<Checkbox checked={features.has_set} onChange={handleFeatureChange} name="has_set" />}
+            label="せんべろセット"
+          />
+          <FormControlLabel
+            control={<Checkbox checked={features.has_chinchiro} onChange={handleFeatureChange} name="has_chinchiro" />}
+            label="チンチロリン"
+          />
+          <FormControlLabel
+            control={<Checkbox checked={features.outside_available} onChange={handleFeatureChange} name="outside_available" />}
+            label="外飲み"
+          />
+          <FormControlLabel
+            control={<Checkbox checked={features.is_standing} onChange={handleFeatureChange} name="is_standing" />}
+            label="立ち飲み"
+          />
+          <FormControlLabel
+            control={<Checkbox checked={features.is_kakuuchi} onChange={handleFeatureChange} name="is_kakuuchi" />}
+            label="角打ち"
+          />
+          <FormControlLabel
+            control={<Checkbox checked={features.is_cash_on} onChange={handleFeatureChange} name="is_cash_on" />}
+            label="キャッシュオン"
+          />
+          <FormControlLabel
+            control={<Checkbox checked={features.has_charge} onChange={handleFeatureChange} name="has_charge" />}
+            label="チャージあり"
+          />
+          <FormControlLabel
+            control={<Checkbox checked={features.has_tv} onChange={handleFeatureChange} name="has_tv" />}
+            label="TV設置"
+          />
+          <FormControlLabel
+            control={<Checkbox checked={features.smoking_allowed} onChange={handleFeatureChange} name="smoking_allowed" />}
+            label="喫煙可"
+          />
+          <FormControlLabel
+            control={<Checkbox checked={features.has_happy_hour} onChange={handleFeatureChange} name="has_happy_hour" />}
+            label="ハッピーアワー"
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleFeatureDialogClose}>キャンセル</Button>
+          <Button onClick={handleFeatureSearch} color="primary">
+            この特徴で検索
+          </Button>
+        </DialogActions>
+      </Dialog>
+      <Dialog open={openLocationDialog} onClose={handleLocationDialogClose}>
+        <DialogTitle>位置情報の許可が必要です</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            このアプリは近くのレストランを見つけるために位置情報を使用します。
+            ブラウザの設定から位置情報の使用を許可してください。
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleLocationDialogClose}>閉じる</Button>
+        </DialogActions>
+      </Dialog>
+
+      <Snackbar open={snackbar.open} autoHideDuration={6000} onClose={handleSnackbarClose}>
+        <Alert onClose={handleSnackbarClose} severity={snackbar.severity} sx={{ width: '100%' }}>
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </Container>
   );
 };
