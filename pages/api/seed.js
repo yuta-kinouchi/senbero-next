@@ -12,9 +12,8 @@ function getCurrentMySQLDateTime() {
 }
 
 function formatDateTime(timeString) {
-  // Assuming a default date since only time is provided
-  const defaultDate = '1970-01-01'; // Unix epoch start date
-  const dateTimeString = `${defaultDate}T${timeString}.000Z`; // Adding seconds and timezone for full ISO string
+  const defaultDate = '1970-01-01';
+  const dateTimeString = `${defaultDate}T${timeString}.000Z`;
 
   console.log("Original time string:", timeString);
   console.log("Full datetime string:", dateTimeString);
@@ -27,6 +26,12 @@ function formatDateTime(timeString) {
   }
 
   return date.toISOString().slice(0, 19).replace('T', ' ');
+}
+
+// 修正: boolean値を0または1の整数として処理する
+function processBooleanAsInteger(value) {
+  if (value === null || value === undefined) return 0;
+  return value.toLowerCase() === 'true' || value === '1' ? 1 : 0;
 }
 
 export default async function handler(req, res) {
@@ -65,7 +70,6 @@ export default async function handler(req, res) {
     for (const row of results) {
       const currentDateTime = getCurrentMySQLDateTime();
 
-      // Check if restaurant already exists
       let restaurantId = row.restaurant_id;
       let restaurantExists = false;
       console.log(restaurantId)
@@ -87,7 +91,6 @@ export default async function handler(req, res) {
         }
       }
 
-      // Insert restaurant if it doesn't exist
       if (!restaurantExists) {
         const restaurantValues = [
           row.restaurant_id || null,
@@ -104,23 +107,23 @@ export default async function handler(req, res) {
           row.home_page || null,
           row.description || null,
           row.special_rule || null,
-          row.morning_available === 'FALSE' ? false : true,
-          row.daytime_available === 'FALSE' ? false : true,
-          row.has_set === 'FALSE' ? false : true,
+          processBooleanAsInteger(row.morning_available),
+          processBooleanAsInteger(row.daytime_available),
+          processBooleanAsInteger(row.has_set),
           row.senbero_description || null,
-          row.has_chinchiro === 'FALSE' ? false : true,
+          processBooleanAsInteger(row.has_chinchiro),
           row.chinchiro_description || null,
-          row.outside_available === 'FALSE' ? false : true,
+          processBooleanAsInteger(row.outside_available),
           row.outside_description || null,
-          row.is_standing === 'FALSE' ? false : true,
+          processBooleanAsInteger(row.is_standing),
           row.standing_description || null,
-          row.is_kakuuchi === 'FALSE' ? false : true,
-          row.is_cash_on === 'FALSE' ? false : true,
-          row.has_charge === 'FALSE' ? false : true,
+          processBooleanAsInteger(row.is_kakuuchi),
+          processBooleanAsInteger(row.is_cash_on),
+          processBooleanAsInteger(row.has_charge),
           row.charge_description || null,
-          row.has_tv === 'FALSE' ? false : true,
-          row.smoking_allowed === 'FALSE' ? false : true,
-          row.has_happy_hour === 'FALSE' ? false : true,
+          processBooleanAsInteger(row.has_tv),
+          processBooleanAsInteger(row.smoking_allowed),
+          processBooleanAsInteger(row.has_happy_hour),
           null,
           isValidDate(row.created_at) ? row.created_at : currentDateTime,
           isValidDate(row.updated_at) ? row.updated_at : currentDateTime
@@ -152,7 +155,6 @@ export default async function handler(req, res) {
         }
       }
 
-      // Insert operating hours
       if (row.day_of_week && restaurantId) {
         const operatingHoursValues = [
           restaurantId,
