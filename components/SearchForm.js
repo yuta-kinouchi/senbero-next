@@ -79,22 +79,17 @@ const SearchForm = () => {
       .map(([key]) => key);
 
     try {
-      const response = await fetch('/api/search-by-features', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ features: selectedFeatures }),
+      router.push({
+        pathname: '/restaurant-list',
+        query: { features: selectedFeatures.join(',') },
       });
-
-      if (!response.ok) {
-        throw new Error('Failed to search by features');
-      }
-
-      router.push('/restaurant-list');
     } catch (error) {
-      console.error('Error searching by features:', error);
-      alert('エラーが発生しました。もう一度お試しください。');
+      console.error('Error navigating to restaurant list:', error);
+      setSnackbar({
+        open: true,
+        message: 'エラーが発生しました。もう一度お試しください。',
+        severity: 'error'
+      });
     }
 
     handleFeatureDialogClose();
