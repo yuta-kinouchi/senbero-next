@@ -1,6 +1,6 @@
-import { CircularProgress } from '@mui/material';
+import { Alert, CircularProgress, Snackbar } from '@mui/material';
 import { useRouter } from 'next/router';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import Navbar from '../components/Navbar';
 import RestaurantList from '../components/RestaurantList';
 import styles from '../styles/HomePage.module.css';
@@ -8,38 +8,96 @@ import styles from '../styles/HomePage.module.css';
 const RestaurantListPage = () => {
   const [restaurants, setRestaurants] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const router = useRouter();
-  const { latitude, longitude } = router.query;
-  const localTime = new Date().toISOString();
+  const { latitude, longitude, features } = router.query;
+
+  const fetchRestaurants = useCallback(async (lat, lon, featureList) => {
+    try {
+      let url, method, body;
+
+      if (featureList) {
+        // 特徴による検索
+        url = '/api/search-by-features';
+        method = 'POST';
+        body = JSON.stringify({ features: featureList.split(',') });
+      } else if (lat && lon) {
+        // 位置情報による検索
+        url = `/api/restaurants?latitude=${lat}&longitude=${lon}&localTime=${new Date().toISOString()}`;
+        method = 'GET';
+      } else {
+        throw new Error('Invalid search parameters');
+      }
+
+      const response = await fetch(url, {
+        method,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: method === 'POST' ? body : undefined,
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch restaurants');
+      }
+      const data = await response.json();
+      setRestaurants(data);
+    } catch (error) {
+      console.error('Error:', error);
+      setError('レストラン情報の取得に失敗しました。');
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  const getLocationAndFetchRestaurants = useCallback(() => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const { latitude, longitude } = position.coords;
+          fetchRestaurants(latitude, longitude);
+        },
+        (error) => {
+          console.error('Geolocation error:', error);
+          setError('位置情報の取得に失敗しました。ブラウザの設定をご確認ください。');
+          setLoading(false);
+        },
+        { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+      );
+    } else {
+      setError('お使いのブラウザは位置情報をサポートしていません。');
+      setLoading(false);
+    }
+  }, [fetchRestaurants]);
 
   useEffect(() => {
-    if (latitude && longitude) {
-      const fetchRestaurants = async () => {
-        try {
-          const response = await fetch(`/api/restaurants?latitude=${latitude}&longitude=${longitude}&localTime=${localTime}`);
-          if (!response.ok) {
-            throw new Error('Failed to fetch restaurants');
-          }
-          const data = await response.json();
-          setRestaurants(data);
-        } catch (error) {
-          console.error('Error:', error);
-        } finally {
-          setLoading(false);
-        }
-      };
-
-      fetchRestaurants();
+    if (features) {
+      // 特徴による検索
+      fetchRestaurants(null, null, features);
+    } else if (latitude && longitude) {
+      // 位置情報による検索
+      fetchRestaurants(latitude, longitude);
     } else {
-      setLoading(false); // 位置情報がない場合もローディングを解除
+      // パラメータがない場合は現在位置を取得して検索
+      getLocationAndFetchRestaurants();
     }
-  }, [latitude, longitude]);
+  }, [latitude, longitude, features, fetchRestaurants, getLocationAndFetchRestaurants]);
+
+  const handleCloseError = (event, reason) => {
+    if (reason === 'clickaway') {
+      return;
+    }
+    setError(null);
+  };
 
   if (loading) {
     return (
       <div className={styles.container}>
         <Navbar />
-        <CircularProgress />
+        <div className={styles.loadingContainer}>
+          <CircularProgress />
+          <p>レストラン情報を読み込んでいます...</p>
+        </div>
       </div>
     );
   }
@@ -47,7 +105,16 @@ const RestaurantListPage = () => {
   return (
     <div className={styles.container}>
       <Navbar />
-      <RestaurantList restaurants={restaurants} />
+      {restaurants.length > 0 ? (
+        <RestaurantList restaurants={restaurants} />
+      ) : (
+        <p>条件に合うレストランが見つかりませんでした。</p>
+      )}
+      <Snackbar open={!!error} autoHideDuration={6000} onClose={handleCloseError}>
+        <Alert onClose={handleCloseError} severity="error" sx={{ width: '100%' }}>
+          {error}
+        </Alert>
+      </Snackbar>
     </div>
   );
 };
