@@ -2,10 +2,10 @@ import SportsBarRoundedIcon from "@mui/icons-material/SportsBarRounded";
 import {
   Alert,
   Box, Button,
-  Checkbox,
   Container, Dialog, DialogActions, DialogContent, DialogContentText,
   DialogTitle,
-  FormControlLabel,
+  Grid,
+  IconButton,
   Snackbar,
   Typography, useMediaQuery
 } from "@mui/material";
@@ -36,6 +36,21 @@ const SearchForm = () => {
     smoking_allowed: false,
     has_happy_hour: false,
   });
+
+  const featureItems = [
+    { name: 'morning_available', label: '朝飲み' },
+    { name: 'daytime_available', label: '昼飲み' },
+    { name: 'has_set', label: 'せんべろセット' },
+    { name: 'has_chinchiro', label: 'チンチロリン' },
+    { name: 'outside_available', label: '外飲み' },
+    { name: 'is_standing', label: '立ち飲み' },
+    { name: 'is_kakuuchi', label: '角打ち' },
+    { name: 'is_cash_on', label: 'キャッシュオン' },
+    { name: 'has_charge', label: 'チャージあり' },
+    { name: 'has_tv', label: 'TV設置' },
+    { name: 'smoking_allowed', label: '喫煙可' },
+    { name: 'has_happy_hour', label: 'ハッピーアワー' },
+  ];
 
   useEffect(() => {
     checkLocationPermission();
@@ -69,8 +84,8 @@ const SearchForm = () => {
     setOpenFeatureDialog(false);
   };
 
-  const handleFeatureChange = (event) => {
-    setFeatures({ ...features, [event.target.name]: event.target.checked });
+  const handleIconClick = (name) => {
+    setFeatures(prev => ({ ...prev, [name]: !prev[name] }));
   };
 
   const handleFeatureSearch = async () => {
@@ -219,57 +234,24 @@ const SearchForm = () => {
         </Button>
       </Box>
 
-      <Dialog open={openFeatureDialog} onClose={handleFeatureDialogClose}>
+      <Dialog open={openFeatureDialog} onClose={handleFeatureDialogClose} maxWidth="md" fullWidth>
         <DialogTitle>特徴から検索</DialogTitle>
         <DialogContent>
-          <FormControlLabel
-            control={<Checkbox checked={features.morning_available} onChange={handleFeatureChange} name="morning_available" />}
-            label="朝飲み"
-          />
-          <FormControlLabel
-            control={<Checkbox checked={features.daytime_available} onChange={handleFeatureChange} name="daytime_available" />}
-            label="昼飲み"
-          />
-          <FormControlLabel
-            control={<Checkbox checked={features.has_set} onChange={handleFeatureChange} name="has_set" />}
-            label="せんべろセット"
-          />
-          <FormControlLabel
-            control={<Checkbox checked={features.has_chinchiro} onChange={handleFeatureChange} name="has_chinchiro" />}
-            label="チンチロリン"
-          />
-          <FormControlLabel
-            control={<Checkbox checked={features.outside_available} onChange={handleFeatureChange} name="outside_available" />}
-            label="外飲み"
-          />
-          <FormControlLabel
-            control={<Checkbox checked={features.is_standing} onChange={handleFeatureChange} name="is_standing" />}
-            label="立ち飲み"
-          />
-          <FormControlLabel
-            control={<Checkbox checked={features.is_kakuuchi} onChange={handleFeatureChange} name="is_kakuuchi" />}
-            label="角打ち"
-          />
-          <FormControlLabel
-            control={<Checkbox checked={features.is_cash_on} onChange={handleFeatureChange} name="is_cash_on" />}
-            label="キャッシュオン"
-          />
-          <FormControlLabel
-            control={<Checkbox checked={features.has_charge} onChange={handleFeatureChange} name="has_charge" />}
-            label="チャージあり"
-          />
-          <FormControlLabel
-            control={<Checkbox checked={features.has_tv} onChange={handleFeatureChange} name="has_tv" />}
-            label="TV設置"
-          />
-          <FormControlLabel
-            control={<Checkbox checked={features.smoking_allowed} onChange={handleFeatureChange} name="smoking_allowed" />}
-            label="喫煙可"
-          />
-          <FormControlLabel
-            control={<Checkbox checked={features.has_happy_hour} onChange={handleFeatureChange} name="has_happy_hour" />}
-            label="ハッピーアワー"
-          />
+          <Grid container spacing={2}>
+            {featureItems.map((item) => (
+              <Grid item xs={12} sm={4} key={item.name}>
+                <IconButton
+                  onClick={() => handleIconClick(item.name)}
+                  color={features[item.name] ? "primary" : "default"}
+                >
+                  <SportsBarRoundedIcon />
+                </IconButton>
+                <Typography variant="body2" display="inline">
+                  {item.label}
+                </Typography>
+              </Grid>
+            ))}
+          </Grid>
         </DialogContent>
         <DialogActions>
           <Button onClick={handleFeatureDialogClose}>キャンセル</Button>
