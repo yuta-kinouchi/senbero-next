@@ -25,7 +25,7 @@ import React from 'react';
 
 const FeatureEditItem = ({ icon: Icon, label, isActive, description, onChangeActive, onChangeDescription }) => (
   <Box sx={{ display: 'flex', alignItems: 'flex-start', mb: 2 }}>
-    <Box sx={{ mr: 2, color: isActive ? 'warning.main' : 'action.disabled' }}>
+    <Box sx={{ m: 2, color: isActive ? 'warning.main' : 'action.disabled' }}>
       <Icon fontSize="large" />
     </Box>
     <Box sx={{ flexGrow: 1 }}>
