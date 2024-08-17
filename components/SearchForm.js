@@ -218,7 +218,7 @@ const SearchForm = () => {
             marginRight: "10px",
           }}
         >
-          検索する
+          イマココ検索
         </Button>
         <Button
           variant="outlined"

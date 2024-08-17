@@ -72,13 +72,8 @@ const RestaurantListPage = () => {
 
   useEffect(() => {
     if (features) {
-      // 特徴による検索
       fetchRestaurants(null, null, features);
-    } else if (latitude && longitude) {
-      // 位置情報による検索
-      fetchRestaurants(latitude, longitude);
     } else {
-      // パラメータがない場合は現在位置を取得して検索
       getLocationAndFetchRestaurants();
     }
   }, [latitude, longitude, features, fetchRestaurants, getLocationAndFetchRestaurants]);
