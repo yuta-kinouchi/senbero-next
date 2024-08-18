@@ -1,4 +1,4 @@
-import { Alert, CircularProgress, Snackbar } from '@mui/material';
+import { Alert, Box, Chip, CircularProgress, Snackbar } from '@mui/material';
 import { useRouter } from 'next/router';
 import { useCallback, useEffect, useState } from 'react';
 import Navbar from '../components/Navbar';
@@ -9,11 +9,28 @@ const RestaurantListPage = () => {
   const [restaurants, setRestaurants] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [selectedFeatures, setSelectedFeatures] = useState([]);
   const router = useRouter();
   const { useLocation, features } = router.query;
 
+  const availableFeatures = [
+    { name: 'morning_available', label: '朝飲み' },
+    { name: 'daytime_available', label: '昼飲み' },
+    { name: 'has_set', label: 'せんべろセット' },
+    { name: 'has_chinchiro', label: 'チンチロリン' },
+    { name: 'outside_available', label: '外飲み' },
+    { name: 'is_standing', label: '立ち飲み' },
+    { name: 'is_kakuuchi', label: '角打ち' },
+    { name: 'is_cash_on', label: 'キャッシュオン' },
+    { name: 'has_charge', label: 'チャージあり' },
+    { name: 'has_tv', label: 'TV設置' },
+    { name: 'smoking_allowed', label: '喫煙可' },
+    { name: 'has_happy_hour', label: 'ハッピーアワー' },
+  ];
+
   const fetchRestaurants = useCallback(async (params: URLSearchParams) => {
     try {
+      console.log('Fetching restaurants with params:', params.toString());
       const response = await fetch(`/api/restaurants/search?${params.toString()}`, {
         method: 'GET',
         headers: {
@@ -25,6 +42,7 @@ const RestaurantListPage = () => {
         throw new Error('Failed to fetch restaurants');
       }
       const data = await response.json();
+      console.log('Fetched restaurants:', data.length);
       setRestaurants(data);
     } catch (error) {
       console.error('Error:', error);
@@ -45,8 +63,8 @@ const RestaurantListPage = () => {
             lng: longitude.toString(),
             timestamp: currentTimestamp,
           });
-          if (features) {
-            params.append('features', features as string);
+          if (selectedFeatures.length > 0) {
+            params.append('features', selectedFeatures.join(','));
           }
           fetchRestaurants(params);
         },
@@ -61,19 +79,37 @@ const RestaurantListPage = () => {
       setError('お使いのブラウザは位置情報をサポートしていません。');
       setLoading(false);
     }
-  }, [features, fetchRestaurants]);
+  }, [selectedFeatures, fetchRestaurants]);
+
+  useEffect(() => {
+    if (features) {
+      const featureList = features.split(',');
+      console.log('Initial features:', featureList);
+      setSelectedFeatures(featureList);
+    }
+  }, [features]);
 
   useEffect(() => {
     if (useLocation === 'true') {
       getLocationAndSearch();
     } else {
       const params = new URLSearchParams();
-      if (features) {
-        params.append('features', features as string);
+      if (selectedFeatures.length > 0) {
+        params.append('features', selectedFeatures.join(','));
       }
       fetchRestaurants(params);
     }
-  }, [useLocation, features, getLocationAndSearch, fetchRestaurants]);
+  }, [useLocation, selectedFeatures, getLocationAndSearch, fetchRestaurants]);
+
+  const handleFeatureToggle = (feature) => {
+    setSelectedFeatures((prev) => {
+      const newFeatures = prev.includes(feature)
+        ? prev.filter((f) => f !== feature)
+        : [...prev, feature];
+      console.log('Selected features after toggle:', newFeatures);
+      return newFeatures;
+    });
+  };
 
   const handleCloseError = (event, reason) => {
     if (reason === 'clickaway') {
@@ -97,6 +133,16 @@ const RestaurantListPage = () => {
   return (
     <div className={styles.container}>
       <Navbar />
+      <Box sx={{ mb: 2, display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+        {availableFeatures.map((feature) => (
+          <Chip
+            key={feature.name}
+            label={feature.label}
+            onClick={() => handleFeatureToggle(feature.name)}
+            color={selectedFeatures.includes(feature.name) ? "primary" : "default"}
+          />
+        ))}
+      </Box>
       {restaurants.length > 0 ? (
         <RestaurantList restaurants={restaurants} />
       ) : (

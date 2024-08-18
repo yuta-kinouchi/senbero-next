@@ -10,30 +10,34 @@ export default async function handler(req, res) {
   if (req.method === 'GET') {
     const { lat, lng, features, timestamp } = req.query;
 
-    if (!lat || !lng || !timestamp) {
-      console.log('Missing required parameters');
-      res.status(400).json({ message: 'Latitude, longitude, and timestamp are required' });
+    const isLocationSearch = lat && lng;
+
+    if (isLocationSearch && !timestamp) {
+      console.log('Missing required parameter: timestamp for location-based search');
+      res.status(400).json({ message: 'Timestamp is required for location-based search' });
       return;
     }
 
     try {
       console.log('Processing search parameters...');
-      const currentTime = new Date(timestamp);
-      if (isNaN(currentTime.getTime())) {
-        throw new Error('Invalid timestamp provided');
-      }
-      const dayOfWeek = getDay(currentTime);
-      const currentMinutes = currentTime.getHours() * 60 + currentTime.getMinutes();
-
-      console.log('Current time:', { dayOfWeek, currentMinutes });
-
       let whereClause = {};
+      let currentMinutes, dayOfWeek;
+
+      if (isLocationSearch) {
+        const currentTime = new Date(timestamp);
+        if (isNaN(currentTime.getTime())) {
+          throw new Error('Invalid timestamp provided');
+        }
+        dayOfWeek = getDay(currentTime);
+        currentMinutes = currentTime.getHours() * 60 + currentTime.getMinutes();
+        console.log('Current time:', { dayOfWeek, currentMinutes });
+      }
 
       if (features) {
         const featureList = features.split(',');
         console.log('Features:', featureList);
         whereClause = {
-          OR: featureList.map(feature => ({ [feature]: true }))
+          AND: featureList.map(feature => ({ [feature]: true }))
         };
       }
 
@@ -49,53 +53,66 @@ export default async function handler(req, res) {
 
       console.log(`Query completed. Found ${restaurants.length} restaurants.`);
 
-      const openRestaurants = restaurants.filter(restaurant => {
-        const todayHours = restaurant.operating_hours.find(h => h.day_of_week === dayOfWeek);
-        if (!todayHours) return false;
+      let filteredRestaurants = restaurants;
 
-        console.log('Today\'s hours for restaurant:', restaurant.id, todayHours);
+      if (isLocationSearch) {
+        filteredRestaurants = restaurants.filter(restaurant => {
+          const todayHours = restaurant.operating_hours.find(h => h.day_of_week === dayOfWeek);
+          if (!todayHours) return false;
 
-        const openTime = new Date(todayHours.open_time);
-        const closeTime = new Date(todayHours.close_time);
+          console.log('Today\'s hours for restaurant:', restaurant.id, todayHours);
 
-        const openMinutes = openTime.getHours() * 60 + openTime.getMinutes();
-        const closeMinutes = closeTime.getHours() * 60 + closeTime.getMinutes();
+          const openTime = new Date(todayHours.open_time);
+          const closeTime = new Date(todayHours.close_time);
 
-        console.log('Parsed times:', {
-          openMinutes,
-          closeMinutes,
-          currentMinutes
-        });
+          const openMinutes = openTime.getHours() * 60 + openTime.getMinutes();
+          const closeMinutes = closeTime.getHours() * 60 + closeTime.getMinutes();
 
-        let isOpen;
-        if (closeMinutes < openMinutes) {
-          // 深夜営業の場合
-          isOpen = currentMinutes >= openMinutes || currentMinutes < closeMinutes;
-        } else {
-          isOpen = currentMinutes >= openMinutes && currentMinutes < closeMinutes;
-        }
+          console.log('Parsed times:', {
+            openMinutes,
+            closeMinutes,
+            currentMinutes
+          });
 
-        console.log('Is restaurant open:', isOpen);
+          let isOpen;
+          if (closeMinutes < openMinutes) {
+            // 深夜営業の場合
+            isOpen = currentMinutes >= openMinutes || currentMinutes < closeMinutes;
+          } else {
+            isOpen = currentMinutes >= openMinutes && currentMinutes < closeMinutes;
+          }
 
-        return isOpen;
-      }).map(restaurant => ({
-        ...restaurant,
-        close_time: restaurant.operating_hours.find(h => h.day_of_week === dayOfWeek).close_time
-      }));
+          console.log('Is restaurant open:', isOpen);
 
-      const sortedRestaurants = openRestaurants.map((restaurant) => {
-        const distance = getDistanceFromLatLonInKm(
-          parseFloat(lat),
-          parseFloat(lng),
-          restaurant.latitude,
-          restaurant.longitude
+          return isOpen;
+        }).map(restaurant => ({
+          ...restaurant,
+          close_time: restaurant.operating_hours.find(h => h.day_of_week === dayOfWeek).close_time
+        }));
+
+        filteredRestaurants = filteredRestaurants.map((restaurant) => {
+          const distance = getDistanceFromLatLonInKm(
+            parseFloat(lat),
+            parseFloat(lng),
+            restaurant.latitude,
+            restaurant.longitude
+          );
+          return { ...restaurant, distance };
+        }).sort((a, b) => a.distance - b.distance);
+      }
+
+      console.log(`Filtered ${filteredRestaurants.length} restaurants.`);
+
+      // デバッグ用：フィルタリングされたレストランの特徴を出力
+      filteredRestaurants.forEach(restaurant => {
+        console.log(`Restaurant ${restaurant.id} features:`,
+          Object.entries(restaurant)
+            .filter(([key, value]) => typeof value === 'boolean' && value === true)
+            .map(([key]) => key)
         );
-        return { ...restaurant, distance };
-      }).sort((a, b) => a.distance - b.distance);
+      });
 
-      console.log(`Filtered and sorted ${sortedRestaurants.length} open restaurants by distance.`);
-
-      res.status(200).json(sortedRestaurants);
+      res.status(200).json(filteredRestaurants);
     } catch (error) {
       console.error('Error fetching restaurants:', error);
       res.status(500).json({ message: 'Error fetching restaurants', error: error.message });
