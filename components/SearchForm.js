@@ -2,7 +2,7 @@ import SportsBarRoundedIcon from "@mui/icons-material/SportsBarRounded";
 import {
   Alert,
   Box, Button,
-  Container, Dialog, DialogActions, DialogContent, DialogContentText,
+  Container, Dialog, DialogActions, DialogContent,
   DialogTitle,
   Grid,
   IconButton,
@@ -11,17 +11,14 @@ import {
 } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
 import { useRouter } from 'next/router';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
 const SearchForm = () => {
   const router = useRouter();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
-  const [isSearching, setIsSearching] = useState(false);
   const [openFeatureDialog, setOpenFeatureDialog] = useState(false);
-  const [openLocationDialog, setOpenLocationDialog] = useState(false);
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'info' });
-  const [locationPermission, setLocationPermission] = useState('prompt');
   const [features, setFeatures] = useState({
     morning_available: false,
     daytime_available: false,
@@ -52,28 +49,11 @@ const SearchForm = () => {
     { name: 'has_happy_hour', label: 'ハッピーアワー' },
   ];
 
-  useEffect(() => {
-    checkLocationPermission();
-  }, []);
-
-  const checkLocationPermission = async () => {
-    if (navigator.permissions && navigator.permissions.query) {
-      try {
-        const result = await navigator.permissions.query({ name: 'geolocation' });
-        setLocationPermission(result.state);
-        result.onchange = () => setLocationPermission(result.state);
-      } catch (error) {
-        console.error('Error checking location permission:', error);
-      }
-    }
-  };
-
   const handleSearch = () => {
-    if (locationPermission === 'denied') {
-      setOpenLocationDialog(true);
-      return;
-    }
-    router.push('/restaurant-list');
+    router.push({
+      pathname: '/restaurant-list',
+      query: { useLocation: 'true' },
+    });
   };
 
   const handleFeatureDialogOpen = () => {
@@ -88,24 +68,18 @@ const SearchForm = () => {
     setFeatures(prev => ({ ...prev, [name]: !prev[name] }));
   };
 
-  const handleFeatureSearch = async () => {
+  const handleFeatureSearch = (useLocation = false) => {
     const selectedFeatures = Object.entries(features)
       .filter(([key, value]) => value)
       .map(([key]) => key);
 
-    try {
-      router.push({
-        pathname: '/restaurant-list',
-        query: { features: selectedFeatures.join(',') },
-      });
-    } catch (error) {
-      console.error('Error navigating to restaurant list:', error);
-      setSnackbar({
-        open: true,
-        message: 'エラーが発生しました。もう一度お試しください。',
-        severity: 'error'
-      });
-    }
+    router.push({
+      pathname: '/restaurant-list',
+      query: {
+        features: selectedFeatures.join(','),
+        useLocation: useLocation ? 'true' : 'false',
+      },
+    });
 
     handleFeatureDialogClose();
   };
@@ -113,10 +87,6 @@ const SearchForm = () => {
   const handleSnackbarClose = (event, reason) => {
     if (reason === 'clickaway') return;
     setSnackbar({ ...snackbar, open: false });
-  };
-
-  const handleLocationDialogClose = () => {
-    setOpenLocationDialog(false);
   };
 
   return (
@@ -255,21 +225,12 @@ const SearchForm = () => {
         </DialogContent>
         <DialogActions>
           <Button onClick={handleFeatureDialogClose}>キャンセル</Button>
-          <Button onClick={handleFeatureSearch} color="primary">
-            この特徴で検索
+          <Button onClick={() => handleFeatureSearch(false)} color="primary">
+            特徴のみで検索
           </Button>
-        </DialogActions>
-      </Dialog>
-      <Dialog open={openLocationDialog} onClose={handleLocationDialogClose}>
-        <DialogTitle>位置情報の許可が必要です</DialogTitle>
-        <DialogContent>
-          <DialogContentText>
-            このアプリは近くのレストランを見つけるために位置情報を使用します。
-            ブラウザの設定から位置情報の使用を許可してください。
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleLocationDialogClose}>閉じる</Button>
+          <Button onClick={() => handleFeatureSearch(true)} color="secondary">
+            特徴＋位置情報で検索
+          </Button>
         </DialogActions>
       </Dialog>
 
@@ -281,5 +242,6 @@ const SearchForm = () => {
     </Container>
   );
 };
+
 
 export default SearchForm;

@@ -1,4 +1,4 @@
-import { Alert, CircularProgress, Snackbar } from '@mui/material';
+import { Alert, Box, Chip, CircularProgress, Snackbar } from '@mui/material';
 import { useRouter } from 'next/router';
 import { useCallback, useEffect, useState } from 'react';
 import Navbar from '../components/Navbar';
@@ -9,38 +9,40 @@ const RestaurantListPage = () => {
   const [restaurants, setRestaurants] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [selectedFeatures, setSelectedFeatures] = useState([]);
   const router = useRouter();
-  const { latitude, longitude, features } = router.query;
+  const { useLocation, features } = router.query;
 
-  const fetchRestaurants = useCallback(async (lat, lon, featureList) => {
+  const availableFeatures = [
+    { name: 'morning_available', label: '朝飲み' },
+    { name: 'daytime_available', label: '昼飲み' },
+    { name: 'has_set', label: 'せんべろセット' },
+    { name: 'has_chinchiro', label: 'チンチロリン' },
+    { name: 'outside_available', label: '外飲み' },
+    { name: 'is_standing', label: '立ち飲み' },
+    { name: 'is_kakuuchi', label: '角打ち' },
+    { name: 'is_cash_on', label: 'キャッシュオン' },
+    { name: 'has_charge', label: 'チャージあり' },
+    { name: 'has_tv', label: 'TV設置' },
+    { name: 'smoking_allowed', label: '喫煙可' },
+    { name: 'has_happy_hour', label: 'ハッピーアワー' },
+  ];
+
+  const fetchRestaurants = useCallback(async (params: URLSearchParams) => {
     try {
-      let url, method, body;
-
-      if (featureList) {
-        // 特徴による検索
-        url = '/api/search-by-features';
-        method = 'POST';
-        body = JSON.stringify({ features: featureList.split(',') });
-      } else if (lat && lon) {
-        // 位置情報による検索
-        url = `/api/restaurants?latitude=${lat}&longitude=${lon}&localTime=${new Date().toISOString()}`;
-        method = 'GET';
-      } else {
-        throw new Error('Invalid search parameters');
-      }
-
-      const response = await fetch(url, {
-        method,
+      console.log('Fetching restaurants with params:', params.toString());
+      const response = await fetch(`/api/restaurants/search?${params.toString()}`, {
+        method: 'GET',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: method === 'POST' ? body : undefined,
       });
 
       if (!response.ok) {
         throw new Error('Failed to fetch restaurants');
       }
       const data = await response.json();
+      console.log('Fetched restaurants:', data.length);
       setRestaurants(data);
     } catch (error) {
       console.error('Error:', error);
@@ -50,12 +52,21 @@ const RestaurantListPage = () => {
     }
   }, []);
 
-  const getLocationAndFetchRestaurants = useCallback(() => {
+  const getLocationAndSearch = useCallback(() => {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (position) => {
           const { latitude, longitude } = position.coords;
-          fetchRestaurants(latitude, longitude);
+          const currentTimestamp = new Date().toISOString();
+          const params = new URLSearchParams({
+            lat: latitude.toString(),
+            lng: longitude.toString(),
+            timestamp: currentTimestamp,
+          });
+          if (selectedFeatures.length > 0) {
+            params.append('features', selectedFeatures.join(','));
+          }
+          fetchRestaurants(params);
         },
         (error) => {
           console.error('Geolocation error:', error);
@@ -68,15 +79,37 @@ const RestaurantListPage = () => {
       setError('お使いのブラウザは位置情報をサポートしていません。');
       setLoading(false);
     }
-  }, [fetchRestaurants]);
+  }, [selectedFeatures, fetchRestaurants]);
 
   useEffect(() => {
     if (features) {
-      fetchRestaurants(null, null, features);
-    } else {
-      getLocationAndFetchRestaurants();
+      const featureList = features.split(',');
+      console.log('Initial features:', featureList);
+      setSelectedFeatures(featureList);
     }
-  }, [latitude, longitude, features, fetchRestaurants, getLocationAndFetchRestaurants]);
+  }, [features]);
+
+  useEffect(() => {
+    if (useLocation === 'true') {
+      getLocationAndSearch();
+    } else {
+      const params = new URLSearchParams();
+      if (selectedFeatures.length > 0) {
+        params.append('features', selectedFeatures.join(','));
+      }
+      fetchRestaurants(params);
+    }
+  }, [useLocation, selectedFeatures, getLocationAndSearch, fetchRestaurants]);
+
+  const handleFeatureToggle = (feature) => {
+    setSelectedFeatures((prev) => {
+      const newFeatures = prev.includes(feature)
+        ? prev.filter((f) => f !== feature)
+        : [...prev, feature];
+      console.log('Selected features after toggle:', newFeatures);
+      return newFeatures;
+    });
+  };
 
   const handleCloseError = (event, reason) => {
     if (reason === 'clickaway') {
@@ -100,6 +133,16 @@ const RestaurantListPage = () => {
   return (
     <div className={styles.container}>
       <Navbar />
+      <Box sx={{ mb: 2, display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+        {availableFeatures.map((feature) => (
+          <Chip
+            key={feature.name}
+            label={feature.label}
+            onClick={() => handleFeatureToggle(feature.name)}
+            color={selectedFeatures.includes(feature.name) ? "primary" : "default"}
+          />
+        ))}
+      </Box>
       {restaurants.length > 0 ? (
         <RestaurantList restaurants={restaurants} />
       ) : (
