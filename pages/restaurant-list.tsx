@@ -1,4 +1,4 @@
-import { Alert, Box, Chip, CircularProgress, Snackbar } from '@mui/material';
+import { Alert, Box, Chip, CircularProgress, Snackbar, useMediaQuery, useTheme } from '@mui/material';
 import { useRouter } from 'next/router';
 import { useCallback, useEffect, useState } from 'react';
 import Navbar from '../components/Navbar';
@@ -12,6 +12,8 @@ const RestaurantListPage = () => {
   const [selectedFeatures, setSelectedFeatures] = useState([]);
   const router = useRouter();
   const { useLocation, features } = router.query;
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
   const availableFeatures = [
     { name: 'morning_available', label: '朝飲み' },
@@ -30,6 +32,7 @@ const RestaurantListPage = () => {
 
   const fetchRestaurants = useCallback(async (params: URLSearchParams) => {
     try {
+      setLoading(true);
       console.log('Fetching restaurants with params:', params.toString());
       const response = await fetch(`/api/restaurants/search?${params.toString()}`, {
         method: 'GET',
@@ -62,10 +65,8 @@ const RestaurantListPage = () => {
             lat: latitude.toString(),
             lng: longitude.toString(),
             timestamp: currentTimestamp,
+            features: selectedFeatures.join(','),
           });
-          if (selectedFeatures.length > 0) {
-            params.append('features', selectedFeatures.join(','));
-          }
           fetchRestaurants(params);
         },
         (error) => {
@@ -82,24 +83,29 @@ const RestaurantListPage = () => {
   }, [selectedFeatures, fetchRestaurants]);
 
   useEffect(() => {
-    if (features) {
-      const featureList = features.split(',');
-      console.log('Initial features:', featureList);
-      setSelectedFeatures(featureList);
+    if (router.isReady) {
+      const featuresList = Array.isArray(features) ? features : features ? [features] : [];
+      setSelectedFeatures(featuresList);
     }
-  }, [features]);
+  }, [router.isReady, features]);
 
   useEffect(() => {
-    if (useLocation === 'true') {
-      getLocationAndSearch();
-    } else {
-      const params = new URLSearchParams();
-      if (selectedFeatures.length > 0) {
-        params.append('features', selectedFeatures.join(','));
+    if (router.isReady) {
+      if (useLocation === 'true') {
+        getLocationAndSearch();
+      } else {
+        const params = new URLSearchParams();
+        if (selectedFeatures.length > 0) {
+          params.append('features', selectedFeatures.join(','));
+        }
+        if (params.toString()) {
+          fetchRestaurants(params);
+        } else {
+          setLoading(false);
+        }
       }
-      fetchRestaurants(params);
     }
-  }, [useLocation, selectedFeatures, getLocationAndSearch, fetchRestaurants]);
+  }, [router.isReady, useLocation, selectedFeatures, getLocationAndSearch, fetchRestaurants]);
 
   const handleFeatureToggle = (feature) => {
     setSelectedFeatures((prev) => {
@@ -133,13 +139,33 @@ const RestaurantListPage = () => {
   return (
     <div className={styles.container}>
       <Navbar />
-      <Box sx={{ mb: 2, display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+      <Box
+        sx={{
+          mb: 3,
+          mt: 2,
+          display: 'flex',
+          flexWrap: 'wrap',
+          gap: 1.5,
+          justifyContent: 'center',
+          maxWidth: '100%',
+          padding: isMobile ? '0 16px' : '0 32px',
+        }}
+      >
         {availableFeatures.map((feature) => (
           <Chip
             key={feature.name}
             label={feature.label}
             onClick={() => handleFeatureToggle(feature.name)}
             color={selectedFeatures.includes(feature.name) ? "primary" : "default"}
+            sx={{
+              margin: '4px',
+              fontSize: isMobile ? '0.75rem' : '0.875rem',
+              height: isMobile ? '28px' : '32px',
+              '&:hover': {
+                backgroundColor: theme.palette.action.hover,
+              },
+              transition: 'all 0.3s',
+            }}
           />
         ))}
       </Box>
