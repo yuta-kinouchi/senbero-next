@@ -56,7 +56,7 @@ export default async function handler(req, res) {
       let filteredRestaurants = restaurants;
 
       if (isLocationSearch) {
-        filteredRestaurants = restaurants.filter(restaurant => {
+        filteredRestaurants = filteredRestaurants.filter(restaurant => {
           const todayHours = restaurant.operating_hours.find(h => h.day_of_week === dayOfWeek);
           if (!todayHours) return false;
 
