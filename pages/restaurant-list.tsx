@@ -10,31 +10,15 @@ const RestaurantListPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const router = useRouter();
-  const { latitude, longitude, features } = router.query;
+  const { useLocation, features } = router.query;
 
-  const fetchRestaurants = useCallback(async (lat, lon, featureList) => {
+  const fetchRestaurants = useCallback(async (params: URLSearchParams) => {
     try {
-      let url, method, body;
-
-      if (featureList) {
-        // 特徴による検索
-        url = '/api/search-by-features';
-        method = 'POST';
-        body = JSON.stringify({ features: featureList.split(',') });
-      } else if (lat && lon) {
-        // 位置情報による検索
-        url = `/api/restaurants?latitude=${lat}&longitude=${lon}&localTime=${new Date().toISOString()}`;
-        method = 'GET';
-      } else {
-        throw new Error('Invalid search parameters');
-      }
-
-      const response = await fetch(url, {
-        method,
+      const response = await fetch(`/api/restaurants/search?${params.toString()}`, {
+        method: 'GET',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: method === 'POST' ? body : undefined,
       });
 
       if (!response.ok) {
@@ -50,12 +34,21 @@ const RestaurantListPage = () => {
     }
   }, []);
 
-  const getLocationAndFetchRestaurants = useCallback(() => {
+  const getLocationAndSearch = useCallback(() => {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (position) => {
           const { latitude, longitude } = position.coords;
-          fetchRestaurants(latitude, longitude);
+          const currentTimestamp = new Date().toISOString();
+          const params = new URLSearchParams({
+            lat: latitude.toString(),
+            lng: longitude.toString(),
+            timestamp: currentTimestamp,
+          });
+          if (features) {
+            params.append('features', features as string);
+          }
+          fetchRestaurants(params);
         },
         (error) => {
           console.error('Geolocation error:', error);
@@ -68,15 +61,19 @@ const RestaurantListPage = () => {
       setError('お使いのブラウザは位置情報をサポートしていません。');
       setLoading(false);
     }
-  }, [fetchRestaurants]);
+  }, [features, fetchRestaurants]);
 
   useEffect(() => {
-    if (features) {
-      fetchRestaurants(null, null, features);
+    if (useLocation === 'true') {
+      getLocationAndSearch();
     } else {
-      getLocationAndFetchRestaurants();
+      const params = new URLSearchParams();
+      if (features) {
+        params.append('features', features as string);
+      }
+      fetchRestaurants(params);
     }
-  }, [latitude, longitude, features, fetchRestaurants, getLocationAndFetchRestaurants]);
+  }, [useLocation, features, getLocationAndSearch, fetchRestaurants]);
 
   const handleCloseError = (event, reason) => {
     if (reason === 'clickaway') {
