@@ -242,7 +242,7 @@ const RestaurantEdit = ({ restaurant, handleInputChange, handleSubmit, handleChe
 
           <FeatureEditItem
             icon={AttachMoney}
-            label="チャージ"
+            label="チャージなし"
             isActive={restaurant.has_charge}
             description={restaurant.charge_description}
             onChangeActive={handleFeatureChange('has_charge')}
