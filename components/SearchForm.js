@@ -1,4 +1,9 @@
+import CasinoIcon from '@mui/icons-material/Casino';
+import DeckRoundedIcon from '@mui/icons-material/DeckRounded';
+import PaymentsRoundedIcon from '@mui/icons-material/PaymentsRounded';
+import SmokingRoomsRoundedIcon from '@mui/icons-material/SmokingRoomsRounded';
 import SportsBarRoundedIcon from "@mui/icons-material/SportsBarRounded";
+import TvRoundedIcon from '@mui/icons-material/TvRounded';
 import {
   Alert,
   Box, Button,
@@ -34,19 +39,44 @@ const SearchForm = () => {
     has_happy_hour: false,
   });
 
-  const featureItems = [
-    { name: 'morning_available', label: '朝飲み' },
-    { name: 'daytime_available', label: '昼飲み' },
-    { name: 'has_set', label: 'せんべろセット' },
-    { name: 'has_chinchiro', label: 'チンチロリン' },
-    { name: 'outside_available', label: '外飲み' },
-    { name: 'is_standing', label: '立ち飲み' },
-    { name: 'is_kakuuchi', label: '角打ち' },
-    { name: 'is_cash_on', label: 'キャッシュオン' },
-    { name: 'has_charge', label: 'チャージあり' },
-    { name: 'has_tv', label: 'TV設置' },
-    { name: 'smoking_allowed', label: '喫煙可' },
-    { name: 'has_happy_hour', label: 'ハッピーアワー' },
+  const featureCategories = [
+    {
+      category: "楽しみ方",
+      items: [
+        { name: 'has_set', label: 'せんべろセット', icon: <SportsBarRoundedIcon /> },
+        { name: 'has_happy_hour', label: 'ハッピーアワー', icon: <SportsBarRoundedIcon /> },
+        { name: 'has_chinchiro', label: 'チンチロ', icon: <CasinoIcon /> },
+      ]
+    },
+    {
+      category: "時間",
+      items: [
+        { name: 'morning_available', label: '朝飲み', icon: <SportsBarRoundedIcon /> },
+        { name: 'daytime_available', label: '昼飲み', icon: <SportsBarRoundedIcon /> },
+      ]
+    },
+    {
+      category: "雰囲気",
+      items: [
+        { name: 'outside_available', label: '外飲み', icon: <DeckRoundedIcon /> },
+        { name: 'is_standing', label: '立ち飲み', icon: <SportsBarRoundedIcon /> },
+        { name: 'is_kakuuchi', label: '角打ち', icon: <SportsBarRoundedIcon /> },
+      ]
+    },
+    {
+      category: "お金",
+      items: [
+        { name: 'is_cash_on', label: 'キャッシュオン', icon: <PaymentsRoundedIcon /> },
+        { name: 'has_charge', label: 'チャージなし', icon: <PaymentsRoundedIcon /> },
+      ]
+    },
+    {
+      category: "その他",
+      items: [
+        { name: 'has_tv', label: 'TV設置', icon: <TvRoundedIcon /> },
+        { name: 'smoking_allowed', label: '喫煙可', icon: <SmokingRoomsRoundedIcon /> },
+      ]
+    },
   ];
 
   const handleSearch = () => {
@@ -207,18 +237,30 @@ const SearchForm = () => {
       <Dialog open={openFeatureDialog} onClose={handleFeatureDialogClose} maxWidth="md" fullWidth>
         <DialogTitle>特徴から検索</DialogTitle>
         <DialogContent>
-          <Grid container spacing={2}>
-            {featureItems.map((item) => (
-              <Grid item xs={12} sm={4} key={item.name}>
-                <IconButton
-                  onClick={() => handleIconClick(item.name)}
-                  color={features[item.name] ? "primary" : "default"}
-                >
-                  <SportsBarRoundedIcon />
-                </IconButton>
-                <Typography variant="body2" display="inline">
-                  {item.label}
+          <Grid container spacing={3}>
+            {featureCategories.map((category) => (
+              <Grid item xs={12} key={category.category}>
+                <Typography variant="h6" gutterBottom>
+                  {category.category}
                 </Typography>
+                <Grid container spacing={2}>
+                  {category.items.map((item) => (
+                    <Grid item xs={6} sm={4} md={3} key={item.name}>
+                      <Box display="flex" alignItems="center">
+                        <IconButton
+                          onClick={() => handleIconClick(item.name)}
+                          color={features[item.name] ? "primary" : "default"}
+                          size="small"
+                        >
+                          {item.icon}
+                        </IconButton>
+                        <Typography variant="body2" sx={{ ml: 1 }}>
+                          {item.label}
+                        </Typography>
+                      </Box>
+                    </Grid>
+                  ))}
+                </Grid>
               </Grid>
             ))}
           </Grid>
@@ -242,6 +284,5 @@ const SearchForm = () => {
     </Container>
   );
 };
-
 
 export default SearchForm;

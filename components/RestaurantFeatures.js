@@ -103,7 +103,7 @@ const RestaurantFeatures = ({ restaurant }) => (
 
     <FeatureItem
       icon={AttachMoney}
-      label="チャージ"
+      label="チャージなし"
       isActive={restaurant.has_charge}
       description={restaurant.charge_description}
     />
