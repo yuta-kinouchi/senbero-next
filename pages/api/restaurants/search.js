@@ -8,8 +8,9 @@ export default async function handler(req, res) {
   console.log('Query parameters:', req.query);
 
   if (req.method === 'GET') {
-    const { lat, lng, features, timestamp } = req.query;
-
+    const { lat, lng, features, timestamp, maxBeerPrice, maxChuhaiPrice } = req.query;
+    console.log(maxBeerPrice)
+    console.log(maxChuhaiPrice)
     const isLocationSearch = lat && lng;
 
     if (isLocationSearch && !timestamp) {
@@ -39,6 +40,14 @@ export default async function handler(req, res) {
         whereClause = {
           AND: featureList.map(feature => ({ [feature]: true }))
         };
+      }
+
+      // 価格条件を whereClause に追加
+      if (maxBeerPrice) {
+        whereClause.beer_price = { lte: parseInt(maxBeerPrice) };
+      }
+      if (maxChuhaiPrice) {
+        whereClause.chuhai_price = { lte: parseInt(maxChuhaiPrice) };
       }
 
       console.log('Final where clause:', JSON.stringify(whereClause, null, 2));
@@ -101,6 +110,15 @@ export default async function handler(req, res) {
         }).sort((a, b) => a.distance - b.distance);
       }
 
+      // 価格でのフィルタリング（nullの場合も考慮）
+      if (maxBeerPrice || maxChuhaiPrice) {
+        filteredRestaurants = filteredRestaurants.filter(restaurant => {
+          const beerPriceOk = maxBeerPrice ? (restaurant.beer_price === null || restaurant.beer_price <= parseInt(maxBeerPrice)) : true;
+          const chuhaiPriceOk = maxChuhaiPrice ? (restaurant.chuhai_price === null || restaurant.chuhai_price <= parseInt(maxChuhaiPrice)) : true;
+          return beerPriceOk && chuhaiPriceOk;
+        });
+      }
+
       console.log(`Filtered ${filteredRestaurants.length} restaurants.`);
 
       // デバッグ用：フィルタリングされたレストランの特徴を出力
@@ -110,6 +128,10 @@ export default async function handler(req, res) {
             .filter(([key, value]) => typeof value === 'boolean' && value === true)
             .map(([key]) => key)
         );
+        console.log(`Restaurant ${restaurant.id} prices:`, {
+          beer_price: restaurant.beer_price,
+          chuhai_price: restaurant.chuhai_price
+        });
       });
 
       res.status(200).json(filteredRestaurants);

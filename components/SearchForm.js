@@ -11,6 +11,7 @@ import {
   DialogTitle,
   Grid,
   IconButton,
+  Slider,
   Snackbar,
   Typography, useMediaQuery
 } from "@mui/material";
@@ -38,6 +39,8 @@ const SearchForm = () => {
     smoking_allowed: false,
     has_happy_hour: false,
   });
+  const [beerPrice, setBeerPrice] = useState(1000);
+  const [chuhaiPrice, setChuhaiPrice] = useState(1000);
 
   const featureCategories = [
     {
@@ -79,10 +82,11 @@ const SearchForm = () => {
     },
   ];
 
+
   const handleSearch = () => {
     router.push({
       pathname: '/restaurant-list',
-      query: { useLocation: 'true' },
+      query: { useLocation: 'true', maxBeerPrice: beerPrice, maxChuhaiPrice: chuhaiPrice },
     });
   };
 
@@ -108,6 +112,8 @@ const SearchForm = () => {
       query: {
         features: selectedFeatures.join(','),
         useLocation: useLocation ? 'true' : 'false',
+        maxBeerPrice: beerPrice,
+        maxChuhaiPrice: chuhaiPrice,
       },
     });
 
@@ -117,6 +123,14 @@ const SearchForm = () => {
   const handleSnackbarClose = (event, reason) => {
     if (reason === 'clickaway') return;
     setSnackbar({ ...snackbar, open: false });
+  };
+
+  const handleBeerPriceChange = (event, newValue) => {
+    setBeerPrice(newValue);
+  };
+
+  const handleChuhaiPriceChange = (event, newValue) => {
+    setChuhaiPrice(newValue);
   };
 
   return (
@@ -263,6 +277,37 @@ const SearchForm = () => {
                 </Grid>
               </Grid>
             ))}
+            <Grid item xs={12}>
+              <Typography variant="h6" gutterBottom>
+                価格
+              </Typography>
+              <Box sx={{ width: '100%', mt: 2 }}>
+                <Typography gutterBottom>ビール最大価格: {beerPrice}円</Typography>
+                <Slider
+                  value={beerPrice}
+                  onChange={handleBeerPriceChange}
+                  aria-labelledby="beer-price-slider"
+                  valueLabelDisplay="auto"
+                  step={50}
+                  marks
+                  min={300}
+                  max={1500}
+                />
+              </Box>
+              <Box sx={{ width: '100%', mt: 2 }}>
+                <Typography gutterBottom>酎ハイ最大価格: {chuhaiPrice}円</Typography>
+                <Slider
+                  value={chuhaiPrice}
+                  onChange={handleChuhaiPriceChange}
+                  aria-labelledby="chuhai-price-slider"
+                  valueLabelDisplay="auto"
+                  step={50}
+                  marks
+                  min={300}
+                  max={1500}
+                />
+              </Box>
+            </Grid>
           </Grid>
         </DialogContent>
         <DialogActions>
@@ -284,5 +329,6 @@ const SearchForm = () => {
     </Container>
   );
 };
+
 
 export default SearchForm;
