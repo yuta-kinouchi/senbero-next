@@ -1,5 +1,3 @@
-import { S3Client } from "@aws-sdk/client-s3";
-import { Upload } from "@aws-sdk/lib-storage";
 import { Alert, CircularProgress, Container, Snackbar } from '@mui/material';
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
@@ -12,18 +10,17 @@ const RestaurantEditPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [successMessage, setSuccessMessage] = useState('');
+  const [imagePreview, setImagePreview] = useState(null);
+  const [imageFile, setImageFile] = useState(null);
   const router = useRouter();
   const { id } = router.query;
 
   useEffect(() => {
     const fetchRestaurant = async () => {
       if (!id) return;
-
       try {
         const response = await fetch(`/api/restaurants/${id}`);
-        if (!response.ok) {
-          throw new Error('Failed to fetch restaurant');
-        }
+        if (!response.ok) throw new Error('Failed to fetch restaurant');
         const data = await response.json();
         setRestaurant(data);
       } catch (error) {
@@ -33,7 +30,6 @@ const RestaurantEditPage = () => {
         setLoading(false);
       }
     };
-
     fetchRestaurant();
   }, [id]);
 
@@ -47,37 +43,38 @@ const RestaurantEditPage = () => {
     setRestaurant(prev => ({ ...prev, [name]: checked }));
   };
 
-  const cleanObject = (obj) => {
-    const cleanedObj = {};
-    Object.keys(obj).forEach(key => {
-      if (typeof obj[key] !== 'object' || obj[key] === null) {
-        cleanedObj[key] = obj[key];
-      } else if (obj[key] instanceof File) {
-        // ファイルオブジェクトは特別に処理
-        cleanedObj[key] = {
-          name: obj[key].name,
-          type: obj[key].type,
-          size: obj[key].size,
-        };
-      }
-      // その他のオブジェクトや配列は除外
-    });
-    return cleanedObj;
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setImageFile(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
-  const handleSubmit = async (formData) => {
+  const handleSubmit = async (e) => {
+    e.preventDefault();
     setLoading(true);
     setError(null);
-    console.log('Received formData:', formData);
-    try {
-      let updatedRestaurantData = { ...formData };
-      delete updatedRestaurantData.imageFile;
 
-      // 新しい画像がアップロードされた場合
-      if (formData.imageFile instanceof File) {
+    try {
+      let updatedRestaurantData = { ...restaurant };
+
+      ['beer_price', 'chuhai_price'].forEach(field => {
+        if (updatedRestaurantData[field] === '') {
+          updatedRestaurantData[field] = null;
+        } else {
+          const parsedValue = parseInt(updatedRestaurantData[field], 10);
+          updatedRestaurantData[field] = isNaN(parsedValue) ? null : parsedValue;
+        }
+      });
+
+      if (imageFile) {
         try {
-          const imageUrl = await handleImageUpload(formData.imageFile, id);
-          console.log('Uploaded image URL:', imageUrl);
+          const imageUrl = await handleImageUpload(imageFile, id);
           updatedRestaurantData.restaurant_image = imageUrl;
         } catch (uploadError) {
           console.error('Error uploading image:', uploadError);
@@ -85,22 +82,15 @@ const RestaurantEditPage = () => {
         }
       }
 
-      console.log('Data to be sent to server:', updatedRestaurantData);
-
       const response = await fetch(`/api/restaurants/${id}`, {
         method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(updatedRestaurantData),
       });
 
-      if (!response.ok) {
-        throw new Error('Failed to update restaurant');
-      }
+      if (!response.ok) throw new Error('Failed to update restaurant');
 
       const updatedRestaurant = await response.json();
-      console.log('Updated restaurant data:', updatedRestaurant);
       setRestaurant(updatedRestaurant);
       setSuccessMessage('レストランの編集に成功しました。詳細ページへ移動します。');
 
@@ -113,14 +103,6 @@ const RestaurantEditPage = () => {
     } finally {
       setLoading(false);
     }
-  };
-
-  const handleCloseSnackbar = (event, reason) => {
-    if (reason === 'clickaway') {
-      return;
-    }
-    setSuccessMessage('');
-    setError(null);
   };
 
   const handleImageUpload = async (file, id) => {
@@ -152,27 +134,27 @@ const RestaurantEditPage = () => {
     }
   };
 
+  const handleCloseSnackbar = (event, reason) => {
+    if (reason === 'clickaway') return;
+    setSuccessMessage('');
+    setError(null);
+  };
+
+  if (loading) return <CircularProgress />;
+  if (error) return <div>Error: {error}</div>;
+
   return (
     <div className={styles.container}>
       <Navbar />
       <Container maxWidth="md" sx={{ mt: 4 }}>
-        {loading ? (
-          <div className={styles.loadingContainer}>
-            <CircularProgress />
-          </div>
-        ) : error ? (
-          <div className={styles.errorContainer}>
-            <p>Error: {error}</p>
-          </div>
-        ) : (
-          <RestaurantEdit
-            restaurant={restaurant}
-            handleInputChange={handleInputChange}
-            handleSubmit={handleSubmit}
-            handleCheckboxChange={handleCheckboxChange}
-            handleImageUpload={handleImageUpload}
-          />
-        )}
+        <RestaurantEdit
+          restaurant={restaurant}
+          handleInputChange={handleInputChange}
+          handleSubmit={handleSubmit}
+          handleCheckboxChange={handleCheckboxChange}
+          handleFileChange={handleFileChange}
+          imagePreview={imagePreview}
+        />
       </Container>
       <Snackbar
         open={!!successMessage || !!error}

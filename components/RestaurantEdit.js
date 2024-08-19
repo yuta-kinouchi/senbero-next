@@ -1,14 +1,14 @@
 import {
   AttachMoney,
-  Casino as CasinoIcon,
-  CloudUpload as CloudUploadIcon,
-  LocalBar as LocalBarIcon,
-  NightlifeTwoTone as NightlifeTwoToneIcon,
-  OutdoorGrill,
+  Casino,
+  CloudUpload,
+  Deck,
+  LocalBar,
+  Payments,
   SmokingRooms,
-  SportsBarRounded as SportsBarRoundedIcon,
+  SportsBar,
   Tv,
-  WbSunny as WbSunnyIcon,
+  WbSunny
 } from '@mui/icons-material';
 import {
   Box,
@@ -51,40 +51,18 @@ const FeatureEditItem = ({ icon: Icon, label, isActive, description, onChangeAct
   </Box>
 );
 
-const RestaurantEdit = ({ restaurant, handleInputChange, handleSubmit, handleCheckboxChange }) => {
-  const [imagePreview, setImagePreview] = React.useState(null);
-  const [imageFile, setImageFile] = React.useState(null);
-
-  const handleFileChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      setImageFile(file);
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImagePreview(reader.result);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  const handleFormSubmit = (e) => {
-    e.preventDefault();
-    const updatedFormData = { ...restaurant, imageFile };
-    handleSubmit(updatedFormData);
-  };
-
-  const handleFeatureChange = (name) => (event) => {
-    handleCheckboxChange(name)(event);
-  };
-
-  const handleFeatureDescriptionChange = (name) => (event) => {
-    handleInputChange(event, name);
-  };
-
+const RestaurantEdit = ({
+  restaurant,
+  handleInputChange,
+  handleSubmit,
+  handleCheckboxChange,
+  handleFileChange,
+  imagePreview
+}) => {
   return (
     <Card>
       <CardContent>
-        <Box component="form" onSubmit={handleFormSubmit} sx={{ mt: 3 }}>
+        <Box component="form" onSubmit={handleSubmit} sx={{ mt: 3 }}>
           <Typography variant="h4" component="h1" gutterBottom>
             Edit Restaurant: {restaurant.name}
           </Typography>
@@ -98,7 +76,7 @@ const RestaurantEdit = ({ restaurant, handleInputChange, handleSubmit, handleChe
                 name="name"
                 label="Name"
                 value={restaurant.name || ''}
-                onChange={(e) => handleInputChange(e, 'name')}
+                onChange={(e) => handleInputChange(e)}
               />
             </Grid>
             <Grid item xs={12} sm={6}>
@@ -108,7 +86,7 @@ const RestaurantEdit = ({ restaurant, handleInputChange, handleSubmit, handleChe
                 name="phone_number"
                 label="Phone Number"
                 value={restaurant.phone_number || ''}
-                onChange={(e) => handleInputChange(e, 'phone_number')}
+                onChange={(e) => handleInputChange(e)}
               />
             </Grid>
             <Grid item xs={12}>
@@ -120,11 +98,10 @@ const RestaurantEdit = ({ restaurant, handleInputChange, handleSubmit, handleChe
                 multiline
                 rows={4}
                 value={restaurant.description || ''}
-                onChange={(e) => handleInputChange(e, 'description')}
+                onChange={(e) => handleInputChange(e)}
               />
             </Grid>
 
-            {/* Image Upload */}
             <Grid item xs={12}>
               <Typography variant="h6" gutterBottom>
                 Restaurant Image
@@ -140,7 +117,7 @@ const RestaurantEdit = ({ restaurant, handleInputChange, handleSubmit, handleChe
                 <Button
                   variant="outlined"
                   component="span"
-                  startIcon={<CloudUploadIcon />}
+                  startIcon={<CloudUpload />}
                 >
                   Upload Image
                 </Button>
@@ -155,123 +132,181 @@ const RestaurantEdit = ({ restaurant, handleInputChange, handleSubmit, handleChe
 
           <Divider sx={{ my: 3 }} />
 
+          <Typography variant="h5" gutterBottom>
+            料金
+          </Typography>
+          <Grid container spacing={2}>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                fullWidth
+                margin="normal"
+                name="beer_price"
+                label="ビール料金"
+                type="number"
+                value={restaurant.beer_price || ''}
+                onChange={(e) => handleInputChange(e)}
+              />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                fullWidth
+                margin="normal"
+                name="chuhai_price"
+                label="酎ハイ料金"
+                type="number"
+                value={restaurant.chuhai_price || ''}
+                onChange={(e) => handleInputChange(e)}
+              />
+            </Grid>
+            <Grid item xs={12}>
+              <TextField
+                fullWidth
+                margin="normal"
+                name="beer_types"
+                label="ビールの種類"
+                value={restaurant.beer_types || ''}
+                onChange={(e) => handleInputChange(e)}
+              />
+            </Grid>
+          </Grid>
+
+          <Divider sx={{ my: 3 }} />
+
           {/* Features */}
           <Typography variant="h5" gutterBottom>
-            Features
+            特徴
           </Typography>
 
+          {/* 楽しみ方 */}
+          <Typography variant="h6" gutterBottom>
+            楽しみ方
+          </Typography>
           <FeatureEditItem
-            icon={SportsBarRoundedIcon}
+            icon={SportsBar}
             label="せんべろセット"
             isActive={restaurant.has_set}
             description={restaurant.senbero_description}
-            onChangeActive={handleFeatureChange('has_set')}
-            onChangeDescription={handleFeatureDescriptionChange('senbero_description')}
+            onChangeActive={handleCheckboxChange('has_set')}
+            onChangeDescription={(e) => handleInputChange(e, 'senbero_description')}
           />
-          <Divider />
-
           <FeatureEditItem
-            icon={LocalBarIcon}
-            label="立ち飲み"
-            isActive={restaurant.is_standing}
-            description={restaurant.standing_description}
-            onChangeActive={handleFeatureChange('is_standing')}
-            onChangeDescription={handleFeatureDescriptionChange('standing_description')}
+            icon={SportsBar}
+            label="ハッピーアワー"
+            isActive={restaurant.has_happy_hour}
+            onChangeActive={handleCheckboxChange('has_happy_hour')}
           />
-          <Divider />
-
           <FeatureEditItem
-            icon={OutdoorGrill}
-            label="外飲み"
-            isActive={restaurant.outside_available}
-            description={restaurant.outside_description}
-            onChangeActive={handleFeatureChange('outside_available')}
-            onChangeDescription={handleFeatureDescriptionChange('outside_description')}
-          />
-          <Divider />
-
-          <FeatureEditItem
-            icon={WbSunnyIcon}
-            label="朝飲み"
-            isActive={restaurant.morning_available}
-            onChangeActive={handleFeatureChange('morning_available')}
-          />
-          <Divider />
-
-          <FeatureEditItem
-            icon={NightlifeTwoToneIcon}
-            label="昼飲み"
-            isActive={restaurant.daytime_available}
-            onChangeActive={handleFeatureChange('daytime_available')}
-          />
-          <Divider />
-
-          <FeatureEditItem
-            icon={CasinoIcon}
+            icon={Casino}
             label="チンチロ"
             isActive={restaurant.has_chinchiro}
             description={restaurant.chinchiro_description}
-            onChangeActive={handleFeatureChange('has_chinchiro')}
-            onChangeDescription={handleFeatureDescriptionChange('chinchiro_description')}
+            onChangeActive={handleCheckboxChange('has_chinchiro')}
+            onChangeDescription={(e) => handleInputChange(e, 'chinchiro_description')}
           />
-          <Divider />
 
+          <Divider sx={{ my: 2 }} />
+
+          {/* 時間 */}
+          <Typography variant="h6" gutterBottom>
+            時間
+          </Typography>
           <FeatureEditItem
-            icon={SportsBarRoundedIcon}
-            label="ハッピーアワー"
-            isActive={restaurant.has_happy_hour}
-            onChangeActive={handleFeatureChange('has_happy_hour')}
+            icon={WbSunny}
+            label="朝飲み"
+            isActive={restaurant.morning_available}
+            onChangeActive={handleCheckboxChange('morning_available')}
           />
-          <Divider />
-
           <FeatureEditItem
-            icon={LocalBarIcon}
+            icon={LocalBar}
+            label="昼飲み"
+            isActive={restaurant.daytime_available}
+            onChangeActive={handleCheckboxChange('daytime_available')}
+          />
+
+          <Divider sx={{ my: 2 }} />
+
+          {/* 雰囲気 */}
+          <Typography variant="h6" gutterBottom>
+            雰囲気
+          </Typography>
+          <FeatureEditItem
+            icon={Deck}
+            label="外飲み"
+            isActive={restaurant.outside_available}
+            description={restaurant.outside_description}
+            onChangeActive={handleCheckboxChange('outside_available')}
+            onChangeDescription={(e) => handleInputChange(e, 'outside_description')}
+          />
+          <FeatureEditItem
+            icon={SportsBar}
+            label="立ち飲み"
+            isActive={restaurant.is_standing}
+            description={restaurant.standing_description}
+            onChangeActive={handleCheckboxChange('is_standing')}
+            onChangeDescription={(e) => handleInputChange(e, 'standing_description')}
+          />
+          <FeatureEditItem
+            icon={LocalBar}
             label="角打ち"
             isActive={restaurant.is_kakuuchi}
-            onChangeActive={handleFeatureChange('is_kakuuchi')}
+            onChangeActive={handleCheckboxChange('is_kakuuchi')}
           />
-          <Divider />
 
+          <Divider sx={{ my: 2 }} />
+
+          {/* 支払い */}
+          <Typography variant="h6" gutterBottom>
+            支払い
+          </Typography>
           <FeatureEditItem
             icon={AttachMoney}
             label="キャッシュオン"
             isActive={restaurant.is_cash_on}
-            onChangeActive={handleFeatureChange('is_cash_on')}
+            onChangeActive={handleCheckboxChange('is_cash_on')}
           />
-          <Divider />
-
           <FeatureEditItem
             icon={AttachMoney}
             label="チャージなし"
             isActive={restaurant.has_charge}
             description={restaurant.charge_description}
-            onChangeActive={handleFeatureChange('has_charge')}
-            onChangeDescription={handleFeatureDescriptionChange('charge_description')}
+            onChangeActive={handleCheckboxChange('has_charge')}
+            onChangeDescription={(e) => handleInputChange(e, 'charge_description')}
           />
-          <Divider />
+          <FeatureEditItem
+            icon={Payments}
+            label="クレジットカード利用可"
+            isActive={restaurant.credit_card}
+            description={restaurant.credit_card_description}
+            onChangeActive={handleCheckboxChange('credit_card')}
+            onChangeDescription={(e) => handleInputChange(e, 'credit_card_description')}
+          />
 
+          <Divider sx={{ my: 2 }} />
+
+          {/* その他 */}
+          <Typography variant="h6" gutterBottom>
+            その他
+          </Typography>
           <FeatureEditItem
             icon={Tv}
             label="TV設置"
             isActive={restaurant.has_tv}
-            onChangeActive={handleFeatureChange('has_tv')}
+            onChangeActive={handleCheckboxChange('has_tv')}
           />
-          <Divider />
-
           <FeatureEditItem
             icon={SmokingRooms}
-            label="喫煙"
+            label="喫煙可"
             isActive={restaurant.smoking_allowed}
-            onChangeActive={handleFeatureChange('smoking_allowed')}
+            onChangeActive={handleCheckboxChange('smoking_allowed')}
           />
 
           <TextField
             fullWidth
             margin="normal"
             name="special_rule"
-            label="Special Rule"
+            label="特別ルール"
             value={restaurant.special_rule || ''}
-            onChange={(e) => handleInputChange(e, 'special_rule')}
+            onChange={(e) => handleInputChange(e)}
           />
 
           <Button type="submit" variant="contained" color="primary" sx={{ mt: 3 }}>

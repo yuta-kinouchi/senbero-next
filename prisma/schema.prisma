@@ -60,6 +60,11 @@ model Restaurant {
   smoking_allowed Boolean?
   has_happy_hour Boolean?
   restaurant_image String?
+  credit_card Boolean?
+  credit_card_description String?
+  beer_price          Int?
+  beer_types          Int?
+  chuhai_price        Int?
   deleted_at     DateTime? @map("deleted_at")
   created_at     DateTime  @default(now()) @map("created_at")
   updated_at     DateTime  @updatedAt @map("updated_at")

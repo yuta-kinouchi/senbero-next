@@ -10,6 +10,7 @@ export default async function handler(req, res) {
       const restaurant = await prisma.restaurant.findUnique({
         where: { restaurant_id: parseInt(id) },
       });
+      console.log(restaurant)
 
       if (restaurant) {
         res.status(200).json(restaurant);
@@ -55,6 +56,11 @@ export default async function handler(req, res) {
         smoking_allowed,
         special_rule,
         restaurant_image,
+        credit_card,
+        credit_card_description,
+        beer_price,
+        beer_types,
+        chuhai_price,
       } = req.body;
 
       const updatedRestaurant = await prisma.restaurant.update({
@@ -90,6 +96,11 @@ export default async function handler(req, res) {
           smoking_allowed,
           special_rule,
           restaurant_image,
+          credit_card,
+          credit_card_description,
+          beer_price,
+          beer_types,
+          chuhai_price,
           updated_at: new Date(),
         },
       });

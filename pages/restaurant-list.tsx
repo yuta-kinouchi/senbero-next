@@ -11,7 +11,7 @@ const RestaurantListPage = () => {
   const [error, setError] = useState(null);
   const [selectedFeatures, setSelectedFeatures] = useState([]);
   const router = useRouter();
-  const { useLocation, features } = router.query;
+  const { useLocation, features, maxBeerPrice, maxChuhaiPrice } = router.query;
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
@@ -66,6 +66,8 @@ const RestaurantListPage = () => {
             lng: longitude.toString(),
             timestamp: currentTimestamp,
             features: selectedFeatures.join(','),
+            maxBeerPrice: maxBeerPrice as string,
+            maxChuhaiPrice: maxChuhaiPrice as string,
           });
           fetchRestaurants(params);
         },
@@ -80,7 +82,7 @@ const RestaurantListPage = () => {
       setError('お使いのブラウザは位置情報をサポートしていません。');
       setLoading(false);
     }
-  }, [selectedFeatures, fetchRestaurants]);
+  }, [selectedFeatures, maxBeerPrice, maxChuhaiPrice, fetchRestaurants]);
 
   useEffect(() => {
     if (router.isReady) {
@@ -98,6 +100,8 @@ const RestaurantListPage = () => {
         if (selectedFeatures.length > 0) {
           params.append('features', selectedFeatures.join(','));
         }
+        if (maxBeerPrice) params.append('maxBeerPrice', maxBeerPrice as string);
+        if (maxChuhaiPrice) params.append('maxChuhaiPrice', maxChuhaiPrice as string);
         if (params.toString()) {
           fetchRestaurants(params);
         } else {
@@ -105,7 +109,7 @@ const RestaurantListPage = () => {
         }
       }
     }
-  }, [router.isReady, useLocation, selectedFeatures, getLocationAndSearch, fetchRestaurants]);
+  }, [router.isReady, useLocation, selectedFeatures, maxBeerPrice, maxChuhaiPrice, getLocationAndSearch, fetchRestaurants]);
 
   const handleFeatureToggle = (feature) => {
     setSelectedFeatures((prev) => {
@@ -113,6 +117,12 @@ const RestaurantListPage = () => {
         ? prev.filter((f) => f !== feature)
         : [...prev, feature];
       console.log('Selected features after toggle:', newFeatures);
+
+      // 特徴が変更されたら、新しい検索を実行
+      const params = new URLSearchParams(router.query as any);
+      params.set('features', newFeatures.join(','));
+      router.push(`${router.pathname}?${params.toString()}`, undefined, { shallow: true });
+
       return newFeatures;
     });
   };
