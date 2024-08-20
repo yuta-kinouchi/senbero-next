@@ -7,6 +7,7 @@ import {
   SportsBar,
   Tv,
 } from '@mui/icons-material';
+import CreditCardIcon from '@mui/icons-material/CreditCard';
 import {
   Box,
   Divider,
@@ -73,8 +74,8 @@ const featureCategories = [
     category: "支払い",
     items: [
       { name: 'is_cash_on', label: 'キャッシュオン', icon: Payments },
-      { name: 'has_charge', label: 'チャージなし', icon: Payments },
-      { name: 'credit_card', label: 'クレカ利用可能', icon: Payments },
+      { name: 'has_charge', label: 'チャージ', icon: Payments },
+      { name: 'credit_card', label: 'クレカ利用可能', icon: CreditCardIcon },
     ]
   },
   {

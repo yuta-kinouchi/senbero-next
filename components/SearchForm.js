@@ -1,4 +1,5 @@
 import CasinoIcon from '@mui/icons-material/Casino';
+import CreditCardIcon from '@mui/icons-material/CreditCard';
 import DeckRoundedIcon from '@mui/icons-material/DeckRounded';
 import PaymentsRoundedIcon from '@mui/icons-material/PaymentsRounded';
 import SmokingRoomsRoundedIcon from '@mui/icons-material/SmokingRoomsRounded';
@@ -39,8 +40,8 @@ const SearchForm = () => {
     smoking_allowed: false,
     has_happy_hour: false,
   });
-  const [beerPrice, setBeerPrice] = useState(1000);
-  const [chuhaiPrice, setChuhaiPrice] = useState(1000);
+  const [beerPrice, setBeerPrice] = useState(null);
+  const [chuhaiPrice, setChuhaiPrice] = useState(null);
 
   const featureCategories = [
     {
@@ -70,7 +71,7 @@ const SearchForm = () => {
       category: "お金",
       items: [
         { name: 'is_cash_on', label: 'キャッシュオン', icon: <PaymentsRoundedIcon /> },
-        { name: 'has_charge', label: 'チャージなし', icon: <PaymentsRoundedIcon /> },
+        { name: 'credit_card', label: 'クレカ可', icon: <CreditCardIcon /> },
       ]
     },
     {
@@ -82,12 +83,36 @@ const SearchForm = () => {
     },
   ];
 
-
   const handleSearch = () => {
+    const query = { useLocation: 'true' };
+    if (beerPrice !== null) query.maxBeerPrice = beerPrice;
+    if (chuhaiPrice !== null) query.maxChuhaiPrice = chuhaiPrice;
+
     router.push({
       pathname: '/restaurant-list',
-      query: { useLocation: 'true', maxBeerPrice: beerPrice, maxChuhaiPrice: chuhaiPrice },
+      query: query,
     });
+  };
+
+  const handleFeatureSearch = (useLocation = false) => {
+    const selectedFeatures = Object.entries(features)
+      .filter(([key, value]) => value)
+      .map(([key]) => key);
+
+    const query = {
+      features: selectedFeatures.join(','),
+      useLocation: useLocation ? 'true' : 'false',
+    };
+
+    if (beerPrice !== null) query.maxBeerPrice = beerPrice;
+    if (chuhaiPrice !== null) query.maxChuhaiPrice = chuhaiPrice;
+
+    router.push({
+      pathname: '/restaurant-list',
+      query: query,
+    });
+
+    handleFeatureDialogClose();
   };
 
   const handleFeatureDialogOpen = () => {
@@ -100,24 +125,6 @@ const SearchForm = () => {
 
   const handleIconClick = (name) => {
     setFeatures(prev => ({ ...prev, [name]: !prev[name] }));
-  };
-
-  const handleFeatureSearch = (useLocation = false) => {
-    const selectedFeatures = Object.entries(features)
-      .filter(([key, value]) => value)
-      .map(([key]) => key);
-
-    router.push({
-      pathname: '/restaurant-list',
-      query: {
-        features: selectedFeatures.join(','),
-        useLocation: useLocation ? 'true' : 'false',
-        maxBeerPrice: beerPrice,
-        maxChuhaiPrice: chuhaiPrice,
-      },
-    });
-
-    handleFeatureDialogClose();
   };
 
   const handleSnackbarClose = (event, reason) => {
@@ -282,29 +289,29 @@ const SearchForm = () => {
                 価格
               </Typography>
               <Box sx={{ width: '100%', mt: 2 }}>
-                <Typography gutterBottom>ビール最大価格: {beerPrice}円</Typography>
+                <Typography gutterBottom>ビール価格: {beerPrice !== null ? `~${beerPrice}円` : '未設定'}</Typography>
                 <Slider
-                  value={beerPrice}
+                  value={beerPrice !== null ? beerPrice : 1000}
                   onChange={handleBeerPriceChange}
                   aria-labelledby="beer-price-slider"
                   valueLabelDisplay="auto"
-                  step={50}
+                  step={100}
                   marks
                   min={300}
-                  max={1500}
+                  max={1000}
                 />
               </Box>
               <Box sx={{ width: '100%', mt: 2 }}>
-                <Typography gutterBottom>酎ハイ最大価格: {chuhaiPrice}円</Typography>
+                <Typography gutterBottom>酎ハイ価格: {chuhaiPrice !== null ? `~${chuhaiPrice}円` : '未設定'}</Typography>
                 <Slider
-                  value={chuhaiPrice}
+                  value={chuhaiPrice !== null ? chuhaiPrice : 1000}
                   onChange={handleChuhaiPriceChange}
                   aria-labelledby="chuhai-price-slider"
                   valueLabelDisplay="auto"
-                  step={50}
+                  step={100}
                   marks
                   min={300}
-                  max={1500}
+                  max={1000}
                 />
               </Box>
             </Grid>
