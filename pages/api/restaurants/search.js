@@ -43,10 +43,10 @@ export default async function handler(req, res) {
       }
 
       // 価格条件を whereClause に追加
-      if (maxBeerPrice) {
+      if (maxBeerPrice !== undefined && !isNaN(parseInt(maxBeerPrice))) {
         whereClause.beer_price = { lte: parseInt(maxBeerPrice) };
       }
-      if (maxChuhaiPrice) {
+      if (maxChuhaiPrice !== undefined && !isNaN(parseInt(maxChuhaiPrice))) {
         whereClause.chuhai_price = { lte: parseInt(maxChuhaiPrice) };
       }
 

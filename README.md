@@ -91,7 +91,7 @@ erDiagram
         text standing_description "立ち飲み詳細"
         boolean is_kakuuchi "角打ち"
         boolean is_cash_on "キャッシュオン"
-        boolean has_charge "チャージなし"
+        boolean has_charge "チャージあり"
         text charge_description "チャージ詳細"
         boolean has_tv "テレビ"
         boolean smoking_allowed "喫煙"

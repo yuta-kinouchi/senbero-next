@@ -266,7 +266,7 @@ const RestaurantEdit = ({
           />
           <FeatureEditItem
             icon={AttachMoney}
-            label="チャージなし"
+            label="チャージあり"
             isActive={restaurant.has_charge}
             description={restaurant.charge_description}
             onChangeActive={handleCheckboxChange('has_charge')}
