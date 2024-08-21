@@ -1,0 +1,28 @@
+const handleImageUpload = async (file, id) => {
+  try {
+    const fileName = `restaurant_${id}_${Date.now()}.${file.name.split('.').pop()}`;
+
+    const s3Client = new S3Client({
+      region: process.env.NEXT_PUBLIC_AWS_REGION,
+      credentials: {
+        accessKeyId: process.env.NEXT_PUBLIC_AWS_ACCESS_KEY_ID,
+        secretAccessKey: process.env.NEXT_PUBLIC_AWS_SECRET_ACCESS_KEY,
+      },
+    });
+
+    const upload = new Upload({
+      client: s3Client,
+      params: {
+        Bucket: process.env.NEXT_PUBLIC_S3_BUCKET_NAME,
+        Key: fileName,
+        Body: file,
+      },
+    });
+
+    const result = await upload.done();
+    return result.Location; // S3のURL
+  } catch (error) {
+    console.error("Error uploading file:", error);
+    throw error;
+  }
+};

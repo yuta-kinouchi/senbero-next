@@ -1,14 +1,29 @@
-import { Alert, CircularProgress, Container, Snackbar } from '@mui/material';
+import { S3Client } from '@aws-sdk/client-s3';
+import { Upload } from '@aws-sdk/lib-storage';
+import { Alert, CircularProgress, Container, LinearProgress, Snackbar } from '@mui/material';
+import imageCompression from 'browser-image-compression';
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
 import Navbar from '../../../components/Navbar';
 import RestaurantEdit from '../../../components/RestaurantEdit';
 import styles from '../../../styles/HomePage.module.css';
 
+// S3クライアントの初期化
+const s3Client = typeof window !== 'undefined'
+  ? new S3Client({
+    region: process.env.NEXT_PUBLIC_AWS_REGION,
+    credentials: {
+      accessKeyId: process.env.NEXT_PUBLIC_AWS_ACCESS_KEY_ID,
+      secretAccessKey: process.env.NEXT_PUBLIC_AWS_SECRET_ACCESS_KEY,
+    },
+  })
+  : null;
+
 const RestaurantEditPage = () => {
   const [restaurant, setRestaurant] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [uploadProgress, setUploadProgress] = useState(0);
   const [successMessage, setSuccessMessage] = useState('');
   const [imagePreview, setImagePreview] = useState(null);
   const [imageFile, setImageFile] = useState(null);
@@ -55,10 +70,50 @@ const RestaurantEditPage = () => {
     }
   };
 
+  const handleImageUpload = async (file, id) => {
+    try {
+      setUploadProgress(0);
+
+      const options = {
+        maxSizeMB: 0.5, // 最大ファイルサイズを500KBに設定
+        maxWidthOrHeight: 1200, // 最大幅または高さを1200pxに設定
+        useWebWorker: true,
+        preserveExif: false, // Exif情報を削除してファイルサイズを削減
+      };
+
+      const compressedFile = await imageCompression(file, options);
+
+      const fileName = `restaurant_${id}_${Date.now()}.${compressedFile.name.split('.').pop()}`;
+
+      const upload = new Upload({
+        client: s3Client,
+        params: {
+          Bucket: process.env.NEXT_PUBLIC_S3_BUCKET_NAME,
+          Key: fileName,
+          Body: compressedFile,
+          ContentType: compressedFile.type
+        },
+      });
+
+      upload.on("httpUploadProgress", (progress) => {
+        const percentUploaded = Math.round((progress.loaded / progress.total) * 100);
+        setUploadProgress(percentUploaded);
+      });
+
+      const result = await upload.done();
+      setUploadProgress(100);
+      return result.Location;
+    } catch (error) {
+      console.error("Error processing or uploading file:", error);
+      throw new Error(`画像のアップロードに失敗しました: ${error.message}`);
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
+    setUploadProgress(0);
 
     try {
       let updatedRestaurantData = { ...restaurant };
@@ -78,7 +133,9 @@ const RestaurantEditPage = () => {
           updatedRestaurantData.restaurant_image = imageUrl;
         } catch (uploadError) {
           console.error('Error uploading image:', uploadError);
-          setError('画像のアップロードに失敗しました。他の情報は更新されます。');
+          setError(uploadError.message);
+          setLoading(false);
+          return;
         }
       }
 
@@ -105,35 +162,6 @@ const RestaurantEditPage = () => {
     }
   };
 
-  const handleImageUpload = async (file, id) => {
-    try {
-      const fileName = `restaurant_${id}_${Date.now()}.${file.name.split('.').pop()}`;
-
-      const s3Client = new S3Client({
-        region: process.env.NEXT_PUBLIC_AWS_REGION,
-        credentials: {
-          accessKeyId: process.env.NEXT_PUBLIC_AWS_ACCESS_KEY_ID,
-          secretAccessKey: process.env.NEXT_PUBLIC_AWS_SECRET_ACCESS_KEY,
-        },
-      });
-
-      const upload = new Upload({
-        client: s3Client,
-        params: {
-          Bucket: process.env.NEXT_PUBLIC_S3_BUCKET_NAME,
-          Key: fileName,
-          Body: file,
-        },
-      });
-
-      const result = await upload.done();
-      return result.Location; // S3のURL
-    } catch (error) {
-      console.error("Error uploading file:", error);
-      throw error;
-    }
-  };
-
   const handleCloseSnackbar = (event, reason) => {
     if (reason === 'clickaway') return;
     setSuccessMessage('');
@@ -147,6 +175,9 @@ const RestaurantEditPage = () => {
     <div className={styles.container}>
       <Navbar />
       <Container maxWidth="md" sx={{ mt: 4 }}>
+        {uploadProgress > 0 && uploadProgress < 100 && (
+          <LinearProgress variant="determinate" value={uploadProgress} />
+        )}
         <RestaurantEdit
           restaurant={restaurant}
           handleInputChange={handleInputChange}
