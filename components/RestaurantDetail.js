@@ -1,16 +1,10 @@
 import {
-  Description,
-  Edit,
-  EventSeat,
-  Language,
-  LocationOn,
-  Phone
+  Edit
 } from '@mui/icons-material';
 import ChatBubbleOutlineIcon from '@mui/icons-material/ChatBubbleOutline';
 import SportsBarRoundedIcon from "@mui/icons-material/SportsBarRounded";
 import {
   Box,
-  Button,
   Card,
   CardContent,
   CardMedia,
@@ -24,6 +18,7 @@ import {
 } from '@mui/material';
 import { useRouter } from 'next/router';
 import React, { useState } from 'react';
+import OperatingHours from './OperatingHours';
 import RestaurantFeatures from './RestaurantFeatures';
 
 
@@ -75,32 +70,71 @@ const RestaurantDetail = ({ restaurant }) => {
 
               {/* Information section */}
               <Grid item xs={12} sm={6}>
-                <CardContent>
-                  <Typography variant="body1">
-                    <LocationOn sx={{ mr: 1, verticalAlign: 'middle' }} />
-                    {restaurant.state}{restaurant.city}{restaurant.address_line1}{restaurant.address_line2}
-                  </Typography>
-                  <Typography variant="body1">
-                    <Phone sx={{ mr: 1, verticalAlign: 'middle' }} />
-                    {restaurant.phone_number || 'N/A'}
-                  </Typography>
-                  <Typography variant="body1">
-                    <EventSeat sx={{ mr: 1, verticalAlign: 'middle' }} />
-                    {restaurant.capacity || 'N/A'}
-                  </Typography>
-                  {restaurant.home_page && (
-                    <Typography variant="body1">
-                      <Language sx={{ mr: 1, verticalAlign: 'middle' }} />
-                      <a href={restaurant.home_page} target="_blank" rel="noopener noreferrer">
-                        {restaurant.home_page}
-                      </a>
-                    </Typography>
-                  )}
-                  <Typography variant="body1">
-                    <Description sx={{ mr: 1, verticalAlign: 'middle' }} />
-                    {restaurant.description || 'N/A'}
-                  </Typography>
-                </CardContent>
+                <Box sx={{ mb: 2 }}>
+                  <Grid container spacing={1}>
+                    <Grid item xs={4}>
+                      <Typography variant="subtitle2" sx={{ fontWeight: 'bold' }}>住所</Typography>
+                    </Grid>
+                    <Grid item xs={8}>
+                      <Typography variant="body2">
+                        {`${restaurant.state}${restaurant.city}${restaurant.address_line1}${restaurant.address_line2}`}
+                      </Typography>
+                    </Grid>
+
+                    <Grid item xs={12}><Divider sx={{ my: 1 }} /></Grid>
+
+                    <Grid item xs={4}>
+                      <Typography variant="subtitle2" sx={{ fontWeight: 'bold' }}>電話番号</Typography>
+                    </Grid>
+                    <Grid item xs={8}>
+                      <Typography variant="body2">{restaurant.phone_number || 'N/A'}</Typography>
+                    </Grid>
+                  </Grid>
+                </Box>
+
+                <Divider sx={{ my: 2 }} />
+
+                <Box sx={{ mb: 2 }}>
+                  <Grid container spacing={1}>
+                    <Grid item xs={4}>
+                      <Typography variant="subtitle2" sx={{ fontWeight: 'bold' }}>座席数</Typography>
+                    </Grid>
+                    <Grid item xs={8}>
+                      <Typography variant="body2">{restaurant.capacity || 'N/A'}</Typography>
+                    </Grid>
+
+                    <Grid item xs={12}><Divider sx={{ my: 1 }} /></Grid>
+
+                    <Grid item xs={4}>
+                      <Typography variant="subtitle2" sx={{ fontWeight: 'bold' }}>ウェブサイト</Typography>
+                    </Grid>
+                    <Grid item xs={8}>
+                      <Typography variant="body2">
+                        {restaurant.home_page ? (
+                          <a href={restaurant.home_page} target="_blank" rel="noopener noreferrer">
+                            {restaurant.home_page}
+                          </a>
+                        ) : 'N/A'}
+                      </Typography>
+                    </Grid>
+                  </Grid>
+                </Box>
+
+                <Divider sx={{ my: 2 }} />
+
+                <Box>
+                  <Grid container spacing={1}>
+                    <Grid item xs={4}>
+                      <Typography variant="subtitle2" sx={{ fontWeight: 'bold' }}>説明</Typography>
+                    </Grid>
+                    <Grid item xs={8}>
+                      <Typography variant="body2">{restaurant.description || 'N/A'}</Typography>
+                    </Grid>
+                  </Grid>
+                </Box>
+                <Divider sx={{ my: 2 }} />
+
+                <OperatingHours restaurant={restaurant} />
               </Grid>
             </Grid>
 
@@ -136,21 +170,6 @@ const RestaurantDetail = ({ restaurant }) => {
                 </Typography>
               </Box>
             )}
-
-            <Box mt={3}>
-              <Button
-                variant="contained"
-                color="primary"
-                startIcon={<LocationOn />}
-                href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
-                  restaurant.name
-                )}`}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                View on Google Maps
-              </Button>
-            </Box>
           </CardContent>
         </Box>
       </Card>

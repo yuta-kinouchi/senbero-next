@@ -9,6 +9,9 @@ export default async function handler(req, res) {
     try {
       const restaurant = await prisma.restaurant.findUnique({
         where: { restaurant_id: parseInt(id) },
+        include: {
+          operating_hours: true, // 営業時間情報を含める
+        },
       });
       console.log(restaurant)
 
