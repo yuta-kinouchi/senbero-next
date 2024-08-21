@@ -96,7 +96,7 @@ const RestaurantFeatures = ({ restaurant }) => (
       <Grid container spacing={2}>
         <Grid item xs={6}>
           <PriceItem
-            icon={LocalDrink}
+            icon={SportsBar}
             label="ビール"
             price={restaurant.beer_price || "未設定"}
           />
