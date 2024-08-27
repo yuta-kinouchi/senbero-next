@@ -258,6 +258,37 @@ const SearchForm = () => {
       <Dialog open={openFeatureDialog} onClose={handleFeatureDialogClose} maxWidth="md" fullWidth>
         <DialogTitle>特徴から検索</DialogTitle>
         <DialogContent>
+          <Grid item xs={12}>
+            <Typography variant="h6" gutterBottom>
+              価格
+            </Typography>
+            <Box sx={{ width: '100%', mt: 2 }}>
+              <Typography gutterBottom>ビール価格: {beerPrice !== null ? `~${beerPrice}円` : '未設定'}</Typography>
+              <Slider
+                value={beerPrice !== null ? beerPrice : 1000}
+                onChange={handleBeerPriceChange}
+                aria-labelledby="beer-price-slider"
+                valueLabelDisplay="auto"
+                step={100}
+                marks
+                min={300}
+                max={1000}
+              />
+            </Box>
+            <Box sx={{ width: '100%', mt: 2 }}>
+              <Typography gutterBottom>酎ハイ価格: {chuhaiPrice !== null ? `~${chuhaiPrice}円` : '未設定'}</Typography>
+              <Slider
+                value={chuhaiPrice !== null ? chuhaiPrice : 1000}
+                onChange={handleChuhaiPriceChange}
+                aria-labelledby="chuhai-price-slider"
+                valueLabelDisplay="auto"
+                step={100}
+                marks
+                min={300}
+                max={1000}
+              />
+            </Box>
+          </Grid>
           <Grid container spacing={3}>
             {featureCategories.map((category) => (
               <Grid item xs={12} key={category.category}>
@@ -284,37 +315,6 @@ const SearchForm = () => {
                 </Grid>
               </Grid>
             ))}
-            <Grid item xs={12}>
-              <Typography variant="h6" gutterBottom>
-                価格
-              </Typography>
-              <Box sx={{ width: '100%', mt: 2 }}>
-                <Typography gutterBottom>ビール価格: {beerPrice !== null ? `~${beerPrice}円` : '未設定'}</Typography>
-                <Slider
-                  value={beerPrice !== null ? beerPrice : 1000}
-                  onChange={handleBeerPriceChange}
-                  aria-labelledby="beer-price-slider"
-                  valueLabelDisplay="auto"
-                  step={100}
-                  marks
-                  min={300}
-                  max={1000}
-                />
-              </Box>
-              <Box sx={{ width: '100%', mt: 2 }}>
-                <Typography gutterBottom>酎ハイ価格: {chuhaiPrice !== null ? `~${chuhaiPrice}円` : '未設定'}</Typography>
-                <Slider
-                  value={chuhaiPrice !== null ? chuhaiPrice : 1000}
-                  onChange={handleChuhaiPriceChange}
-                  aria-labelledby="chuhai-price-slider"
-                  valueLabelDisplay="auto"
-                  step={100}
-                  marks
-                  min={300}
-                  max={1000}
-                />
-              </Box>
-            </Grid>
           </Grid>
         </DialogContent>
         <DialogActions>
