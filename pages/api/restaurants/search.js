@@ -3,6 +3,12 @@ import { getDay } from 'date-fns';
 
 const prisma = new PrismaClient();
 
+// export default async function handler(req, res) {
+//   const restaurants = await prisma.restaurant.findMany();
+//   console.log('All restaurants:', restaurants);
+//   return { ...restaurant}
+// }
+
 export default async function handler(req, res) {
   console.log('API called: /api/restaurants/search');
   console.log('Query parameters:', req.query);
@@ -65,39 +71,44 @@ export default async function handler(req, res) {
       let filteredRestaurants = restaurants;
 
       if (isLocationSearch) {
+        const currentTimeUTC = new Date(timestamp);
+        if (isNaN(currentTimeUTC.getTime())) {
+          throw new Error('Invalid timestamp provided');
+        }
+
+        // UTCから日本時間（JST）に変換（+9時間）
+        const currentTimeJST = new Date(currentTimeUTC.getTime() + 9 * 60 * 60 * 1000);
+        dayOfWeek = getDay(currentTimeJST);
+
+        console.log('Current time (JST):', currentTimeJST.toISOString());
+
         filteredRestaurants = filteredRestaurants.filter(restaurant => {
           const todayHours = restaurant.operating_hours.find(h => h.day_of_week === dayOfWeek);
           if (!todayHours) return false;
 
-          console.log('Today\'s hours for restaurant:', restaurant.id, todayHours);
-
+          // 営業時間はすでに日本時間で保存されているため、そのまま使用
           const openTime = new Date(todayHours.open_time);
           const closeTime = new Date(todayHours.close_time);
 
-          const openMinutes = openTime.getHours() * 60 + openTime.getMinutes();
-          const closeMinutes = closeTime.getHours() * 60 + closeTime.getMinutes();
+          // 営業時間の日付部分を現在の日付（JST）に合わせる
+          openTime.setFullYear(currentTimeJST.getFullYear(), currentTimeJST.getMonth(), currentTimeJST.getDate());
+          closeTime.setFullYear(currentTimeJST.getFullYear(), currentTimeJST.getMonth(), currentTimeJST.getDate());
 
-          console.log('Parsed times:', {
-            openMinutes,
-            closeMinutes,
-            currentMinutes
-          });
-
-          let isOpen;
-          if (closeMinutes < openMinutes) {
-            // 深夜営業の場合
-            isOpen = currentMinutes >= openMinutes || currentMinutes < closeMinutes;
-          } else {
-            isOpen = currentMinutes >= openMinutes && currentMinutes < closeMinutes;
+          // 深夜営業の場合、閉店時刻を翌日に設定
+          if (closeTime <= openTime) {
+            closeTime.setDate(closeTime.getDate() + 1);
           }
 
-          console.log('Is restaurant open:', isOpen);
+          const isOpen = currentTimeJST >= openTime && currentTimeJST < closeTime;
+
+          console.log(`Restaurant ${restaurant.restaurant_id}: Open=${openTime.toISOString()}, Close=${closeTime.toISOString()}, Current(JST)=${currentTimeJST.toISOString()}, IsOpen=${isOpen}`);
 
           return isOpen;
         }).map(restaurant => ({
           ...restaurant,
           close_time: restaurant.operating_hours.find(h => h.day_of_week === dayOfWeek).close_time
         }));
+
 
         filteredRestaurants = filteredRestaurants.map((restaurant) => {
           const distance = getDistanceFromLatLonInKm(
@@ -121,7 +132,6 @@ export default async function handler(req, res) {
 
       console.log(`Filtered ${filteredRestaurants.length} restaurants.`);
 
-      // デバッグ用：フィルタリングされたレストランの特徴を出力
       filteredRestaurants.forEach(restaurant => {
         console.log(`Restaurant ${restaurant.id} features:`,
           Object.entries(restaurant)

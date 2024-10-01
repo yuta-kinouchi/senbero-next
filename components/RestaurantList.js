@@ -22,7 +22,17 @@ const RestaurantList = ({ restaurants }) => {
   const formatTime = (timeString) => {
     if (!timeString) return "";
     try {
-      return new Date(timeString).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      // タイムゾーンオフセットを計算（日本時間は UTC+9）
+      const jstOffset = 9 * 60 * 60 * 1000;
+
+      const date = new Date(new Date(timeString).getTime() - jstOffset);
+
+      return date.toLocaleTimeString('ja-JP', {
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false,
+        timeZone: 'Asia/Tokyo'
+      });
     } catch (error) {
       console.error("Invalid time format:", timeString);
       return "";
