@@ -22,7 +22,6 @@ const RestaurantList = ({ restaurants }) => {
   const formatTime = (timeString) => {
     if (!timeString) return "";
     try {
-      // タイムゾーンオフセットを計算（日本時間は UTC+9）
       const jstOffset = 9 * 60 * 60 * 1000;
 
       const date = new Date(new Date(timeString).getTime() - jstOffset);

@@ -8,7 +8,7 @@ import styles from '../styles/HomePage.module.css';
 const RestaurantListPage = () => {
   const [restaurants, setRestaurants] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState<null | string>(null);
   const [selectedFeatures, setSelectedFeatures] = useState([]);
   const router = useRouter();
   const { useLocation, features, maxBeerPrice, maxChuhaiPrice } = router.query;

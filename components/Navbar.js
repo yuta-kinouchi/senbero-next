@@ -1,5 +1,5 @@
 import SportsBarIcon from '@mui/icons-material/SportsBar';
-import { AppBar, Button, IconButton, Toolbar, Typography } from '@mui/material';
+import { AppBar, IconButton, Toolbar, Typography } from '@mui/material';
 import { signOut, useSession } from "next-auth/react";
 import { useState } from 'react';
 
@@ -24,7 +24,7 @@ const Navbar = () => {
         <Typography variant="h6" style={{ flexGrow: 1, color: 'black' }}>
           せんべろCheers
         </Typography>
-        {session ? (
+        {/* {session ? (
           <>
             <Typography variant="subtitle1" style={{ marginRight: '1rem', color: 'black' }}>
               {session.user.name}
@@ -36,7 +36,7 @@ const Navbar = () => {
             <Button href="/login" color="inherit" style={{ color: 'black' }}>ログイン</Button>
             <Button href="/register" color="inherit" style={{ color: 'black' }}>新規登録</Button>
           </>
-        )}
+        )} */}
       </Toolbar>
     </AppBar>
   );
