@@ -27,7 +27,7 @@ export default function SeedPage() {
       setResult(data.message || 'Seeding completed');
     } catch (error) {
       console.error("Error occurred", error);
-      setResult(`Error: ${error.message}`);
+      setResult(`Error: ${error instanceof Error ? error.message : String(error)}`);
     } finally {
       setIsLoading(false);
     }
@@ -53,7 +53,7 @@ export default function SeedPage() {
       setResult('CSV file generated successfully');
     } catch (error) {
       console.error("Error occurred", error);
-      setResult(`Error: ${error.message}`);
+      setResult(`Error: ${error instanceof Error ? error.message : String(error)}`);
     } finally {
       setIsLoading(false);
     }
