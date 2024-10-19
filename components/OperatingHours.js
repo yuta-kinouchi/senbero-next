@@ -15,17 +15,27 @@ const OperatingHours = ({ restaurant }) => {
     return acc;
   }, {});
 
-
   const getDayName = (dayNumber) => {
     const days = ['日', '月', '火', '水', '木', '金', '土'];
     return days[dayNumber] + '曜日';
   };
 
   const formatTime = (timeString) => {
-    if (!timeString) return 'N/A';
-    if (timeString.includes('T')) {
-      const date = new Date(timeString);
-      return date.toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit', hour12: false });
+    if (!timeString) return "";
+    try {
+      const jstOffset = 9 * 60 * 60 * 1000;
+
+      const date = new Date(new Date(timeString).getTime() - jstOffset);
+
+      return date.toLocaleTimeString('ja-JP', {
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false,
+        timeZone: 'Asia/Tokyo'
+      });
+    } catch (error) {
+      console.error("Invalid time format:", timeString);
+      return "";
     }
   };
 

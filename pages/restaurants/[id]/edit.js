@@ -73,17 +73,24 @@ const RestaurantEditPage = () => {
   const handleImageUpload = async (file, id) => {
     try {
       setUploadProgress(0);
+      console.log('Original file:', file.name, file.size, file.type);
 
       const options = {
-        maxSizeMB: 0.5, // 最大ファイルサイズを500KBに設定
-        maxWidthOrHeight: 1200, // 最大幅または高さを1200pxに設定
+        maxSizeMB: 0.5,
+        maxWidthOrHeight: 1200,
         useWebWorker: true,
-        preserveExif: false, // Exif情報を削除してファイルサイズを削減
+        preserveExif: false,
       };
 
+      console.log('Compression options:', options);
+
       const compressedFile = await imageCompression(file, options);
+      console.log('Compressed file:', compressedFile.name, compressedFile.size, compressedFile.type);
 
       const fileName = `restaurant_${id}_${Date.now()}.${compressedFile.name.split('.').pop()}`;
+      console.log('Generated file name:', fileName);
+
+      console.log('S3 Bucket Name:', process.env.NEXT_PUBLIC_S3_BUCKET_NAME);
 
       const upload = new Upload({
         client: s3Client,
@@ -98,13 +105,19 @@ const RestaurantEditPage = () => {
       upload.on("httpUploadProgress", (progress) => {
         const percentUploaded = Math.round((progress.loaded / progress.total) * 100);
         setUploadProgress(percentUploaded);
+        console.log('Upload progress:', percentUploaded + '%');
       });
 
       const result = await upload.done();
       setUploadProgress(100);
+      console.log('Upload completed. File location:', result.Location);
       return result.Location;
     } catch (error) {
-      console.error("Error processing or uploading file:", error);
+      console.error("Detailed error:", error);
+      console.error("Error stack:", error.stack);
+      if (error.response) {
+        console.error("S3 error response:", error.response);
+      }
       throw new Error(`画像のアップロードに失敗しました: ${error.message}`);
     }
   };

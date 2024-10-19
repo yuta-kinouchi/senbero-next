@@ -6,7 +6,7 @@ import {
   TextField,
   Typography
 } from '@mui/material'
-import { signIn } from 'next-auth/client'
+import { signIn } from "next-auth/react"
 import { useRouter } from 'next/router'
 import React, { useState } from 'react'
 

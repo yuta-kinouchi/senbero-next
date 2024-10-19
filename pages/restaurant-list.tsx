@@ -8,8 +8,8 @@ import styles from '../styles/HomePage.module.css';
 const RestaurantListPage = () => {
   const [restaurants, setRestaurants] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [selectedFeatures, setSelectedFeatures] = useState([]);
+  const [error, setError] = useState<null | string>(null);
+  const [selectedFeatures, setSelectedFeatures] = useState<string[]>([]);
   const router = useRouter();
   const { useLocation, features, maxBeerPrice, maxChuhaiPrice } = router.query;
   const theme = useTheme();
@@ -111,7 +111,7 @@ const RestaurantListPage = () => {
     }
   }, [router.isReady, useLocation, selectedFeatures, maxBeerPrice, maxChuhaiPrice, getLocationAndSearch, fetchRestaurants]);
 
-  const handleFeatureToggle = (feature) => {
+  const handleFeatureToggle = (feature: string) => {
     setSelectedFeatures((prev) => {
       const newFeatures = prev.includes(feature)
         ? prev.filter((f) => f !== feature)
@@ -127,7 +127,7 @@ const RestaurantListPage = () => {
     });
   };
 
-  const handleCloseError = (event, reason) => {
+  const handleCloseError = (event: React.SyntheticEvent | Event, reason?: string) => {
     if (reason === 'clickaway') {
       return;
     }
