@@ -27,7 +27,8 @@
     "**/*.ts",
     "**/*.tsx",
     "components/RegisterForm.js",
-    "pages/api/store-location.js"
+    "pages/api/store-location.js",
+    "pages/api/export-csv.js"
   ],
   "exclude": [
     "node_modules"
