@@ -32,7 +32,7 @@ export default NextAuth({
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
     }),
   ],
-  database: process.env.DATABASE_URL,
+  database: process.env.POSTGRES_URL,
   session: {
     strategy: 'jwt',
   },
