@@ -15,27 +15,37 @@ export default async function handler(req, res) {
       // CSVヘッダー
       const csvHeader = [
         'restaurant_id', 'name', 'phone_number', 'country', 'state', 'city',
-        'address_line1', 'address_line2', 'latitude', 'longitude', 'day_of_week',
-        'open_time', 'close_time', 'drink_last_order_time', 'food_last_order_time',
+        'address_line1', 'address_line2', 'latitude', 'longitude', 'capacity', 
+        'day_of_week', 'open_time', 'close_time', 'drink_last_order_time', 
+        'food_last_order_time', 'happy_hour_start', 'happy_hour_end',
         'home_page', 'description', 'special_rule', 'morning_available',
         'daytime_available', 'has_set', 'senbero_description', 'has_chinchiro',
         'chinchiro_description', 'outside_available', 'outside_description',
         'is_standing', 'standing_description', 'is_kakuuchi', 'is_cash_on',
-        'has_charge', 'charge_description', 'has_tv', 'smoking_allowed', 'has_happy_hour'
+        'has_charge', 'charge_description', 'has_tv', 'smoking_allowed', 
+        'has_happy_hour', 'restaurant_image',
+        'credit_card', 'credit_card_description', 
+        'beer_price', 'beer_types', 'chuhai_price', 
+        'created_at', 'updated_at', 'deleted_at' 
       ].join(',');
 
       // データをCSV形式に変換
       const csvRows = restaurants.flatMap(r =>
         r.operating_hours.map(oh => [
           r.restaurant_id, r.name, r.phone_number, r.country, r.state, r.city,
-          r.address_line1, r.address_line2, r.latitude, r.longitude, oh.day_of_week,
-          formatTimeToJST(oh.open_time), formatTimeToJST(oh.close_time),
+          r.address_line1, r.address_line2, r.latitude, r.longitude, r.capacity,
+          oh.day_of_week, formatTimeToJST(oh.open_time), formatTimeToJST(oh.close_time),
           formatTimeToJST(oh.drink_last_order_time), formatTimeToJST(oh.food_last_order_time),
+          formatTimeToJST(oh.happy_hour_start), formatTimeToJST(oh.happy_hour_end),
           r.home_page, r.description, r.special_rule, r.morning_available,
           r.daytime_available, r.has_set, r.senbero_description, r.has_chinchiro,
           r.chinchiro_description, r.outside_available, r.outside_description,
           r.is_standing, r.standing_description, r.is_kakuuchi, r.is_cash_on,
-          r.has_charge, r.charge_description, r.has_tv, r.smoking_allowed, r.has_happy_hour
+          r.has_charge, r.charge_description, r.has_tv, r.smoking_allowed,
+          r.has_happy_hour, r.restaurant_image,
+          r.credit_card, r.credit_card_description,
+          r.beer_price, r.beer_types, r.chuhai_price,
+          formatTimeToJST(r.created_at), formatTimeToJST(r.updated_at), formatTimeToJST(r.deleted_at)
         ].map(cell => `"${formatCell(cell)}"`).join(','))
       );
 
