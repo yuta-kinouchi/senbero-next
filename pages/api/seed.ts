@@ -36,6 +36,18 @@ function parseDayOfWeek(day: string): number {
   return index !== -1 ? index : parseInt(day, 10)
 }
 
+function parsePrice(price: string | undefined): number | undefined {
+  if (!price) return undefined
+  const numPrice = parseInt(price.replace(/[^0-9]/g, ''))
+  return isNaN(numPrice) ? undefined : numPrice
+}
+
+// function parseBeerTypes(types: string | undefined): string[] {
+//   if (!types) return []
+//   return types.split(',').map(type => type.trim())
+// }
+
+
 async function main() {
   console.log("Seeding process started")
 
@@ -114,8 +126,14 @@ async function main() {
               has_tv: !!processBooleanAsInteger(row.has_tv),
               smoking_allowed: !!processBooleanAsInteger(row.smoking_allowed),
               has_happy_hour: !!processBooleanAsInteger(row.has_happy_hour),
-              created_at: isValidDate(row.created_at) ? new Date(row.created_at) : currentDateTime,
-              updated_at: isValidDate(row.updated_at) ? new Date(row.updated_at) : currentDateTime
+              restaurant_image: row.restaurant_image || undefined,
+              credit_card: !!processBooleanAsInteger(row.credit_card),
+              credit_card_description: row.credit_card_description || undefined,
+              beer_price: parsePrice(row.beer_price),
+              // beer_types: row.beer_types ? JSON.stringify(parseBeerTypes(row.beer_types)) : undefined,
+              chuhai_price: parsePrice(row.chuhai_price),
+              // created_at: isValidDate(row.created_at) ? new Date(row.created_at) : currentDateTime,
+              // updated_at: isValidDate(row.updated_at) ? new Date(row.updated_at) : currentDateTime
             }
           })
 
@@ -137,8 +155,10 @@ async function main() {
               close_time: formatDateTime(row.close_time),
               drink_last_order_time: formatDateTime(row.drink_last_order_time) || null,
               food_last_order_time: formatDateTime(row.food_last_order_time) || null,
-              created_at: isValidDate(row.created_at) ? new Date(row.created_at) : currentDateTime,
-              updated_at: isValidDate(row.updated_at) ? new Date(row.updated_at) : currentDateTime
+              happy_hour_start: formatDateTime(row.happy_hour_start) || null,
+              happy_hour_end: formatDateTime(row.happy_hour_end) || null,
+              // created_at: isValidDate(row.created_at) ? new Date(row.created_at) : currentDateTime,
+              // updated_at: isValidDate(row.updated_at) ? new Date(row.updated_at) : currentDateTime
             }
           })
 
