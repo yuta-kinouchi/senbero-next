@@ -5,56 +5,15 @@ import path from 'path'
 
 const prisma = new PrismaClient()
 
-interface RestaurantData {
-  restaurant_id: string
-  name: string
-  phone_number: string
-  country: string
-  state: string
-  city: string
-  address_line1: string
-  address_line2: string
-  latitude: string
-  longitude: string
-  capacity: string
-  home_page: string
-  description: string
-  special_rule: string
-  morning_available: string
-  daytime_available: string
-  has_set: string
-  senbero_description: string
-  has_chinchiro: string
-  chinchiro_description: string
-  outside_available: string
-  outside_description: string
-  is_standing: string
-  standing_description: string
-  is_kakuuchi: string
-  is_cash_on: string
-  has_charge: string
-  charge_description: string
-  has_tv: string
-  smoking_allowed: string
-  has_happy_hour: string
-  created_at: string
-  updated_at: string
-  day_of_week: string
-  open_time: string
-  close_time: string
-  drink_last_order_time: string
-  food_last_order_time: string
-}
-
-function isValidDate(dateString: string): boolean {
+function isValidDate(dateString) {
   return !isNaN(Date.parse(dateString))
 }
 
-function getCurrentMySQLDateTime(): string {
+function getCurrentMySQLDateTime() {
   return new Date().toISOString().slice(0, 19).replace('T', ' ')
 }
 
-function formatDateTime(timeString: string): string | null {
+function formatDateTime(timeString) {
   const defaultDate = '1970-01-01'
   const dateTimeString = `${defaultDate}T${timeString}.000Z`
 
@@ -66,7 +25,7 @@ function formatDateTime(timeString: string): string | null {
   return date.toISOString().slice(0, 19).replace('T', ' ')
 }
 
-function processBooleanAsInteger(value: string | undefined | null): number {
+function processBooleanAsInteger(value) {
   if (value === null || value === undefined) return 0
   return value.toLowerCase() === 'true' || value === '1' ? 1 : 0
 }
@@ -81,11 +40,11 @@ async function main() {
     process.exit(1)
   }
 
-  const results: RestaurantData[] = []
-  await new Promise<void>((resolve, reject) => {
+  const results = []
+  await new Promise((resolve, reject) => {
     fs.createReadStream(filePath)
       .pipe(csv())
-      .on('data', (data: RestaurantData) => results.push(data))
+      .on('data', (data) => results.push(data))
       .on('end', () => resolve())
       .on('error', (error) => {
         console.error('Error reading CSV:', error)
