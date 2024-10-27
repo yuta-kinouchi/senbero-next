@@ -28,7 +28,8 @@
     "**/*.tsx",
     "components/RegisterForm.js",
     "pages/api/store-location.js",
-    "pages/api/export-csv.js"
+    "pages/api/export-csv.js",
+    "prisma/seed.js"
   ],
   "exclude": [
     "node_modules"
