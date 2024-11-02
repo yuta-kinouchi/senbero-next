@@ -1,6 +1,6 @@
 import { Alert, Box, Chip, CircularProgress, Snackbar, useMediaQuery, useTheme } from '@mui/material';
 import { useRouter } from 'next/router';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import Navbar from '../components/Navbar';
 import RestaurantList from '../components/RestaurantList';
 import styles from '../styles/HomePage.module.css';
@@ -15,7 +15,8 @@ const RestaurantListPage = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
-  const availableFeatures = [
+  // availableFeaturesをメモ化
+  const availableFeatures = useMemo(() => [
     { name: 'morning_available', label: '朝飲み' },
     { name: 'daytime_available', label: '昼飲み' },
     { name: 'has_set', label: 'せんべろセット' },
@@ -28,12 +29,11 @@ const RestaurantListPage = () => {
     { name: 'has_tv', label: 'TV設置' },
     { name: 'smoking_allowed', label: '喫煙可' },
     { name: 'has_happy_hour', label: 'ハッピーアワー' },
-  ];
+  ], []);
 
   const fetchRestaurants = useCallback(async (params: URLSearchParams) => {
     try {
       setLoading(true);
-      console.log('Fetching restaurants with params:', params.toString());
       const response = await fetch(`/api/restaurants/search?${params.toString()}`, {
         method: 'GET',
         headers: {
@@ -45,7 +45,6 @@ const RestaurantListPage = () => {
         throw new Error('Failed to fetch restaurants');
       }
       const data = await response.json();
-      console.log('Fetched restaurants:', data.length);
       setRestaurants(data);
     } catch (error) {
       console.error('Error:', error);
@@ -55,20 +54,26 @@ const RestaurantListPage = () => {
     }
   }, []);
 
+  const searchParams = useMemo(() => {
+    const params = new URLSearchParams();
+    if (selectedFeatures.length > 0) {
+      params.append('features', selectedFeatures.join(','));
+    }
+    if (maxBeerPrice) params.append('maxBeerPrice', maxBeerPrice as string);
+    if (maxChuhaiPrice) params.append('maxChuhaiPrice', maxChuhaiPrice as string);
+    return params;
+  }, [selectedFeatures, maxBeerPrice, maxChuhaiPrice]);
+
   const getLocationAndSearch = useCallback(() => {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (position) => {
           const { latitude, longitude } = position.coords;
-          const currentTimestamp = new Date().toISOString();
-          const params = new URLSearchParams({
-            lat: latitude.toString(),
-            lng: longitude.toString(),
-            timestamp: currentTimestamp,
-            features: selectedFeatures.join(','),
-            maxBeerPrice: maxBeerPrice as string,
-            maxChuhaiPrice: maxChuhaiPrice as string,
-          });
+          // 新しいURLSearchParamsインスタンスを作成
+          const params = new URLSearchParams(searchParams.toString());
+          params.append('lat', latitude.toString());
+          params.append('lng', longitude.toString());
+          params.append('timestamp', new Date().toISOString());
           fetchRestaurants(params);
         },
         (error) => {
@@ -82,7 +87,8 @@ const RestaurantListPage = () => {
       setError('お使いのブラウザは位置情報をサポートしていません。');
       setLoading(false);
     }
-  }, [selectedFeatures, maxBeerPrice, maxChuhaiPrice, fetchRestaurants]);
+  }, [searchParams, fetchRestaurants]);
+
 
   useEffect(() => {
     if (router.isReady) {
@@ -92,40 +98,35 @@ const RestaurantListPage = () => {
   }, [router.isReady, features]);
 
   useEffect(() => {
-    if (router.isReady) {
+    if (!router.isReady) return;
+    
+    const executeSearch = async () => {
       if (useLocation === 'true') {
         getLocationAndSearch();
+      } else if (searchParams.toString()) {
+        const params = new URLSearchParams(searchParams.toString());
+        await fetchRestaurants(params);
       } else {
-        const params = new URLSearchParams();
-        if (selectedFeatures.length > 0) {
-          params.append('features', selectedFeatures.join(','));
-        }
-        if (maxBeerPrice) params.append('maxBeerPrice', maxBeerPrice as string);
-        if (maxChuhaiPrice) params.append('maxChuhaiPrice', maxChuhaiPrice as string);
-        if (params.toString()) {
-          fetchRestaurants(params);
-        } else {
-          setLoading(false);
-        }
+        setLoading(false);
       }
-    }
-  }, [router.isReady, useLocation, selectedFeatures, maxBeerPrice, maxChuhaiPrice, getLocationAndSearch, fetchRestaurants]);
+    };
+  
+    executeSearch();
+  }, [router.isReady, useLocation, searchParams]);
 
-  const handleFeatureToggle = (feature: string) => {
+  const handleFeatureToggle = useCallback((feature: string) => {
     setSelectedFeatures((prev) => {
       const newFeatures = prev.includes(feature)
         ? prev.filter((f) => f !== feature)
         : [...prev, feature];
-      console.log('Selected features after toggle:', newFeatures);
-
-      // 特徴が変更されたら、新しい検索を実行
+  
       const params = new URLSearchParams(router.query as any);
       params.set('features', newFeatures.join(','));
       router.push(`${router.pathname}?${params.toString()}`, undefined, { shallow: true });
-
+  
       return newFeatures;
     });
-  };
+  }, [router]);
 
   const handleCloseError = (event: React.SyntheticEvent | Event, reason?: string) => {
     if (reason === 'clickaway') {
@@ -134,18 +135,32 @@ const RestaurantListPage = () => {
     setError(null);
   };
 
-  if (loading) {
-    return (
-      <div className={styles.container}>
-        <Navbar />
-        <div className={styles.loadingContainer}>
+  const restaurantListComponent = useMemo(() => {
+    if (loading) {
+      return (
+        <Box 
+          sx={{ 
+            display: 'flex', 
+            flexDirection: 'column',
+            alignItems: 'center', 
+            justifyContent: 'center',
+            minHeight: '50vh', // 画面の高さに応じて調整
+            gap: 2 
+          }}
+        >
           <CircularProgress />
           <p>レストラン情報を読み込んでいます...</p>
-        </div>
-      </div>
+        </Box>
+      );
+    }
+  
+    return restaurants.length > 0 ? (
+      <RestaurantList restaurants={restaurants} />
+    ) : (
+      <p>条件に合うレストランが見つかりませんでした。</p>
     );
-  }
-
+  }, [restaurants, loading]);
+  
   return (
     <div className={styles.container}>
       <Navbar />
@@ -179,11 +194,7 @@ const RestaurantListPage = () => {
           />
         ))}
       </Box>
-      {restaurants.length > 0 ? (
-        <RestaurantList restaurants={restaurants} />
-      ) : (
-        <p>条件に合うレストランが見つかりませんでした。</p>
-      )}
+      {restaurantListComponent}
       <Snackbar open={!!error} autoHideDuration={6000} onClose={handleCloseError}>
         <Alert onClose={handleCloseError} severity="error" sx={{ width: '100%' }}>
           {error}
@@ -191,6 +202,6 @@ const RestaurantListPage = () => {
       </Snackbar>
     </div>
   );
-};
+}
 
 export default RestaurantListPage;
