@@ -144,7 +144,7 @@ const RestaurantListPage = () => {
             flexDirection: 'column',
             alignItems: 'center', 
             justifyContent: 'center',
-            minHeight: '50vh', // 画面の高さに応じて調整
+            minHeight: '50vh',
             gap: 2 
           }}
         >
@@ -154,11 +154,8 @@ const RestaurantListPage = () => {
       );
     }
   
-    return restaurants.length > 0 ? (
-      <RestaurantList restaurants={restaurants} />
-    ) : (
-      <p>条件に合うレストランが見つかりませんでした。</p>
-    );
+    // RestaurantListコンポーネントに結果の表示を委譲
+    return <RestaurantList restaurants={restaurants} />;
   }, [restaurants, loading]);
   
   return (
