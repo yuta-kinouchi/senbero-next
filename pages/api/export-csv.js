@@ -86,9 +86,6 @@ function formatTimeToJST(dateTime) {
   // dateTimeが文字列の場合、Dateオブジェクトに変換
   const date = typeof dateTime === 'string' ? new Date(dateTime) : dateTime;
 
-  // UTCからJSTへの変換（+9時間）
-  const jstDate = new Date(date.getTime() + 9 * 60 * 60 * 1000);
-
   // HH:MM:SS 形式で出力
-  return jstDate.toISOString().split('T')[1].split('.')[0];
+  return date.toISOString().split('T')[1].split('.')[0];
 }

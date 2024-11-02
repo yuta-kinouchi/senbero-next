@@ -64,7 +64,7 @@ model Restaurant {
   credit_card Boolean?
   credit_card_description String?
   beer_price          Int?
-  beer_types          Int?
+  beer_types          String?
   chuhai_price        Int?
   deleted_at     DateTime? @map("deleted_at")
   created_at     DateTime  @default(now()) @map("created_at")

@@ -1,4 +1,4 @@
-import { Container, Stack, Typography } from '@mui/material';
+import { Box, Container, Stack, Typography } from '@mui/material';
 import { useRouter } from 'next/router';
 import { RestaurantCard } from './RestaurantCard';
 
@@ -11,17 +11,24 @@ const RestaurantList = ({ restaurants }) => {
 
   if (restaurants.length === 0) {
     return (
-      <Container className="p-0">
+      <Box 
+        sx={{ 
+          display: 'flex', 
+          justifyContent: 'center',
+          minHeight: '50vh',
+          alignItems: 'center'
+        }}
+      >
         <Typography variant="body1" color="textSecondary">
-          検索結果はありません。
+          条件に合うレストランが見つかりませんでした。
         </Typography>
-      </Container>
+      </Box>
     );
   }
 
   return (
-    <Container className="p-0">
-      <Stack spacing={1} className="pb-5">
+    <Container sx={{ p: 0 }}>
+      <Stack spacing={1} sx={{ pb: 5 }}>
         {restaurants.map((restaurant) => (
           <RestaurantCard
             key={restaurant.restaurant_id}

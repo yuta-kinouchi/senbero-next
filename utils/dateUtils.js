@@ -16,10 +16,17 @@ export const formatTime = (timeString) => {
 };
 
 export const getTodayOperatingHours = (operatingHours) => {
+  // Date.getDay()の値をday_of_weekの形式に変換
   const today = new Date().getDay();
-  if (operatingHours && Array.isArray(operatingHours) && operatingHours[today]) {
-    const todayHours = operatingHours[today];
-    return `${formatTime(todayHours.open_time)} ~ ${formatTime(todayHours.close_time)}`;
+  const dayOfWeek = today;
+
+  if (operatingHours && Array.isArray(operatingHours)) {
+    // day_of_weekが一致する営業時間を探す
+    const todayHours = operatingHours.find(hours => hours.day_of_week === dayOfWeek);
+    
+    if (todayHours) {
+      return `${formatTime(todayHours.open_time)} ~ ${formatTime(todayHours.close_time)}`;
+    }
   }
   return "営業時間情報がありません";
 };
