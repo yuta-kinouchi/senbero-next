@@ -23,6 +23,8 @@ import {
   Typography,
 } from '@mui/material';
 import React from 'react';
+import { OperatingHoursFields } from './OperatingHoursFields';
+
 
 const FeatureEditItem: React.FC<FeatureEditItemProps> = ({ 
   icon: Icon, 
@@ -73,8 +75,80 @@ export const RestaurantNew: React.FC<RestaurantFormProps> = ({
       <CardContent>
         <Box component="form" onSubmit={handleSubmit} sx={{ mt: 3 }}>
           <Typography variant="h4" component="h1" gutterBottom>
-            {isNew ? 'Add New Restaurant' : `Edit Restaurant: ${restaurant.name}`}
+            せんべろの追加
           </Typography>
+          <Grid container spacing={2}>
+            {/* Basic Information */}
+            <Grid item xs={12} sm={6}>
+              <TextField
+                fullWidth
+                margin="normal"
+                name="name"
+                label="店名"
+                value={restaurant.name || ''}
+                onChange={(e) => handleInputChange(e)}
+              />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                fullWidth
+                margin="normal"
+                name="phone_number"
+                label="電話番号"
+                value={restaurant.phone_number || ''}
+                onChange={(e) => handleInputChange(e)}
+              />
+            </Grid>
+            <Grid item xs={12}>
+              <TextField
+                fullWidth
+                margin="normal"
+                name="capacity"
+                label="収容人数"
+                value={restaurant.capacity || ''}
+                onChange={handleInputChange}
+              />
+            </Grid>
+            <Grid item xs={12}>
+              <TextField
+                fullWidth
+                margin="normal"
+                name="description"
+                label="詳細"
+                multiline
+                rows={4}
+                value={restaurant.description || ''}
+                onChange={(e) => handleInputChange(e)}
+              />
+            </Grid>
+
+            <Grid item xs={12}>
+              <Typography variant="h6" gutterBottom>
+                店舗外観画像
+              </Typography>
+              <input
+                accept="image/*"
+                style={{ display: 'none' }}
+                id="raised-button-file"
+                type="file"
+                onChange={handleFileChange}
+              />
+              <label htmlFor="raised-button-file">
+                <Button
+                  variant="outlined"
+                  component="span"
+                  startIcon={<CloudUpload />}
+                >
+                  Upload Image
+                </Button>
+              </label>
+              {imagePreview && (
+                <Box mt={2}>
+                  <img src={imagePreview} alt="Restaurant preview" style={{ maxWidth: '100%', maxHeight: '200px' }} />
+                </Box>
+              )}
+            </Grid>
+          </Grid>
 
           {/* 住所情報を追加 */}
           <Grid container spacing={2}>
@@ -122,71 +196,19 @@ export const RestaurantNew: React.FC<RestaurantFormProps> = ({
               />
             </Grid>
           </Grid>
-
-          <Grid container spacing={2}>
-            {/* Basic Information */}
-            <Grid item xs={12} sm={6}>
-              <TextField
-                fullWidth
-                margin="normal"
-                name="name"
-                label="Name"
-                value={restaurant.name || ''}
-                onChange={(e) => handleInputChange(e)}
-              />
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <TextField
-                fullWidth
-                margin="normal"
-                name="phone_number"
-                label="Phone Number"
-                value={restaurant.phone_number || ''}
-                onChange={(e) => handleInputChange(e)}
-              />
-            </Grid>
-            <Grid item xs={12}>
-              <TextField
-                fullWidth
-                margin="normal"
-                name="description"
-                label="Description"
-                multiline
-                rows={4}
-                value={restaurant.description || ''}
-                onChange={(e) => handleInputChange(e)}
-              />
-            </Grid>
-
-            <Grid item xs={12}>
-              <Typography variant="h6" gutterBottom>
-                Restaurant Image
-              </Typography>
-              <input
-                accept="image/*"
-                style={{ display: 'none' }}
-                id="raised-button-file"
-                type="file"
-                onChange={handleFileChange}
-              />
-              <label htmlFor="raised-button-file">
-                <Button
-                  variant="outlined"
-                  component="span"
-                  startIcon={<CloudUpload />}
-                >
-                  Upload Image
-                </Button>
-              </label>
-              {imagePreview && (
-                <Box mt={2}>
-                  <img src={imagePreview} alt="Restaurant preview" style={{ maxWidth: '100%', maxHeight: '200px' }} />
-                </Box>
-              )}
-            </Grid>
+          <Grid item xs={12}>
+            <OperatingHoursFields
+              operatingHours={restaurant.operating_hours || []}
+              onChange={(hours) => {
+                handleInputChange({
+                  target: {
+                    name: 'operating_hours',
+                    value: hours
+                  }
+                });
+              }}
+            />
           </Grid>
-
-          <Divider sx={{ my: 3 }} />
 
           <Typography variant="h5" gutterBottom>
             料金

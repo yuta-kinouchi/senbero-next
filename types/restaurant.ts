@@ -1,15 +1,24 @@
+// types/restaurant.ts
+export interface OperatingHour {
+  day_of_week: number;
+  open_time: string;
+  close_time: string;
+  drink_last_order_time?: string;
+  food_last_order_time?: string;
+  happy_hour_start?: string;
+  happy_hour_end?: string;
+}
+
 export interface Restaurant {
+  restaurant_id?: number;
   name: string;
   phone_number?: string;
-  country: string;
-  state: string;
-  city: string;
-  address_line1: string;
-  address_line2: string;
-  latitude: number;
-  longitude: number;
+  country?: string;
+  state?: string;
+  city?: string;
+  address_line1?: string;
+  address_line2?: string;
   capacity?: number;
-  home_page?: string;
   description?: string;
   special_rule?: string;
   morning_available?: boolean;
@@ -35,6 +44,7 @@ export interface Restaurant {
   beer_price?: number;
   beer_types?: string;
   chuhai_price?: number;
+  operating_hours?: OperatingHour[]; 
 }
 
 export interface FeatureEditItemProps {
