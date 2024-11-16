@@ -1,29 +1,23 @@
 // pages/restaurants/new.tsx
-
 import Navbar from '@/components/Navbar';
 import { RestaurantNew } from '@/components/RestaurantNew';
+import { useRestaurantForm } from '@/hooks/useRestaurantForm';
 import { Container } from '@mui/material';
 import { useRouter } from 'next/router';
-import { useState } from 'react';
 import styles from '../../styles/HomePage.module.css';
 
-const RestaurantNewPage = () => {
+const NewRestaurantPage: React.FC = () => {
   const router = useRouter();
-  const [imagePreview, setImagePreview] = useState<string | null>(null);
-
-  // 初期状態の設定
-  const initialRestaurantState = {
+  
+  const initialData = {
     name: '',
     phone_number: '',
-    country: 'Japan', // デフォルト値
+    country: '',
     state: '',
     city: '',
     address_line1: '',
     address_line2: '',
-    latitude: 0,
-    longitude: 0,
-    capacity: '',
-    home_page: '',
+    capacity: 0,
     description: '',
     special_rule: '',
     morning_available: false,
@@ -45,61 +39,32 @@ const RestaurantNewPage = () => {
     has_happy_hour: false,
     credit_card: false,
     credit_card_description: '',
-    beer_price: '',
+    beer_price: 0,
     beer_types: '',
-    chuhai_price: '',
+    chuhai_price: 0,
+    operating_hours: [],
   };
 
-  const [restaurant, setRestaurant] = useState(initialRestaurantState);
+  const {
+    restaurant,
+    imagePreview,
+    handleInputChange,
+    handleOperatingHoursChange,
+    handleCheckboxChange,
+    handleFileChange,
+    handleSubmit: onSubmit
+  } = useRestaurantForm({ initialData });
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setRestaurant(prev => ({
-      ...prev,
-      [name]: value
-    }));
-  };
-
-  const handleCheckboxChange = (name: string) => (event: React.ChangeEvent<HTMLInputElement>) => {
-    setRestaurant(prev => ({
-      ...prev,
-      [name]: event.target.checked
-    }));
-  };
-
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    if (event.target.files && event.target.files[0]) {
-      const file = event.target.files[0];
-      const reader = new FileReader();
-      
-      reader.onloadend = () => {
-        setImagePreview(reader.result as string);
-      };
-      
-      reader.readAsDataURL(file);
-    }
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
+  // API送信とナビゲーションを含むサブミットハンドラー
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    
     try {
-      const response = await fetch('/api/restaurants', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(restaurant),
-      });
-
-      if (response.ok) {
-        router.push('/'); // 成功したらホームページへリダイレクト
-      } else {
-        // エラー処理
-        console.error('Failed to create restaurant');
-      }
+      await onSubmit(e);
+      // 成功時の処理
+      router.push('/restaurants'); // 一覧ページへ遷移
     } catch (error) {
-      console.error('Error creating restaurant:', error);
+      // エラー処理
+      console.error('Failed to create restaurant:', error);
     }
   };
 
@@ -110,6 +75,7 @@ const RestaurantNewPage = () => {
         <RestaurantNew
           restaurant={restaurant}
           handleInputChange={handleInputChange}
+          handleOperatingHoursChange={handleOperatingHoursChange}
           handleSubmit={handleSubmit}
           handleCheckboxChange={handleCheckboxChange}
           handleFileChange={handleFileChange}
@@ -121,4 +87,4 @@ const RestaurantNewPage = () => {
   );
 };
 
-export default RestaurantNewPage;
+export default NewRestaurantPage;

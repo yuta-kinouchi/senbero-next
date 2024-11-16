@@ -59,6 +59,7 @@ export interface FeatureEditItemProps {
 export interface RestaurantFormProps {
   restaurant: Restaurant;
   handleInputChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
+  handleOperatingHoursChange: (hours: OperatingHour[]) => void; 
   handleSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
   handleCheckboxChange: (name: string) => (event: React.ChangeEvent<HTMLInputElement>) => void;
   handleFileChange: (event: React.ChangeEvent<HTMLInputElement>) => void;

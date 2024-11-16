@@ -64,6 +64,7 @@ const FeatureEditItem: React.FC<FeatureEditItemProps> = ({
 export const RestaurantNew: React.FC<RestaurantFormProps> = ({
   restaurant,
   handleInputChange,
+  handleOperatingHoursChange,
   handleSubmit,
   handleCheckboxChange,
   handleFileChange,
@@ -199,14 +200,7 @@ export const RestaurantNew: React.FC<RestaurantFormProps> = ({
           <Grid item xs={12}>
             <OperatingHoursFields
               operatingHours={restaurant.operating_hours || []}
-              onChange={(hours) => {
-                handleInputChange({
-                  target: {
-                    name: 'operating_hours',
-                    value: hours
-                  }
-                });
-              }}
+              onChange={handleOperatingHoursChange} 
             />
           </Grid>
 
