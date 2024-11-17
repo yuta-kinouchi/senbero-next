@@ -69,7 +69,7 @@ export const RestaurantNew: React.FC<RestaurantFormProps> = ({
   handleCheckboxChange,
   handleFileChange,
   imagePreview,
-  isNew = false
+  loading,
 }) => {
   return (
     <Card>
@@ -381,8 +381,14 @@ export const RestaurantNew: React.FC<RestaurantFormProps> = ({
             onChange={(e) => handleInputChange(e)}
           />
 
-          <Button type="submit" variant="contained" color="primary" sx={{ mt: 3 }}>
-            {isNew ? 'Create Restaurant' : 'Update Restaurant'}
+          <Button 
+            type="submit" 
+            variant="contained" 
+            color="primary" 
+            sx={{ mt: 3 }}
+            disabled={loading}
+          >
+            {loading ? 'Sending...' : 'Create Restaurant'}
           </Button>
         </Box>
       </CardContent>
