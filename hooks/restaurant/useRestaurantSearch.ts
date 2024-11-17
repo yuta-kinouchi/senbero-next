@@ -1,17 +1,15 @@
-// hooks/restaurant/useRestaurantSearch.ts
+import { useRestaurantApi } from '@/hooks/api/useRestaurantApi';
+import { useNavigation } from '@/hooks/useNavigation';
 import { Restaurant } from '@/types/restaurant';
 import { useRouter } from 'next/router';
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 interface UseRestaurantSearchReturn {
   restaurants: Restaurant[];
   loading: boolean;
   error: string | null;
   selectedFeatures: string[];
-  searchParams: URLSearchParams;
   availableFeatures: { name: string; label: string }[];
-  fetchRestaurants: (params: URLSearchParams) => Promise<void>;
-  getLocationAndSearch: () => void;
   handleFeatureToggle: (feature: string) => void;
   handleCloseError: (event: React.SyntheticEvent | Event, reason?: string) => void;
 }
@@ -23,8 +21,12 @@ export const useRestaurantSearch = (): UseRestaurantSearchReturn => {
   const [selectedFeatures, setSelectedFeatures] = useState<string[]>([]);
   const router = useRouter();
   const { useLocation, features, maxBeerPrice, maxChuhaiPrice } = router.query;
+  const { updateSearchParams } = useNavigation();
+  const { searchRestaurants, getNearbyRestaurants } = useRestaurantApi();
 
-  // availableFeaturesをメモ化
+  // 前回の検索パラメータを保持
+  const lastSearchRef = useRef<string>('');
+
   const availableFeatures = useMemo(() => [
     { name: 'morning_available', label: '朝飲み' },
     { name: 'daytime_available', label: '昼飲み' },
@@ -40,30 +42,7 @@ export const useRestaurantSearch = (): UseRestaurantSearchReturn => {
     { name: 'has_happy_hour', label: 'ハッピーアワー' },
   ], []);
 
-  const fetchRestaurants = useCallback(async (params: URLSearchParams) => {
-    try {
-      setLoading(true);
-      const response = await fetch(`/api/restaurants/search?${params.toString()}`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to fetch restaurants');
-      }
-      const data = await response.json();
-      setRestaurants(data);
-    } catch (error) {
-      console.error('Error:', error);
-      setError('レストラン情報の取得に失敗しました。');
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  const searchParams = useMemo(() => {
+  const getSearchParams = useCallback(() => {
     const params = new URLSearchParams();
     if (selectedFeatures.length > 0) {
       params.append('features', selectedFeatures.join(','));
@@ -73,29 +52,69 @@ export const useRestaurantSearch = (): UseRestaurantSearchReturn => {
     return params;
   }, [selectedFeatures, maxBeerPrice, maxChuhaiPrice]);
 
-  const getLocationAndSearch = useCallback(() => {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          const { latitude, longitude } = position.coords;
-          const params = new URLSearchParams(searchParams.toString());
-          params.append('lat', latitude.toString());
-          params.append('lng', longitude.toString());
-          params.append('timestamp', new Date().toISOString());
-          fetchRestaurants(params);
-        },
-        (error) => {
-          console.error('Geolocation error:', error);
-          setError('位置情報の取得に失敗しました。ブラウザの設定をご確認ください。');
-          setLoading(false);
-        },
-        { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
-      );
-    } else {
-      setError('お使いのブラウザは位置情報をサポートしていません。');
+  // 検索実行の制御
+  const executeSearch = useCallback(async () => {
+    const currentParams = getSearchParams().toString();
+    
+    // パラメータが前回と同じ場合は検索をスキップ
+    if (currentParams === lastSearchRef.current) {
+      return;
+    }
+
+    try {
+      setLoading(true);
+      let data: Restaurant[];
+
+      if (useLocation === 'true') {
+        if (navigator.geolocation) {
+          const position = await new Promise<GeolocationPosition>((resolve, reject) => {
+            navigator.geolocation.getCurrentPosition(resolve, reject, {
+              enableHighAccuracy: true,
+              timeout: 10000,
+              maximumAge: 0
+            });
+          });
+
+          data = await getNearbyRestaurants(
+            position.coords.latitude,
+            position.coords.longitude,
+            getSearchParams()
+          );
+        } else {
+          throw new Error('お使いのブラウザは位置情報をサポートしていません。');
+        }
+      } else {
+        data = await searchRestaurants(getSearchParams());
+      }
+
+      setRestaurants(data);
+      lastSearchRef.current = currentParams; // 成功時に検索パラメータを更新
+    } catch (error) {
+      console.error('Error:', error);
+      setError(error instanceof Error ? error.message : 'レストラン情報の取得に失敗しました。');
+    } finally {
       setLoading(false);
     }
-  }, [searchParams, fetchRestaurants]);
+  }, [useLocation, getSearchParams, getNearbyRestaurants, searchRestaurants]);
+
+  // URLのfeaturesパラメータから選択された特徴を設定
+  useEffect(() => {
+    if (router.isReady && features) {
+      const featuresList = Array.isArray(features) ? features : features ? [features] : [];
+      setSelectedFeatures(featuresList);
+    }
+  }, [router.isReady, features]);
+
+  // 検索条件変更時の処理
+  useEffect(() => {
+    if (!router.isReady) return;
+
+    const timeoutId = setTimeout(() => {
+      executeSearch();
+    }, 300); // 300ms のデバウンス
+
+    return () => clearTimeout(timeoutId);
+  }, [router.isReady, useLocation, selectedFeatures, maxBeerPrice, maxChuhaiPrice, executeSearch]);
 
   const handleFeatureToggle = useCallback((feature: string) => {
     setSelectedFeatures((prev) => {
@@ -103,18 +122,13 @@ export const useRestaurantSearch = (): UseRestaurantSearchReturn => {
         ? prev.filter((f) => f !== feature)
         : [...prev, feature];
 
-      const params = new URLSearchParams(router.query as any);
-      params.set('features', newFeatures.join(','));
-      router.push(`${router.pathname}?${params.toString()}`, undefined, { shallow: true });
-
+      updateSearchParams({ features: newFeatures });
       return newFeatures;
     });
-  }, [router]);
+  }, [updateSearchParams]);
 
   const handleCloseError = (event: React.SyntheticEvent | Event, reason?: string) => {
-    if (reason === 'clickaway') {
-      return;
-    }
+    if (reason === 'clickaway') return;
     setError(null);
   };
 
@@ -123,10 +137,7 @@ export const useRestaurantSearch = (): UseRestaurantSearchReturn => {
     loading,
     error,
     selectedFeatures,
-    searchParams,
     availableFeatures,
-    fetchRestaurants,
-    getLocationAndSearch,
     handleFeatureToggle,
     handleCloseError,
   };

@@ -38,7 +38,6 @@ const RestaurantListPage = () => {
       );
     }
   
-    // RestaurantListコンポーネントに結果の表示を委譲
     return <RestaurantList restaurants={restaurants} />;
   }, [restaurants, loading]);
   

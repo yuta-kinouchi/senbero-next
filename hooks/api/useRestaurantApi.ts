@@ -1,4 +1,4 @@
-// hooks/useRestaurantApi.ts
+// hooks/api/useRestaurantApi.ts
 import { Restaurant } from '@/types/restaurant';
 
 export const useRestaurantApi = () => {
