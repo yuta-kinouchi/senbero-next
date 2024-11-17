@@ -30,7 +30,7 @@
     "pages/api/store-location.js",
     "pages/api/export-csv.js",
     "prisma/seed.js"
-  ],
+, "pages/restaurants/[id]/edit.js"  ],
   "exclude": [
     "node_modules"
   ]

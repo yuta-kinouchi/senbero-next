@@ -2,18 +2,16 @@ import Navbar from '@/components/common/Navbar';
 import RestaurantList from '@/components/restaurant/RestaurantList';
 import { useRestaurantSearch } from '@/hooks/restaurant/useRestaurantSearch';
 import styles from '@/styles/HomePage.module.css';
-import { Alert, Box, Chip, CircularProgress, Snackbar, useMediaQuery, useTheme } from '@mui/material';
+import { Box, CircularProgress, useMediaQuery, useTheme } from '@mui/material';
+import { useRouter } from 'next/router';
 import { useMemo } from 'react';
 
 const RestaurantListPage = () => {
+  const router = useRouter();
   const {
     restaurants,
     loading,
     error,
-    selectedFeatures,
-    availableFeatures,
-    handleFeatureToggle,
-    handleCloseError,
   } = useRestaurantSearch();
   
   const theme = useTheme();
@@ -44,42 +42,7 @@ const RestaurantListPage = () => {
   return (
     <div className={styles.container}>
       <Navbar />
-      <Box
-        sx={{
-          mb: 3,
-          mt: 2,
-          display: 'flex',
-          flexWrap: 'wrap',
-          gap: 1.5,
-          justifyContent: 'center',
-          maxWidth: '100%',
-          padding: isMobile ? '0 16px' : '0 32px',
-        }}
-      >
-        {availableFeatures.map((feature) => (
-          <Chip
-            key={feature.name}
-            label={feature.label}
-            onClick={() => handleFeatureToggle(feature.name)}
-            color={selectedFeatures.includes(feature.name) ? "primary" : "default"}
-            sx={{
-              margin: '4px',
-              fontSize: isMobile ? '0.75rem' : '0.875rem',
-              height: isMobile ? '28px' : '32px',
-              '&:hover': {
-                backgroundColor: theme.palette.action.hover,
-              },
-              transition: 'all 0.3s',
-            }}
-          />
-        ))}
-      </Box>
       {restaurantListComponent}
-      <Snackbar open={!!error} autoHideDuration={6000} onClose={handleCloseError}>
-        <Alert onClose={handleCloseError} severity="error" sx={{ width: '100%' }}>
-          {error}
-        </Alert>
-      </Snackbar>
     </div>
   );
 }

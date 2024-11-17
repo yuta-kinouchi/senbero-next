@@ -17,22 +17,26 @@ export const useRestaurantDetail = (id: string | undefined): UseRestaurantDetail
 
   useEffect(() => {
     const fetchRestaurant = async () => {
-      if (!id) return;
+      if (!id) {
+        setLoading(false);
+        return;
+      }
 
       try {
         setLoading(true);
-        const data = await getRestaurant(parseInt(id));
+        const data = await getRestaurant(id);
         setRestaurant(data);
+        setError(null);
       } catch (error) {
-        console.error('Error:', error);
         setError(error instanceof Error ? error.message : 'Failed to fetch restaurant');
+        setRestaurant(null);
       } finally {
         setLoading(false);
       }
     };
 
     fetchRestaurant();
-  }, [id, getRestaurant]);
+  }, [id]); // 依存関係から getRestaurant を削除
 
   return { restaurant, loading, error };
 };

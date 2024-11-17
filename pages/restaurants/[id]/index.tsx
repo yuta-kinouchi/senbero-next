@@ -1,4 +1,4 @@
-// pages/restaurants/[id].tsx
+// pages/restaurants/[id]/index.tsx
 import { ErrorState } from '@/components/common/ErrorState';
 import { LoadingState } from '@/components/common/LoadingState';
 import Navbar from '@/components/common/Navbar';
@@ -20,16 +20,21 @@ const RestaurantDetailPage: React.FC = () => {
     return <ErrorState error={error} />;
   }
 
-  return (
-    <div className={styles.container}>
-      <Navbar />
-      {restaurant ? (
-        <RestaurantDetail restaurant={restaurant} />
-      ) : (
+  if (!restaurant) {
+    return (
+      <div className={styles.container}>
+        <Navbar />
         <div className={styles.notFoundContainer}>
           <p>Restaurant not found</p>
         </div>
-      )}
+      </div>
+    );
+  }
+
+  return (
+    <div className={styles.container}>
+      <Navbar />
+      <RestaurantDetail restaurant={restaurant} />
     </div>
   );
 };

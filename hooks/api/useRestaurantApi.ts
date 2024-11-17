@@ -50,9 +50,33 @@ export const useRestaurantApi = () => {
     return searchRestaurants(searchParams);
   };
 
+  const getRestaurant = async (id: string): Promise<Restaurant> => {
+    try {
+      const response = await fetch(`/api/restaurants/${id}`);
+  
+      if (!response.ok) {
+        throw new Error('Failed to fetch restaurant');
+      }
+  
+      const data = await response.json();
+      return data as Restaurant;
+    } catch (error) {
+      console.error('Error fetching restaurant:', error);
+      throw error;
+    }
+  };
+
+  const updateRestaurant = async (id: number, data: Partial<Restaurant>): Promise<Restaurant> => {
+    // ここに updateRestaurant メソッドの実装を追加する
+    // サーバーAPI呼び出しやデータ更新処理などを記述
+    // 更新後のレストランオブジェクトを返す
+  };
+
   return {
     createRestaurant,
     searchRestaurants,
     getNearbyRestaurants,
+    getRestaurant,
+    updateRestaurant,
   };
 };
