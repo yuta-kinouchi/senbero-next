@@ -1,5 +1,5 @@
-import Navbar from '@/components/Navbar';
-import RestaurantList from '@/components/RestaurantList';
+import Navbar from '@/components/common/Navbar';
+import RestaurantList from '@/components/restaurant/RestaurantList';
 import { useRestaurantSearch } from '@/hooks/restaurant/useRestaurantSearch';
 import styles from '@/styles/HomePage.module.css';
 import { Alert, Box, Chip, CircularProgress, Snackbar, useMediaQuery, useTheme } from '@mui/material';

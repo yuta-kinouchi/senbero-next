@@ -6,7 +6,7 @@ import {
   IconButton, Tab, Tabs, Typography
 } from '@mui/material';
 import { useRouter } from 'next/router';
-import React, { useState } from 'react';
+import { useState } from 'react';
 import OperatingHours from './OperatingHours';
 import RestaurantFeatures from './RestaurantFeatures';
 

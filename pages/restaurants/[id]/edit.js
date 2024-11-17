@@ -1,12 +1,12 @@
+import Navbar from '@/components/Navbar';
+import styles from '@/styles/HomePage.module.css';
 import { S3Client } from '@aws-sdk/client-s3';
 import { Upload } from '@aws-sdk/lib-storage';
+import RestaurantEdit from '@components/RestaurantEdit';
 import { Alert, CircularProgress, Container, LinearProgress, Snackbar } from '@mui/material';
 import imageCompression from 'browser-image-compression';
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
-import Navbar from '../../../components/Navbar';
-import RestaurantEdit from '../../../components/RestaurantEdit';
-import styles from '../../../styles/HomePage.module.css';
 
 // S3クライアントの初期化
 const s3Client = typeof window !== 'undefined'

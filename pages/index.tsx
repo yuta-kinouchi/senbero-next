@@ -1,5 +1,5 @@
-import Navbar from '../components/Navbar';
-import SearchForm from '../components/SearchForm';
+import Navbar from '../components/common/Navbar';
+import SearchForm from '../components/restaurant/SearchForm';
 import styles from '../styles/HomePage.module.css';
 
 
