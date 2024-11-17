@@ -1,4 +1,4 @@
-import Navbar from '../components/Navbar';
+import Navbar from '../components/common/Navbar';
 import RegisterForm from '../components/RegisterForm';
 import styles from '../styles/HomePage.module.css';
 

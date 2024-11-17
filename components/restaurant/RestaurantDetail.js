@@ -1,3 +1,4 @@
+import OperatingHours from '@/components/restaurant/OperationgHour';
 import { Edit } from '@mui/icons-material';
 import ChatBubbleOutlineIcon from '@mui/icons-material/ChatBubbleOutline';
 import SportsBarRoundedIcon from "@mui/icons-material/SportsBarRounded";
@@ -6,8 +7,7 @@ import {
   IconButton, Tab, Tabs, Typography
 } from '@mui/material';
 import { useRouter } from 'next/router';
-import React, { useState } from 'react';
-import OperatingHours from './OperatingHours';
+import { useState } from 'react';
 import RestaurantFeatures from './RestaurantFeatures';
 
 const RestaurantDetail = ({ restaurant }) => {

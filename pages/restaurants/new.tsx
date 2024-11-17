@@ -1,7 +1,7 @@
 // pages/restaurants/new.tsx
-import Navbar from '@/components/Navbar';
-import { RestaurantNew } from '@/components/RestaurantNew';
-import { useRestaurantForm } from '@/hooks/useRestaurantForm';
+import Navbar from '@/components/common/Navbar';
+import { RestaurantNew } from '@/components/restaurant/RestaurantNew';
+import { useRestaurantForm } from '@/hooks/restaurant/useRestaurantForm';
 import { Container } from '@mui/material';
 import styles from '../../styles/HomePage.module.css';
 

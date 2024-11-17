@@ -2,7 +2,7 @@
 import { OperatingHour, Restaurant } from '@/types/restaurant';
 import { useRouter } from 'next/router';
 import { useCallback, useState } from 'react';
-import { useRestaurantApi } from './useRestaurantApi';
+import { useRestaurantApi } from '../api/useRestaurantApi';
 
 // フックの戻り値の型定義
 interface UseRestaurantFormReturn {
