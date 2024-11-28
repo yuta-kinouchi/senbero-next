@@ -1,5 +1,4 @@
-// components/RestaurantList.tsx
-import { useNavigation } from '@/hooks/useNavigation';
+import { useAppNavigation } from '@/hooks/useAppNavigation';
 import { Restaurant } from '@/types/restaurant';
 import { Box, Container, Stack, Typography } from '@mui/material';
 import { RestaurantCard } from './RestaurantCard';
@@ -9,9 +8,8 @@ interface RestaurantListProps {
 }
 
 export const RestaurantList: React.FC<RestaurantListProps> = ({ restaurants }) => {
-  const { navigateToRestaurantDetail } = useNavigation();
+  const { restaurant: navigationFunctions } = useAppNavigation();
 
-  // 空の状態をコンポーネント化
   const EmptyState = () => (
     <Box 
       sx={{ 
@@ -30,7 +28,7 @@ export const RestaurantList: React.FC<RestaurantListProps> = ({ restaurants }) =
   if (!restaurants || restaurants.length === 0) {
     return <EmptyState />;
   }
-
+  
   return (
     <Container sx={{ p: 0 }}>
       <Stack spacing={1} sx={{ pb: 5 }}>
@@ -38,7 +36,7 @@ export const RestaurantList: React.FC<RestaurantListProps> = ({ restaurants }) =
           <RestaurantCard
             key={restaurant.restaurant_id}
             restaurant={restaurant}
-            onClick={() => navigateToRestaurantDetail(restaurant.restaurant_id)}
+            onClick={() => navigationFunctions.toDetail(restaurant.restaurant_id)}
           />
         ))}
       </Stack>
