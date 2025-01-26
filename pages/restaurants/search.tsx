@@ -1,8 +1,9 @@
+import { LoadingState } from '@/components/common/LoadingState';
 import Navbar from '@/components/common/Navbar';
 import RestaurantList from '@/components/restaurant/RestaurantList';
 import { useRestaurantSearch } from '@/hooks/restaurant/useRestaurantSearch';
 import styles from '@/styles/HomePage.module.css';
-import { Box, CircularProgress, useMediaQuery, useTheme } from '@mui/material';
+
 import { useRouter } from 'next/router';
 import { useMemo } from 'react';
 
@@ -13,27 +14,10 @@ const RestaurantListPage = () => {
     loading,
     error,
   } = useRestaurantSearch();
-  
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
   const restaurantListComponent = useMemo(() => {
     if (loading) {
-      return (
-        <Box 
-          sx={{ 
-            display: 'flex', 
-            flexDirection: 'column',
-            alignItems: 'center', 
-            justifyContent: 'center',
-            minHeight: '50vh',
-            gap: 2 
-          }}
-        >
-          <CircularProgress />
-          <p>レストラン情報を読み込んでいます...</p>
-        </Box>
-      );
+      return <LoadingState />;
     }
   
     return <RestaurantList restaurants={restaurants} />;

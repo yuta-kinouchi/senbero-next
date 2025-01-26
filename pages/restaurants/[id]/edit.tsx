@@ -1,15 +1,14 @@
 // pages/restaurants/[id]/edit.tsx
-import { RestaurantEdit } from '@/components/restaurant/RestaurantEdit';
+import RestaurantEdit from '@/components/restaurant/RestaurantEdit';
+import { useImageUpload } from '@/hooks/common/useImageUpload';
 import { useRestaurantEdit } from '@/hooks/restaurant/useRestaurantEdit';
-import { useImageUpload } from '@/hooks/useImageUpload';
+import { useAppNavigation } from '@/hooks/useAppNavigation';
 import styles from '@/styles/HomePage.module.css';
 import { Alert, CircularProgress, Container, LinearProgress, Snackbar } from '@mui/material';
-import { useRouter } from 'next/router';
-
 
 const RestaurantEditPage: React.FC = () => {
-  const router = useRouter();
-  const { id } = router.query;
+  const { getCurrentId } = useAppNavigation();
+  const restaurantId = getCurrentId();
   
   const {
     restaurant,
@@ -21,7 +20,7 @@ const RestaurantEditPage: React.FC = () => {
     handleSubmit,
     setError,
     setSuccessMessage
-  } = useRestaurantEdit(id as string);
+  } = useRestaurantEdit(restaurantId);
 
   const {
     uploadProgress,
@@ -39,10 +38,13 @@ const RestaurantEditPage: React.FC = () => {
 
     if (imageFile) {
       try {
-        const imageUrl = await uploadImage(imageFile, id as string);
+        const imageUrl = await uploadImage(imageFile, restaurantId);
         updatedRestaurantData.restaurant_image = imageUrl;
-      } catch (uploadError) {
-        setError(uploadError.message);
+      } catch (error) {
+        const uploadError = error instanceof Error 
+          ? error.message 
+          : '画像アップロードに失敗しました';
+        setError(uploadError);
         return;
       }
     }

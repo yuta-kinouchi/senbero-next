@@ -1,13 +1,20 @@
 // components/LoadingState.tsx
-import styles from '@/styles/HomePage.module.css';
-import { CircularProgress } from '@mui/material';
-import Navbar from './Navbar';
+import { Box, CircularProgress, Typography } from '@mui/material';
 
-export const LoadingState: React.FC = () => (
-  <div className={styles.container}>
-    <Navbar />
-    <div className={styles.loadingContainer}>
+export const LoadingState = () => {
+  return (
+    <Box 
+      sx={{ 
+        display: 'flex', 
+        flexDirection: 'column',
+        alignItems: 'center', 
+        justifyContent: 'center',
+        minHeight: '50vh',
+        gap: 2 
+      }}
+    >
       <CircularProgress />
-    </div>
-  </div>
-);
+      <Typography>情報を読み込んでいます...</Typography>
+    </Box>
+  );
+};
