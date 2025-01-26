@@ -89,7 +89,7 @@ const SearchForm = () => {
     if (chuhaiPrice !== null) query.maxChuhaiPrice = chuhaiPrice;
 
     router.push({
-      pathname: '/restaurant-list',
+      pathname: '/restaurants/search',
       query: query,
     });
   };
@@ -108,7 +108,7 @@ const SearchForm = () => {
     if (chuhaiPrice !== null) query.maxChuhaiPrice = chuhaiPrice;
 
     router.push({
-      pathname: '/restaurant-list',
+      pathname: '/restaurants/search',
       query: query,
     });
 

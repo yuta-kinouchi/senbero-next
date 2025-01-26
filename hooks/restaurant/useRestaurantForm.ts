@@ -2,7 +2,7 @@
 import { OperatingHour, Restaurant } from '@/types/restaurant';
 import { useRouter } from 'next/router';
 import { useCallback, useState } from 'react';
-import { useRestaurantApi } from './useRestaurantApi';
+import { useRestaurantApi } from '../api/useRestaurantApi';
 
 // フックの戻り値の型定義
 interface UseRestaurantFormReturn {
@@ -17,7 +17,7 @@ interface UseRestaurantFormReturn {
   handleSubmit: (e: React.FormEvent<HTMLFormElement>) => Promise<void>;
   // 以下は必要に応じて追加
   validate: () => Partial<Record<keyof Restaurant, string>>;
-  resetForm: () => void;
+  // resetForm: () => void;
 }
 
 
@@ -26,7 +26,7 @@ export const useRestaurantForm = (initialData?: Partial<Restaurant>): UseRestaur
     name: '',  // nameは必須フィールドなので初期値が必要
     ...initialData
   } as Restaurant);
-  
+
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -86,7 +86,7 @@ export const useRestaurantForm = (initialData?: Partial<Restaurant>): UseRestaur
 
       // FormDataの作成
       const formData = new FormData();
-      
+
       // 画像以外のデータをFormDataに追加
       Object.entries(restaurant).forEach(([key, value]) => {
         if (value !== undefined && value !== null) {
@@ -119,7 +119,7 @@ export const useRestaurantForm = (initialData?: Partial<Restaurant>): UseRestaur
   // バリデーション関数
   const validate = useCallback(() => {
     const errors: Partial<Record<keyof Restaurant, string>> = {};
-    
+
     if (!restaurant.name) {
       errors.name = '店名は必須です';
     }
@@ -140,14 +140,13 @@ export const useRestaurantForm = (initialData?: Partial<Restaurant>): UseRestaur
   }, [restaurant]);
 
   // フォームのリセット
-  const resetForm = useCallback(() => {
-    setRestaurant({
-      name: '',
-      operating_hours: [],
-      // その他のフィールドもデフォルト値にリセット
-    });
-    setImagePreview(null);
-  }, []);
+  // const resetForm = useCallback(() => {
+  //   setRestaurant({
+  //     name: '',
+  //     operating_hours: [],
+  //   });
+  //   setImagePreview(null);
+  // }, []);
 
   return {
     restaurant,
@@ -159,7 +158,7 @@ export const useRestaurantForm = (initialData?: Partial<Restaurant>): UseRestaur
     handleCheckboxChange,
     handleFileChange,
     handleSubmit,
-    validate,
-    resetForm
+    validate
+    // resetForm
   };
 };

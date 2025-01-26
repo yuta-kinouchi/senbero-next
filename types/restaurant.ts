@@ -10,7 +10,7 @@ export interface OperatingHour {
  }
  
  export interface Restaurant {
-  restaurant_id?: number;
+  restaurant_id: number;
   name: string;
   phone_number?: string;
   country?: string;

@@ -1,4 +1,4 @@
-// hooks/useRestaurantApi.ts
+// hooks/api/useRestaurantApi.ts
 import { Restaurant } from '@/types/restaurant';
 
 export const useRestaurantApi = () => {
@@ -50,9 +50,48 @@ export const useRestaurantApi = () => {
     return searchRestaurants(searchParams);
   };
 
+  const getRestaurant = async (id: string): Promise<Restaurant> => {
+    try {
+      const response = await fetch(`/api/restaurants/${id}`);
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch restaurant');
+      }
+
+      const data = await response.json();
+      return data as Restaurant;
+    } catch (error) {
+      console.error('Error fetching restaurant:', error);
+      throw error;
+    }
+  };
+
+  const updateRestaurant = async (id: number, data: Partial<Restaurant>): Promise<Restaurant> => {
+    try {
+      const response = await fetch(`/api/restaurants/${id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to update restaurant');
+      }
+
+      return response.json();
+    } catch (error) {
+      console.error('Error updating restaurant:', error);
+      throw error;
+    }
+  };
+
   return {
     createRestaurant,
     searchRestaurants,
     getNearbyRestaurants,
+    getRestaurant,
+    updateRestaurant,
   };
 };

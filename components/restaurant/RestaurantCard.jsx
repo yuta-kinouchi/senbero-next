@@ -1,6 +1,6 @@
 import { AccessTime, DirectionsRun, Place } from "@mui/icons-material";
 import { Box, Card, CardContent, CardMedia, Fab, Typography } from '@mui/material';
-import { getTodayOperatingHours } from '../utils/dateUtils';
+import { getTodayOperatingHours } from '../../utils/dateUtils';
 
 
 export const RestaurantCard = ({ restaurant, onClick }) => {
