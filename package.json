@@ -28,6 +28,7 @@
     "browser-image-compression": "^2.0.2",
     "csv-parser": "^3.0.0",
     "date-fns": "^3.6.0",
+    "formidable": "^3.5.2",
     "iron-session": "^8.0.3",
     "mysql2": "^3.10.3",
     "next": "^14.2.15",
@@ -36,6 +37,7 @@
     "react-dom": "^18"
   },
   "devDependencies": {
+    "@types/formidable": "^3.4.5",
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",

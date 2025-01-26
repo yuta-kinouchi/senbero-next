@@ -53,11 +53,11 @@ export const useRestaurantApi = () => {
   const getRestaurant = async (id: string): Promise<Restaurant> => {
     try {
       const response = await fetch(`/api/restaurants/${id}`);
-  
+
       if (!response.ok) {
         throw new Error('Failed to fetch restaurant');
       }
-  
+
       const data = await response.json();
       return data as Restaurant;
     } catch (error) {
@@ -67,9 +67,24 @@ export const useRestaurantApi = () => {
   };
 
   const updateRestaurant = async (id: number, data: Partial<Restaurant>): Promise<Restaurant> => {
-    // ここに updateRestaurant メソッドの実装を追加する
-    // サーバーAPI呼び出しやデータ更新処理などを記述
-    // 更新後のレストランオブジェクトを返す
+    try {
+      const response = await fetch(`/api/restaurants/${id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to update restaurant');
+      }
+
+      return response.json();
+    } catch (error) {
+      console.error('Error updating restaurant:', error);
+      throw error;
+    }
   };
 
   return {
