@@ -8,7 +8,7 @@ import { useRestaurantEdit } from '@/hooks/restaurant/useRestaurantEdit';
 import styles from '@/styles/HomePage.module.css';
 import { Alert, Container, LinearProgress, Snackbar } from '@mui/material';
 import { useRouter } from 'next/router';
-import { useMemo } from 'react';
+import { useCallback, useMemo } from 'react';
 
 const RestaurantEditPage = () => {
   const router = useRouter();
@@ -34,7 +34,7 @@ const RestaurantEditPage = () => {
     uploadImage
   } = useImageUpload();
 
-  const handleFormSubmit = async (e: React.FormEvent) => {
+  const handleFormSubmit = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
     if (!restaurant) return;
 
@@ -54,7 +54,7 @@ const RestaurantEditPage = () => {
     }
 
     await handleSubmit(updatedRestaurantData);
-  };
+  }, [restaurant, imageFile, uploadImage, id, setError, handleSubmit]);
 
   const restaurantEditComponent = useMemo(() => {
     if (loading) {

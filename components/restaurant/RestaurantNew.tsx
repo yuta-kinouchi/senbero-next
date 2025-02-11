@@ -393,3 +393,5 @@ export const RestaurantNew: React.FC<RestaurantFormProps> = ({
     </Card>
   );
 };
+
+export default RestaurantNew;
