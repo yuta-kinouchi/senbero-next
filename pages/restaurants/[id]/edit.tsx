@@ -1,15 +1,19 @@
 // pages/restaurants/[id]/edit.tsx
+import { ErrorState } from '@/components/common/ErrorState';
+import { LoadingState } from '@/components/common/LoadingState';
+import Navbar from '@/components/common/Navbar';
 import RestaurantEdit from '@/components/restaurant/RestaurantEdit';
 import { useImageUpload } from '@/hooks/common/useImageUpload';
 import { useRestaurantEdit } from '@/hooks/restaurant/useRestaurantEdit';
-import { useAppNavigation } from '@/hooks/useAppNavigation';
 import styles from '@/styles/HomePage.module.css';
-import { Alert, CircularProgress, Container, LinearProgress, Snackbar } from '@mui/material';
+import { Alert, Container, LinearProgress, Snackbar } from '@mui/material';
+import { useRouter } from 'next/router';
+import { useMemo } from 'react';
 
-const RestaurantEditPage: React.FC = () => {
-  const { getCurrentId } = useAppNavigation();
-  const restaurantId = getCurrentId();
-  
+const RestaurantEditPage = () => {
+  const router = useRouter();
+  const { id } = router.query;
+
   const {
     restaurant,
     loading,
@@ -20,7 +24,7 @@ const RestaurantEditPage: React.FC = () => {
     handleSubmit,
     setError,
     setSuccessMessage
-  } = useRestaurantEdit(restaurantId);
+  } = useRestaurantEdit(id as string);
 
   const {
     uploadProgress,
@@ -38,11 +42,11 @@ const RestaurantEditPage: React.FC = () => {
 
     if (imageFile) {
       try {
-        const imageUrl = await uploadImage(imageFile, restaurantId);
+        const imageUrl = await uploadImage(imageFile, id as string);
         updatedRestaurantData.restaurant_image = imageUrl;
       } catch (error) {
-        const uploadError = error instanceof Error 
-          ? error.message 
+        const uploadError = error instanceof Error
+          ? error.message
           : '画像アップロードに失敗しました';
         setError(uploadError);
         return;
@@ -52,11 +56,24 @@ const RestaurantEditPage: React.FC = () => {
     await handleSubmit(updatedRestaurantData);
   };
 
-  if (loading) return <CircularProgress />;
-  if (error) return <div>Error: {error}</div>;
+  const restaurantEditComponent = useMemo(() => {
+    if (loading) {
+      return <LoadingState />;
+    }
 
-  return (
-    <div className={styles.container}>
+    if (error) {
+      return <ErrorState error={error} />;
+    }
+
+    if (!restaurant) {
+      return (
+        <div className={styles.notFoundContainer}>
+          <p>Restaurant not found</p>
+        </div>
+      );
+    }
+
+    return (
       <Container maxWidth="md" sx={{ mt: 4 }}>
         {uploadProgress > 0 && uploadProgress < 100 && (
           <LinearProgress variant="determinate" value={uploadProgress} />
@@ -83,6 +100,25 @@ const RestaurantEditPage: React.FC = () => {
           </Alert>
         </Snackbar>
       </Container>
+    );
+  }, [
+    restaurant,
+    loading,
+    error,
+    uploadProgress,
+    successMessage,
+    imagePreview,
+    handleInputChange,
+    handleFormSubmit,
+    handleCheckboxChange,
+    handleFileChange,
+    setSuccessMessage
+  ]);
+
+  return (
+    <div className={styles.container}>
+      <Navbar />
+      {restaurantEditComponent}
     </div>
   );
 };

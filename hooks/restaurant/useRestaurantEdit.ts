@@ -1,7 +1,7 @@
 // hooks/restaurant/useRestaurantEdit.ts
 import { Restaurant } from '@/types/restaurant';
 import { useRouter } from 'next/router';
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useRestaurantApi } from '../api/useRestaurantApi';
 
 export const useRestaurantEdit = (id: string) => {
@@ -11,6 +11,24 @@ export const useRestaurantEdit = (id: string) => {
   const [successMessage, setSuccessMessage] = useState('');
   const router = useRouter();
   const { getRestaurant, updateRestaurant } = useRestaurantApi();
+
+  // 初期データの取得
+  useEffect(() => {
+    const fetchRestaurant = async () => {
+      if (!id) return;
+
+      try {
+        const data = await getRestaurant(id);
+        setRestaurant(data);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'レストランの取得に失敗しました');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchRestaurant();
+  }, [id]);
 
   const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;

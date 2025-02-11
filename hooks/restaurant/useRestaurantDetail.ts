@@ -36,7 +36,7 @@ export const useRestaurantDetail = (id: string | undefined): UseRestaurantDetail
     };
 
     fetchRestaurant();
-  }, [id]); // 依存関係から getRestaurant を削除
+  }, [id]);
 
   return { restaurant, loading, error };
 };

@@ -7,9 +7,9 @@ export interface OperatingHour {
   food_last_order_time?: string;
   happy_hour_start?: string;
   happy_hour_end?: string;
- }
- 
- export interface Restaurant {
+}
+
+export interface Restaurant {
   restaurant_id: number;
   name: string;
   phone_number?: string;
@@ -45,18 +45,18 @@ export interface OperatingHour {
   beer_types?: string;
   chuhai_price?: number;
   operating_hours?: OperatingHour[];
- }
- 
- export interface FeatureEditItemProps {
+}
+
+export interface FeatureEditItemProps {
   icon: React.ElementType;
   label: string;
   isActive?: boolean;
   description?: string;
   onChangeActive: (event: React.ChangeEvent<HTMLInputElement>) => void;
   onChangeDescription?: (event: React.ChangeEvent<HTMLInputElement>) => void;
- }
- 
- export interface RestaurantFormProps {
+}
+
+export interface RestaurantFormProps {
   restaurant: Restaurant;
   handleInputChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
   handleOperatingHoursChange: (hours: OperatingHour[]) => void;
@@ -67,4 +67,4 @@ export interface OperatingHour {
   loading: boolean; // 追加
   error: string | null; // 追加
   isNew?: boolean;
- }
+}

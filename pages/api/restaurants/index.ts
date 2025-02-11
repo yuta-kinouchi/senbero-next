@@ -1,155 +1,120 @@
 // pages/api/restaurants/index.ts
-import { OperatingHour, PrismaClient, Restaurant } from '@prisma/client';
+import { PrismaClient } from '@prisma/client';
+import formidable from 'formidable';
+import fs from 'fs';
 import type { NextApiRequest, NextApiResponse } from 'next';
+import path from 'path';
 
 const prisma = new PrismaClient();
 
-// FormDataを使用するため、デフォルトのボディパーサーを無効化
 export const config = {
   api: {
-    bodyParser: false,
+    bodyParser: false, // FormDataを使用するため、デフォルトのbodyParserを無効化
   },
 };
 
-type RestaurantWithDistance = Restaurant & {
-  distance: number;
-  operating_hours: OperatingHour[];
+const saveFile = async (file: formidable.File): Promise<string> => {
+  const uploadsDir = path.join(process.cwd(), 'public', 'uploads');
+
+  // アップロードディレクトリが存在しない場合は作成
+  if (!fs.existsSync(uploadsDir)) {
+    fs.mkdirSync(uploadsDir, { recursive: true });
+  }
+
+  const uniqueFileName = `${Date.now()}-${file.originalFilename}`;
+  const newPath = path.join(uploadsDir, uniqueFileName);
+
+  await fs.promises.copyFile(file.filepath, newPath);
+  return `/uploads/${uniqueFileName}`;
 };
 
-type ErrorResponse = {
-  message: string;
-};
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+  if (req.method !== 'POST') {
+    res.setHeader('Allow', ['POST']);
+    return res.status(405).end(`Method ${req.method} Not Allowed`);
+  }
 
-export default async function handler(
-  req: NextApiRequest,
-  res: NextApiResponse<RestaurantWithDistance[] | Restaurant | ErrorResponse>
-) {
-  switch (req.method) {
-    case 'POST':
-      const mockRestaurant: Restaurant = {
-        restaurant_id: 1,
-        name: "Test Restaurant",
-        phone_number: "03-1234-5678",
-        country: "Japan",
-        state: "Tokyo",
-        city: "Shibuya",
-        address_line1: "1-1-1",
-        address_line2: "",
-        latitude: 35.6581,
-        longitude: 139.7017,
-        capacity: 20,
-        description: "Test description",
-        special_rule: null,
-        morning_available: false,
-        daytime_available: true,
-        has_set: true,
-        senbero_description: "1000円セット",
-        has_chinchiro: false,
-        chinchiro_description: null,
-        outside_available: false,
-        outside_description: null,
-        is_standing: true,
-        standing_description: "カウンター10席",
-        is_kakuuchi: false,
-        is_cash_on: true,
-        has_charge: false,
-        charge_description: null,
-        has_tv: true,
-        smoking_allowed: false,
-        has_happy_hour: true,
-        restaurant_image: null,
-        credit_card: true,
-        credit_card_description: "VISA/Master",
-        beer_price: 500,
-        beer_types: "生ビール、瓶ビール",
-        chuhai_price: 400,
+  try {
+    const form = formidable();
+    const [fields, files] = await form.parse(req);
+
+    // フォームデータからレストラン情報を取得
+    const restaurantData = JSON.parse(fields.restaurant[0]);
+
+    // 画像ファイルの処理
+    let restaurant_image = null;
+    if (files.image && files.image[0]) {
+      restaurant_image = await saveFile(files.image[0]);
+    }
+
+    // レストランの作成
+    const newRestaurant = await prisma.restaurant.create({
+      data: {
+        name: restaurantData.name,
+        address_line1: restaurantData.address_line1,
+        address_line2: restaurantData.address_line2,
+        city: restaurantData.city,
+        state: restaurantData.state,
+        postal_code: restaurantData.postal_code,
+        country: restaurantData.country,
+        phone_number: restaurantData.phone_number,
+        website: restaurantData.website,
+        description: restaurantData.description,
+        capacity: restaurantData.capacity ? parseInt(restaurantData.capacity) : null,
+        is_standing: restaurantData.is_standing || false,
+        standing_description: restaurantData.standing_description,
+        is_kakuuchi: restaurantData.is_kakuuchi || false,
+        is_cash_on: restaurantData.is_cash_on || false,
+        morning_available: restaurantData.morning_available || false,
+        daytime_available: restaurantData.daytime_available || false,
+        has_set: restaurantData.has_set || false,
+        senbero_description: restaurantData.senbero_description,
+        has_chinchiro: restaurantData.has_chinchiro || false,
+        has_happy_hour: restaurantData.has_happy_hour || false,
+        outside_available: restaurantData.outside_available || false,
+        outside_description: restaurantData.outside_description,
+        is_cash_only: restaurantData.is_cash_only || false,
+        has_charge: restaurantData.has_charge || false,
+        charge_description: restaurantData.charge_description,
+        has_tv: restaurantData.has_tv || false,
+        smoking_allowed: restaurantData.smoking_allowed || false,
+        special_rule: restaurantData.special_rule,
+        restaurant_image,
+        credit_card: restaurantData.credit_card || false,
+        credit_card_description: restaurantData.credit_card_description,
+        beer_price: restaurantData.beer_price,
+        beer_types: restaurantData.beer_types,
+        chuhai_price: restaurantData.chuhai_price,
         created_at: new Date(),
         updated_at: new Date(),
-        home_page: null,
-        deleted_at: null
-      };
-      return res.status(201).json(mockRestaurant);
-    default:
-      res.setHeader('Allow', ['GET', 'POST']);
-      return res.status(405).json({ message: `Method ${req.method} Not Allowed` });
+      },
+    });
+
+    // 営業時間の作成（もし含まれている場合）
+    if (restaurantData.operating_hours && restaurantData.operating_hours.length > 0) {
+      await prisma.operatingHours.createMany({
+        data: restaurantData.operating_hours.map((hours: any) => ({
+          restaurant_id: newRestaurant.restaurant_id,
+          day: hours.day,
+          open_time: hours.open_time,
+          close_time: hours.close_time,
+        })),
+      });
+    }
+
+    // 作成したレストラン情報を取得（営業時間を含む）
+    const createdRestaurant = await prisma.restaurant.findUnique({
+      where: { restaurant_id: newRestaurant.restaurant_id },
+      include: {
+        operating_hours: true,
+      },
+    });
+
+    res.status(201).json(createdRestaurant);
+  } catch (error) {
+    console.error('Error creating restaurant:', error);
+    res.status(500).json({ error: 'Failed to create restaurant' });
+  } finally {
+    await prisma.$disconnect();
   }
 }
-
-// async function handlePost(
-//   req: NextApiRequest,
-//   res: NextApiResponse<Restaurant | ErrorResponse>
-// ) {
-//   try {
-//     const { fields, files } = await parseForm(req);
-
-//     // 画像ファイルの処理
-//     let imageUrl = null;
-//     if (files.restaurant_image) {
-//       const file = Array.isArray(files.restaurant_image)
-//         ? files.restaurant_image[0]
-//         : files.restaurant_image;
-//       // TODO: 画像アップロード処理の実装
-//       imageUrl = file.filepath; // 仮の実装
-//     }
-
-//     // operating_hoursの処理
-//     let operating_hours = [];
-//     if (fields.operating_hours) {
-//       operating_hours = JSON.parse(fields.operating_hours.toString());
-//     }
-
-//     // レストランデータの作成
-//     const restaurant = await prisma.restaurant.create({
-//       data: {
-//         name: fields.name.toString(),
-//         phone_number: fields.phone_number?.toString(),
-//         country: fields.country.toString(),
-//         state: fields.state.toString(),
-//         city: fields.city.toString(),
-//         address_line1: fields.address_line1.toString(),
-//         address_line2: fields.address_line2.toString(),
-//         latitude: fields.latitude ? parseFloat(fields.latitude.toString()) : null,
-//         longitude: fields.longitude ? parseFloat(fields.longitude.toString()) : null,
-//         capacity: fields.capacity ? parseInt(fields.capacity.toString(), 10) : null,
-//         description: fields.description?.toString(),
-//         special_rule: fields.special_rule?.toString(),
-//         morning_available: fields.morning_available === 'true',
-//         daytime_available: fields.daytime_available === 'true',
-//         has_set: fields.has_set === 'true',
-//         senbero_description: fields.senbero_description?.toString(),
-//         has_chinchiro: fields.has_chinchiro === 'true',
-//         chinchiro_description: fields.chinchiro_description?.toString(),
-//         outside_available: fields.outside_available === 'true',
-//         outside_description: fields.outside_description?.toString(),
-//         is_standing: fields.is_standing === 'true',
-//         standing_description: fields.standing_description?.toString(),
-//         is_kakuuchi: fields.is_kakuuchi === 'true',
-//         is_cash_on: fields.is_cash_on === 'true',
-//         has_charge: fields.has_charge === 'true',
-//         charge_description: fields.charge_description?.toString(),
-//         has_tv: fields.has_tv === 'true',
-//         smoking_allowed: fields.smoking_allowed === 'true',
-//         has_happy_hour: fields.has_happy_hour === 'true',
-//         restaurant_image: imageUrl,
-//         credit_card: fields.credit_card === 'true',
-//         credit_card_description: fields.credit_card_description?.toString(),
-//         beer_price: fields.beer_price ? parseInt(fields.beer_price.toString(), 10) : null,
-//         beer_types: fields.beer_types?.toString(),
-//         chuhai_price: fields.chuhai_price ? parseInt(fields.chuhai_price.toString(), 10) : null,
-//         operating_hours: {
-//           create: operating_hours
-//         }
-//       },
-//       include: {
-//         operating_hours: true,
-//       },
-//     });
-
-//     return res.status(201).json(restaurant);
-//   } catch (error) {
-//     console.error('Error creating restaurant:', error);
-//     return res.status(500).json({ message: 'Error creating restaurant' });
-//   } finally {
-//     await prisma.$disconnect();
-//   }
-// }

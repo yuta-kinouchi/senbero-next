@@ -2,5 +2,5 @@
 export { middleware } from './middleware/withAuth';
 
 export const config = {
-  matcher: '/:path*'  // すべてのパスに適用
+  matcher: '/:path*'
 };
