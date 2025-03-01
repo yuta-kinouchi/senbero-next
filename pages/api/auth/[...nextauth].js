@@ -1,3 +1,4 @@
+// pages/api/auth/[...nextauth].js
 import { PrismaAdapter } from '@next-auth/prisma-adapter';
 import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcrypt';
@@ -7,7 +8,7 @@ import GoogleProvider from "next-auth/providers/google";
 
 const prisma = new PrismaClient();
 
-export default NextAuth({
+export const authOptions = {
   adapter: PrismaAdapter(prisma),
   providers: [
     CredentialsProvider({
@@ -22,7 +23,13 @@ export default NextAuth({
         });
 
         if (user && bcrypt.compareSync(credentials.password, user.hashed_password)) {
-          return { id: user.id, name: user.name, email: user.email };
+          // ユーザーロールを含める
+          return {
+            id: user.user_id,
+            name: user.name,
+            email: user.email,
+            role: user.gender // 現在genderフィールドに管理者情報を格納しているようです
+          };
         }
         return null;
       }
@@ -32,7 +39,9 @@ export default NextAuth({
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
     }),
   ],
-  database: process.env.POSTGRES_URL,
+  pages: {
+    signIn: "/admin/login", // 管理者ログインページを設定
+  },
   session: {
     strategy: 'jwt',
   },
@@ -40,14 +49,18 @@ export default NextAuth({
     async jwt({ token, user, account }) {
       if (user) {
         token.id = user.id;
+        // ロール情報を追加
+        token.role = user.role;
       }
       if (account) {
-        token.accessToken = account.access_token
+        token.accessToken = account.access_token;
       }
       return token;
     },
     async session({ session, token }) {
       session.user.id = token.id;
+      // セッションにロール情報を追加
+      session.user.role = token.role;
       session.accessToken = token.accessToken;
       return session;
     },
@@ -71,4 +84,6 @@ export default NextAuth({
       }
     },
   },
-});
+};
+
+export default NextAuth(authOptions);
