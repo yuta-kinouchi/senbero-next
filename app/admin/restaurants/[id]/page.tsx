@@ -425,7 +425,7 @@ export default function RestaurantDetail() {
 
                 <Grid item xs={12}>
                   <Typography variant="subtitle2" color="text.secondary">現金のみ</Typography>
-                  <Typography>{restaurant.is_cash_only ? 'はい' : 'いいえ'}</Typography>
+                  <Typography>{restaurant.is_cash_on ? 'はい' : 'いいえ'}</Typography>
                 </Grid>
 
                 <Grid item xs={12}>
