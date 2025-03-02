@@ -31,12 +31,17 @@ import { useEffect, useState } from 'react';
 
 // レストランの型定義
 type OperatingHour = {
-  operating_hour_id: number;
+  id: number;
   restaurant_id: number;
   day_of_week: number;
-  opening_time: string;
-  closing_time: string;
-  is_closed: boolean;
+  open_time: string;
+  close_time: string;
+  drink_last_order_time?: string;
+  food_last_order_time?: string;
+  happy_hour_start?: string;
+  happy_hour_end?: string;
+  created_at: string;
+  updated_at: string;
 };
 
 type Restaurant = {
@@ -48,6 +53,9 @@ type Restaurant = {
   state?: string;
   country: string;
   phone_number?: string;
+  latitude?: number;
+  longitude?: number;
+  home_page?: string;
   description?: string;
   capacity?: number;
   is_standing: boolean;
@@ -59,7 +67,7 @@ type Restaurant = {
   has_set: boolean;
   senbero_description?: string;
   has_chinchiro: boolean;
-  has_happy_hour: boolean;
+  chinchiro_description?: string;
   outside_available: boolean;
   outside_description?: string;
   is_cash_only: boolean;
@@ -67,13 +75,14 @@ type Restaurant = {
   charge_description?: string;
   has_tv: boolean;
   smoking_allowed: boolean;
+  has_happy_hour: boolean;
   special_rule?: string;
   restaurant_image?: string;
   credit_card: boolean;
   credit_card_description?: string;
-  beer_price?: string;
+  beer_price?: number;
   beer_types?: string;
-  chuhai_price?: string;
+  chuhai_price?: number;
   created_at: string;
   updated_at: string;
   operating_hours: OperatingHour[];
@@ -135,7 +144,19 @@ export default function RestaurantDetail() {
   // 時刻のフォーマット (00:00 形式)
   const formatTime = (timeString: string) => {
     if (!timeString) return '指定なし';
-    return timeString.substring(0, 5);
+
+    try {
+      const date = new Date(timeString);
+      const jpTime = new Date(date.getTime() - (9 * 60 * 60 * 1000));
+      return jpTime.toLocaleTimeString('ja-JP', {
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false
+      });
+    } catch (e) {
+      console.error('Time parsing error:', e);
+      return timeString;
+    }
   };
 
   if (loading) {
@@ -219,6 +240,26 @@ export default function RestaurantDetail() {
                   </Box>
                 )}
 
+                {restaurant.home_page && (
+                  <Box>
+                    <Typography variant="subtitle2" color="text.secondary">ホームページ</Typography>
+                    <Typography>
+                      <Link href={restaurant.home_page} target="_blank" rel="noopener noreferrer">
+                        {restaurant.home_page}
+                      </Link>
+                    </Typography>
+                  </Box>
+                )}
+
+                {(restaurant.latitude !== undefined && restaurant.longitude !== undefined) && (
+                  <Box>
+                    <Typography variant="subtitle2" color="text.secondary">位置情報</Typography>
+                    <Typography>
+                      緯度: {restaurant.latitude}, 経度: {restaurant.longitude}
+                    </Typography>
+                  </Box>
+                )}
+
                 <Box>
                   <Typography variant="subtitle2" color="text.secondary">登録日時</Typography>
                   <Typography>{formatDate(restaurant.created_at)}</Typography>
@@ -233,6 +274,13 @@ export default function RestaurantDetail() {
                   <Box>
                     <Typography variant="subtitle2" color="text.secondary">説明</Typography>
                     <Typography style={{ whiteSpace: 'pre-line' }}>{restaurant.description}</Typography>
+                  </Box>
+                )}
+
+                {restaurant.special_rule && (
+                  <Box>
+                    <Typography variant="subtitle2" color="text.secondary">特別ルール</Typography>
+                    <Typography style={{ whiteSpace: 'pre-line' }}>{restaurant.special_rule}</Typography>
                   </Box>
                 )}
               </Box>
@@ -296,8 +344,18 @@ export default function RestaurantDetail() {
                   <Typography variant="subtitle2" color="text.secondary">その他の特徴</Typography>
                   <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
                     {restaurant.has_happy_hour && <Chip size="small" label="ハッピーアワー" color="primary" />}
-                    {restaurant.has_chinchiro && <Chip size="small" label="ちんちろ" />}
-                    {restaurant.outside_available && <Chip size="small" label="外席あり" />}
+                    {restaurant.has_chinchiro && (
+                      <Chip
+                        size="small"
+                        label={`ちんちろ${restaurant.chinchiro_description ? `(${restaurant.chinchiro_description})` : ''}`}
+                      />
+                    )}
+                    {restaurant.outside_available && (
+                      <Chip
+                        size="small"
+                        label={`外席あり${restaurant.outside_description ? `(${restaurant.outside_description})` : ''}`}
+                      />
+                    )}
                     {restaurant.has_tv && <Chip size="small" label="TV設置" />}
                   </Box>
                 </Grid>
@@ -398,9 +456,11 @@ export default function RestaurantDetail() {
                     <TableHead>
                       <TableRow>
                         <TableCell>曜日</TableCell>
-                        <TableCell>営業状況</TableCell>
                         <TableCell>開店時間</TableCell>
                         <TableCell>閉店時間</TableCell>
+                        <TableCell>ドリンク L.O.</TableCell>
+                        <TableCell>フード L.O.</TableCell>
+                        <TableCell>ハッピーアワー</TableCell>
                       </TableRow>
                     </TableHead>
                     <TableBody>
@@ -409,21 +469,34 @@ export default function RestaurantDetail() {
                           oh => oh.day_of_week === day
                         );
 
+                        // 各曜日に対応するデータがない場合はその曜日は定休日と見なす
+                        const isOpen = !!dayData;
+
                         return (
                           <TableRow key={day}>
                             <TableCell>{dayNames[day]}曜日</TableCell>
                             <TableCell>
-                              {dayData?.is_closed ? (
-                                <Chip size="small" label="休業" color="error" />
-                              ) : (
-                                <Chip size="small" label="営業" color="success" />
+                              {isOpen ? formatTime(dayData.open_time) : (
+                                <Chip size="small" label="定休日" color="error" />
                               )}
                             </TableCell>
                             <TableCell>
-                              {dayData?.is_closed ? '-' : formatTime(dayData?.opening_time || '')}
+                              {isOpen ? formatTime(dayData.close_time) : '-'}
                             </TableCell>
                             <TableCell>
-                              {dayData?.is_closed ? '-' : formatTime(dayData?.closing_time || '')}
+                              {isOpen && dayData.drink_last_order_time
+                                ? formatTime(dayData.drink_last_order_time)
+                                : '-'}
+                            </TableCell>
+                            <TableCell>
+                              {isOpen && dayData.food_last_order_time
+                                ? formatTime(dayData.food_last_order_time)
+                                : '-'}
+                            </TableCell>
+                            <TableCell>
+                              {isOpen && dayData.happy_hour_start && dayData.happy_hour_end
+                                ? `${formatTime(dayData.happy_hour_start)} - ${formatTime(dayData.happy_hour_end)}`
+                                : '-'}
                             </TableCell>
                           </TableRow>
                         );

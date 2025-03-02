@@ -40,6 +40,26 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     { text: "レストラン管理", icon: <RestaurantIcon />, path: "/admin/restaurants" },
   ];
 
+  const isPathSelected = (menuPath: string) => {
+    // 完全一致の場合
+    if (pathname === menuPath) {
+      return true;
+    }
+
+    // "/admin" は完全一致の場合のみ選択（サブパスだと選択しない）
+    if (menuPath === "/admin") {
+      return pathname === "/admin";
+    }
+
+    // "/admin/restaurants" の場合はサブパスも含めて選択
+    if (menuPath === "/admin/restaurants" && pathname?.startsWith("/admin/restaurants")) {
+      return true;
+    }
+
+    return false;
+  };
+
+
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
@@ -68,7 +88,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               {menuItems.map((item) => (
                 <ListItem key={item.text} disablePadding>
                   <ListItemButton
-                    selected={pathname === item.path || pathname.startsWith(item.path + "/")}
+                    selected={isPathSelected(item.path)}
                     onClick={() => router.push(item.path)}
                   >
                     <ListItemIcon>{item.icon}</ListItemIcon>
