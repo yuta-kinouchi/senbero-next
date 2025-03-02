@@ -1,32 +1,56 @@
-// app/api/admin/restaurants/[id]/route.js
 import { PrismaClient } from '@prisma/client';
 import { NextResponse } from 'next/server';
 
 const prisma = new PrismaClient();
 
+// GET: レストラン詳細取得
 export async function GET(request, { params }) {
   const { id } = params;
 
   try {
+    // 数値型IDを確保
+    const restaurantId = parseInt(id);
+
+    if (isNaN(restaurantId)) {
+      return NextResponse.json(
+        { error: 'Invalid restaurant ID' },
+        { status: 400 }
+      );
+    }
+
+    // レストランの詳細情報を取得
     const restaurant = await prisma.restaurant.findUnique({
-      where: { restaurant_id: parseInt(id) },
-      include: {
-        operating_hours: true,
+      where: {
+        restaurant_id: restaurantId,
       },
+      // 基本的な情報のみを取得
+      select: {
+        restaurant_id: true,
+        name: true,
+        phone_number: true,
+        country: true,
+        state: true,
+        city: true,
+        address_line1: true,
+        address_line2: true,
+        description: true,
+        created_at: true,
+        updated_at: true,
+      }
     });
 
-    if (restaurant) {
-      return NextResponse.json(restaurant);
-    } else {
+    if (!restaurant) {
       return NextResponse.json(
-        { message: 'Restaurant not found' },
+        { error: 'Restaurant not found' },
         { status: 404 }
       );
     }
+
+    return NextResponse.json(restaurant);
   } catch (error) {
-    console.error('Error fetching restaurant:', error);
+    console.error(`Error fetching restaurant with ID ${id}:`, error);
     return NextResponse.json(
-      { message: 'Error fetching restaurant' },
+      { error: 'Failed to fetch restaurant details' },
       { status: 500 }
     );
   } finally {
@@ -34,92 +58,57 @@ export async function GET(request, { params }) {
   }
 }
 
+// PUT: レストラン情報更新
 export async function PUT(request, { params }) {
   const { id } = params;
-  const data = await request.json();
 
   try {
-    const {
-      name,
-      address_line1,
-      address_line2,
-      city,
-      state,
-      country,
-      phone_number,
-      description,
-      capacity,
-      is_standing,
-      standing_description,
-      is_kakuuchi,
-      is_cash_on,
-      morning_available,
-      daytime_available,
-      has_set,
-      senbero_description,
-      has_chinchiro,
-      has_happy_hour,
-      outside_available,
-      outside_description,
-      is_cash_only,
-      has_charge,
-      charge_description,
-      has_tv,
-      smoking_allowed,
-      special_rule,
-      restaurant_image,
-      credit_card,
-      credit_card_description,
-      beer_price,
-      beer_types,
-      chuhai_price,
-    } = data;
+    const restaurantId = parseInt(id);
 
+    if (isNaN(restaurantId)) {
+      return NextResponse.json(
+        { error: 'Invalid restaurant ID' },
+        { status: 400 }
+      );
+    }
+
+    // リクエストボディを取得
+    const data = await request.json();
+
+    // 基本情報のみを更新
     const updatedRestaurant = await prisma.restaurant.update({
-      where: { restaurant_id: parseInt(id) },
+      where: { restaurant_id: restaurantId },
       data: {
-        name,
-        address_line1,
-        address_line2,
-        city,
-        state,
-        country,
-        phone_number,
-        description,
-        capacity: capacity ? parseInt(capacity) : null,
-        is_standing,
-        standing_description,
-        is_kakuuchi,
-        is_cash_on,
-        morning_available,
-        daytime_available,
-        has_set,
-        senbero_description,
-        has_chinchiro,
-        has_happy_hour,
-        outside_available,
-        outside_description,
-        is_cash_only,
-        has_charge,
-        charge_description,
-        has_tv,
-        smoking_allowed,
-        special_rule,
-        restaurant_image,
-        credit_card,
-        credit_card_description,
-        beer_price,
-        beer_types,
-        chuhai_price,
+        name: data.name,
+        phone_number: data.phone_number || null,
+        country: data.country,
+        state: data.state,
+        city: data.city,
+        address_line1: data.address_line1,
+        address_line2: data.address_line2 || null,
+        description: data.description || null,
         updated_at: new Date(),
       },
+      select: {
+        restaurant_id: true,
+        name: true,
+        phone_number: true,
+        country: true,
+        state: true,
+        city: true,
+        address_line1: true,
+        address_line2: true,
+        description: true,
+        created_at: true,
+        updated_at: true,
+      }
     });
 
     return NextResponse.json(updatedRestaurant);
   } catch (error) {
-    console.error('Error updating restaurant:', error);
+    console.error(`Error updating restaurant with ID ${id}:`, error);
     return NextResponse.json(
-      { error: 'Failed to update restaurant' },
+      { error: 'Failed to update restaurant details', message: error.message },
       { status: 500 }
     );
   } finally {

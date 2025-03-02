@@ -96,7 +96,7 @@ export default function RestaurantDetail() {
   const [error, setError] = useState<string | null>(null);
 
   // レストランIDを取得
-  const restaurantId = params.id;
+  const restaurantId = params?.id;
 
   useEffect(() => {
     const fetchRestaurantDetails = async () => {

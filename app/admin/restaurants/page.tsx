@@ -65,7 +65,7 @@ export default function RestaurantsList() {
 
   useEffect(() => {
     fetchRestaurants(pagination.page, pagination.limit);
-  }, []);
+  }, [pagination.page, pagination.limit]);
 
   const handleChangePage = (event: unknown, newPage: number) => {
     fetchRestaurants(newPage + 1, pagination.limit);

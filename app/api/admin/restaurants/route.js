@@ -3,115 +3,109 @@ import { NextResponse } from 'next/server';
 
 const prisma = new PrismaClient();
 
+// GET: レストラン一覧を取得
 export async function GET(request) {
-  // URLからクエリパラメータを取得
   const { searchParams } = new URL(request.url);
-
-  // ページネーションパラメータの取得
   const page = parseInt(searchParams.get('page') || '1');
   const limit = parseInt(searchParams.get('limit') || '10');
   const skip = (page - 1) * limit;
 
-  // 検索パラメータの取得
-  const search = searchParams.get('search') || '';
-  const city = searchParams.get('city') || '';
-  const isKakuuchi = searchParams.get('is_kakuuchi') === 'true';
-  const hasHappyHour = searchParams.get('has_happy_hour') === 'true';
-  const smokingAllowed = searchParams.get('smoking_allowed') === 'true';
-
-  // ソートパラメータの取得
-  const sortBy = searchParams.get('sort_by') || 'created_at';
-  const sortOrder = searchParams.get('sort_order') || 'desc';
-
   try {
-    // クエリの条件を構築
-    let whereCondition = {};
-
-    // 検索条件の追加
-    if (search) {
-      whereCondition = {
-        ...whereCondition,
-        OR: [
-          { name: { contains: search } },
-          { description: { contains: search } },
-        ],
-      };
-    }
-
-    // 都市でフィルタリング
-    if (city) {
-      whereCondition = {
-        ...whereCondition,
-        city,
-      };
-    }
-
-    // 特定条件でフィルタリング（条件が指定された場合のみ）
-    if (searchParams.has('is_kakuuchi')) {
-      whereCondition = {
-        ...whereCondition,
-        is_kakuuchi: isKakuuchi,
-      };
-    }
-
-    if (searchParams.has('has_happy_hour')) {
-      whereCondition = {
-        ...whereCondition,
-        has_happy_hour: hasHappyHour,
-      };
-    }
-
-    if (searchParams.has('smoking_allowed')) {
-      whereCondition = {
-        ...whereCondition,
-        smoking_allowed: smokingAllowed,
-      };
-    }
-
-    // レストラン一覧を取得
     const restaurants = await prisma.restaurant.findMany({
-      where: whereCondition,
       skip,
       take: limit,
       orderBy: {
-        [sortBy]: sortOrder,
+        updated_at: 'desc'
       },
       select: {
         restaurant_id: true,
         name: true,
-        address_line1: true,
         city: true,
         state: true,
-        description: true,
-        is_kakuuchi: true,
-        beer_price: true,
-        has_happy_hour: true,
-        smoking_allowed: true,
-        restaurant_image: true,
         created_at: true,
-        updated_at: true,
+        updated_at: true
       },
+      where: {
+        deleted_at: null // 削除されていないレコードのみ
+      }
     });
 
-    // 総数をカウント（ページネーション用）
     const totalCount = await prisma.restaurant.count({
-      where: whereCondition,
+      where: {
+        deleted_at: null
+      }
     });
 
-    // レスポンスを返す
     return NextResponse.json({
       restaurants,
       pagination: {
         total: totalCount,
         page,
         limit,
-        pages: Math.ceil(totalCount / limit),
-      },
+        pages: Math.ceil(totalCount / limit)
+      }
     });
   } catch (error) {
     console.error('Error fetching restaurants:', error);
     return NextResponse.json(
       { error: 'Failed to fetch restaurants' },
+      { status: 500 }
+    );
+  } finally {
+    await prisma.$disconnect();
+  }
+}
+
+// POST: 新規レストラン登録
+export async function POST(request) {
+  try {
+    // リクエストボディを取得
+    const data = await request.json();
+
+    // 営業時間データを分離
+    const { operating_hours, ...restaurantData } = data;
+
+    // トランザクション開始
+    const newRestaurant = await prisma.$transaction(async (tx) => {
+      // 1. レストラン情報を作成
+      const restaurant = await tx.restaurant.create({
+        data: {
+          ...restaurantData,
+          created_at: new Date(),
+          updated_at: new Date(),
+        },
+      });
+
+      // 2. 営業時間情報があれば作成
+      if (operating_hours && operating_hours.length > 0) {
+        const operatingHoursData = operating_hours.map(hour => ({
+          restaurant_id: restaurant.restaurant_id,
+          day_of_week: hour.day_of_week,
+          open_time: hour.open_time,
+          close_time: hour.close_time,
+          drink_last_order_time: hour.drink_last_order_time,
+          food_last_order_time: hour.food_last_order_time,
+          happy_hour_start: hour.happy_hour_start,
+          happy_hour_end: hour.happy_hour_end,
+        }));
+
+        await tx.operatingHour.createMany({
+          data: operatingHoursData,
+        });
+      }
+
+      // 3. 作成したレストラン情報（営業時間含む）を取得
+      return tx.restaurant.findUnique({
+        where: { restaurant_id: restaurant.restaurant_id },
+        include: { operating_hours: true },
+      });
+    });
+
+    return NextResponse.json(newRestaurant, { status: 201 });
+  } catch (error) {
+    console.error('Error creating restaurant:', error);
+    return NextResponse.json(
+      { error: 'Failed to create restaurant', message: error.message },
       { status: 500 }
     );
   } finally {

@@ -45,13 +45,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     if (pathname === menuPath) {
       return true;
     }
-
-    // "/admin" は完全一致の場合のみ選択（サブパスだと選択しない）
     if (menuPath === "/admin") {
       return pathname === "/admin";
     }
-
-    // "/admin/restaurants" の場合はサブパスも含めて選択
     if (menuPath === "/admin/restaurants" && pathname?.startsWith("/admin/restaurants")) {
       return true;
     }
