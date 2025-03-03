@@ -1,3 +1,4 @@
+import { OperatingHour } from '@/types/restaurant';
 import { Add as AddIcon, Delete as DeleteIcon } from '@mui/icons-material';
 import {
   Box,
@@ -12,16 +13,6 @@ import {
   Typography,
 } from '@mui/material';
 import React from 'react';
-
-export interface OperatingHour {
-  day_of_week: number;
-  open_time: string;
-  close_time: string;
-  drink_last_order_time?: string;
-  food_last_order_time?: string;
-  happy_hour_start?: string;
-  happy_hour_end?: string;
-}
 
 interface OperatingHoursProps {
   operatingHours?: OperatingHour[];
@@ -40,16 +31,14 @@ const DAYS_OF_WEEK = [
 
 export const OperatingHoursFields: React.FC<OperatingHoursProps> = ({ operatingHours = [], onChange }) => {
   const handleAddHours = () => {
-    const newHours: OperatingHour = {
+    // 新しい型定義に合わせたデフォルト値を設定
+    const newHours: Partial<OperatingHour> = {
       day_of_week: 1,
-      open_time: '',
-      close_time: '',
-      drink_last_order_time: '',
-      food_last_order_time: '',
-      happy_hour_start: '',
-      happy_hour_end: '',
+      open_time: new Date(),
+      close_time: new Date(),
+      // オプショナルフィールドは初期値を設定しない
     };
-    onChange([...operatingHours, newHours]);
+    onChange([...operatingHours, newHours as OperatingHour]);
   };
 
   const handleRemoveHours = (index: number) => {
@@ -58,7 +47,7 @@ export const OperatingHoursFields: React.FC<OperatingHoursProps> = ({ operatingH
     onChange(newHours);
   };
 
-  const handleChange = (index: number, field: keyof OperatingHour, value: string | number) => {
+  const handleChange = (index: number, field: keyof OperatingHour, value: any) => {
     const newHours = [...operatingHours];
     newHours[index] = {
       ...newHours[index],
@@ -71,11 +60,10 @@ export const OperatingHoursFields: React.FC<OperatingHoursProps> = ({ operatingH
     handleChange(index, 'day_of_week', Number(event.target.value));
   };
 
-  const formatTime = (timeStr: string | undefined): string => {
-    if (!timeStr) return '';
+  const formatTime = (time: Date | undefined): string => {
+    if (!time) return '';
     try {
-      const date = new Date(timeStr);
-      return date.toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' });
+      return time.toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' });
     } catch {
       return '';
     }
@@ -83,12 +71,18 @@ export const OperatingHoursFields: React.FC<OperatingHoursProps> = ({ operatingH
 
   const handleTimeChange = (index: number, field: keyof OperatingHour, time: string) => {
     if (!time) {
-      handleChange(index, field, '');
+      // オプショナルフィールドの場合は undefined を設定
+      if (field === 'drink_last_order_time' || field === 'food_last_order_time' ||
+        field === 'happy_hour_start' || field === 'happy_hour_end') {
+        handleChange(index, field, undefined);
+      }
       return;
     }
+
     const [hours, minutes] = time.split(':');
-    const dateStr = `2024-01-01T${hours}:${minutes}:00`;
-    handleChange(index, field, dateStr);
+    const dateObj = new Date();
+    dateObj.setHours(parseInt(hours, 10), parseInt(minutes, 10), 0, 0);
+    handleChange(index, field, dateObj);
   };
 
   return (
@@ -96,7 +90,7 @@ export const OperatingHoursFields: React.FC<OperatingHoursProps> = ({ operatingH
       <Typography variant="h6" gutterBottom>
         営業時間
       </Typography>
-      
+
       {operatingHours.map((hours, index) => (
         <Box key={index} sx={{ mb: 3, p: 2, border: '1px solid #ddd', borderRadius: 1 }}>
           <Grid container spacing={2} alignItems="center">
@@ -114,7 +108,7 @@ export const OperatingHoursFields: React.FC<OperatingHoursProps> = ({ operatingH
                 </Select>
               </FormControl>
             </Grid>
-            
+
             <Grid item xs={12} sm={4}>
               <TextField
                 label="開店時間"
@@ -126,7 +120,7 @@ export const OperatingHoursFields: React.FC<OperatingHoursProps> = ({ operatingH
                 inputProps={{ step: 300 }}
               />
             </Grid>
-            
+
             <Grid item xs={12} sm={4}>
               <TextField
                 label="閉店時間"

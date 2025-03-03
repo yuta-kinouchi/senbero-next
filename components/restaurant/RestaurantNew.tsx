@@ -26,13 +26,13 @@ import React from 'react';
 import { OperatingHoursFields } from './OperatingHoursFields';
 
 
-const FeatureEditItem: React.FC<FeatureEditItemProps> = ({ 
-  icon: Icon, 
-  label, 
-  isActive = false, 
-  description, 
-  onChangeActive, 
-  onChangeDescription 
+const FeatureEditItem: React.FC<FeatureEditItemProps> = ({
+  icon: Icon,
+  label,
+  isActive = false,
+  description,
+  onChangeActive,
+  onChangeDescription
 }) => (
   <Box sx={{ display: 'flex', alignItems: 'flex-start', mb: 2 }}>
     <Box sx={{ m: 2, color: isActive ? 'warning.main' : 'action.disabled' }}>
@@ -83,6 +83,7 @@ export const RestaurantNew: React.FC<RestaurantFormProps> = ({
             <Grid item xs={12} sm={6}>
               <TextField
                 fullWidth
+                required
                 margin="normal"
                 name="name"
                 label="店名"
@@ -155,7 +156,6 @@ export const RestaurantNew: React.FC<RestaurantFormProps> = ({
           <Grid container spacing={2}>
             <Grid item xs={12} sm={6}>
               <TextField
-                required
                 fullWidth
                 margin="normal"
                 name="state"
@@ -166,7 +166,6 @@ export const RestaurantNew: React.FC<RestaurantFormProps> = ({
             </Grid>
             <Grid item xs={12} sm={6}>
               <TextField
-                required
                 fullWidth
                 margin="normal"
                 name="city"
@@ -177,7 +176,6 @@ export const RestaurantNew: React.FC<RestaurantFormProps> = ({
             </Grid>
             <Grid item xs={12}>
               <TextField
-                required
                 fullWidth
                 margin="normal"
                 name="address_line1"
@@ -200,7 +198,7 @@ export const RestaurantNew: React.FC<RestaurantFormProps> = ({
           <Grid item xs={12}>
             <OperatingHoursFields
               operatingHours={restaurant.operating_hours || []}
-              onChange={handleOperatingHoursChange} 
+              onChange={handleOperatingHoursChange}
             />
           </Grid>
 
@@ -381,10 +379,10 @@ export const RestaurantNew: React.FC<RestaurantFormProps> = ({
             onChange={(e) => handleInputChange(e)}
           />
 
-          <Button 
-            type="submit" 
-            variant="contained" 
-            color="primary" 
+          <Button
+            type="submit"
+            variant="contained"
+            color="primary"
             sx={{ mt: 3 }}
             disabled={loading}
           >
@@ -395,3 +393,5 @@ export const RestaurantNew: React.FC<RestaurantFormProps> = ({
     </Card>
   );
 };
+
+export default RestaurantNew;

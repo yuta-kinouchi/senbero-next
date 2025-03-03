@@ -1,24 +1,35 @@
 // types/restaurant.ts
 export interface OperatingHour {
-  day_of_week: number;
-  open_time: string;
-  close_time: string;
-  drink_last_order_time?: string;
-  food_last_order_time?: string;
-  happy_hour_start?: string;
-  happy_hour_end?: string;
- }
- 
- export interface Restaurant {
+  id: number;
   restaurant_id: number;
-  name: string;
-  phone_number?: string;
+  day_of_week: number;
+  open_time: Date;
+  close_time: Date;
+  drink_last_order_time?: Date;
+  food_last_order_time?: Date;
+  happy_hour_start?: Date;
+  happy_hour_end?: Date;
+  created_at: Date;
+  updated_at: Date;
+  restaurant: Restaurant;
+}
+
+export interface Restaurant {
+  restaurant_id?: number;
+  name?: string;
   country?: string;
   state?: string;
   city?: string;
   address_line1?: string;
   address_line2?: string;
+  latitude?: number;
+  longitude?: number;
+  created_at?: Date;
+  updated_at?: Date;
+
+  phone_number?: string;
   capacity?: number;
+  home_page?: string;
   description?: string;
   special_rule?: string;
   morning_available?: boolean;
@@ -44,19 +55,21 @@ export interface OperatingHour {
   beer_price?: number;
   beer_types?: string;
   chuhai_price?: number;
+  deleted_at?: Date;
+
   operating_hours?: OperatingHour[];
- }
- 
- export interface FeatureEditItemProps {
+}
+
+export interface FeatureEditItemProps {
   icon: React.ElementType;
   label: string;
   isActive?: boolean;
   description?: string;
   onChangeActive: (event: React.ChangeEvent<HTMLInputElement>) => void;
   onChangeDescription?: (event: React.ChangeEvent<HTMLInputElement>) => void;
- }
- 
- export interface RestaurantFormProps {
+}
+
+export interface RestaurantFormProps {
   restaurant: Restaurant;
   handleInputChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
   handleOperatingHoursChange: (hours: OperatingHour[]) => void;
@@ -67,4 +80,4 @@ export interface OperatingHour {
   loading: boolean; // 追加
   error: string | null; // 追加
   isNew?: boolean;
- }
+}

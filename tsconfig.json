@@ -20,7 +20,12 @@
       "@/*": [
         "./*"
       ]
-    }
+    },
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ]
   },
   "include": [
     "next-env.d.ts",
@@ -29,8 +34,10 @@
     "components/RegisterForm.js",
     "pages/api/store-location.js",
     "pages/api/export-csv.js",
-    "prisma/seed.js"
-, "pages/restaurants/[id]/edit.js"  ],
+    "prisma/seed.js",
+    "pages/restaurants/[id]/edit.js",
+    ".next/types/**/*.ts"
+  ],
   "exclude": [
     "node_modules"
   ]
