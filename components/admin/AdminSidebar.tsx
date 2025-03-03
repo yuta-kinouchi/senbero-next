@@ -25,8 +25,8 @@ export default function AdminSidebar() {
             <li key={item.path}>
               <Link
                 href={item.path}
-                className={`flex items-center px-4 py-3 hover:bg-gray-800 ${pathname === item.path || pathname.startsWith(item.path + "/")
-                    ? "bg-gray-800" : ""
+                className={`flex items-center px-4 py-3 hover:bg-gray-800 ${pathname === item.path || pathname?.startsWith(item.path + "/")
+                  ? "bg-gray-800" : ""
                   }`}
               >
                 <span className="mr-3">{item.icon}</span>

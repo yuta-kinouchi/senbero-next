@@ -73,7 +73,6 @@ type Restaurant = {
   // 支払い情報
   credit_card: boolean;
   credit_card_description: string;
-  is_cash_only: boolean;
   has_charge: boolean;
   charge_description: string;
 };
@@ -148,7 +147,6 @@ const emptyRestaurant: Restaurant = {
   // 支払い情報
   credit_card: false,
   credit_card_description: '',
-  is_cash_only: false,
   has_charge: false,
   charge_description: '',
 };
@@ -848,21 +846,6 @@ export default function RestaurantEdit() {
                         placeholder="例: VISA, Mastercard, JCB"
                       />
                     )}
-                  </Grid>
-
-                  <Grid item xs={12} md={6}>
-                    <FormGroup>
-                      <FormControlLabel
-                        control={
-                          <Checkbox
-                            checked={restaurant.is_cash_only || false}
-                            onChange={handleCheckboxChange}
-                            name="is_cash_only"
-                          />
-                        }
-                        label="現金のみ"
-                      />
-                    </FormGroup>
                   </Grid>
 
                   <Grid item xs={12}>

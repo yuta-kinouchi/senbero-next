@@ -1,18 +1,35 @@
-// app/admin/login/page.tsx
 'use client';
 
+import {
+  Alert,
+  Box,
+  Button,
+  CircularProgress,
+  Container,
+  Paper,
+  TextField,
+  Typography
+} from '@mui/material';
 import { signIn } from "next-auth/react";
-import { useRouter, useSearchParams } from "next/navigation";
-import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 
 export default function LoginPage() {
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const callbackUrl = searchParams?.get("callbackUrl") || "/admin";
+  const [callbackUrl, setCallbackUrl] = useState("/admin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    // クライアントサイドでのみ実行
+    const params = new URLSearchParams(window.location.search);
+    const callbackParam = params.get("callbackUrl");
+    if (callbackParam) {
+      setCallbackUrl(callbackParam);
+    }
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -40,60 +57,81 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-100">
-      <div className="w-full max-w-md p-8 space-y-8 bg-white rounded-lg shadow">
-        <div>
-          <h1 className="text-2xl font-bold text-center">管理者ログイン</h1>
-        </div>
+    <Container component="main" maxWidth="xs">
+      <Box
+        sx={{
+          marginTop: 8,
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          minHeight: '100vh',
+          pt: 8
+        }}
+      >
+        <Paper
+          elevation={3}
+          sx={{
+            p: 4,
+            width: '100%',
+            borderRadius: 2
+          }}
+        >
+          <Typography component="h1" variant="h5" align="center" sx={{ mb: 3 }}>
+            管理者ログイン
+          </Typography>
 
-        {error && (
-          <div className="p-4 text-red-700 bg-red-100 rounded">
-            {error}
-          </div>
-        )}
+          {error && (
+            <Alert severity="error" sx={{ mb: 2 }}>
+              {error}
+            </Alert>
+          )}
 
-        <form className="space-y-6" onSubmit={handleSubmit}>
-          <div>
-            <label htmlFor="email" className="block text-sm font-medium">
-              メールアドレス
-            </label>
-            <input
-              id="email"
-              name="email"
-              type="email"
+          <Box component="form" onSubmit={handleSubmit} sx={{ mt: 1 }}>
+            <TextField
+              margin="normal"
               required
+              fullWidth
+              id="email"
+              label="メールアドレス"
+              name="email"
+              autoComplete="email"
+              autoFocus
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-3 py-2 mt-1 border rounded-md"
+              variant="outlined"
             />
-          </div>
-
-          <div>
-            <label htmlFor="password" className="block text-sm font-medium">
-              パスワード
-            </label>
-            <input
-              id="password"
-              name="password"
-              type="password"
+            <TextField
+              margin="normal"
               required
+              fullWidth
+              name="password"
+              label="パスワード"
+              type="password"
+              id="password"
+              autoComplete="current-password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-3 py-2 mt-1 border rounded-md"
+              variant="outlined"
             />
-          </div>
-
-          <div>
-            <button
+            <Button
               type="submit"
+              fullWidth
+              variant="contained"
               disabled={loading}
-              className="w-full px-4 py-2 text-white bg-blue-600 rounded-md hover:bg-blue-700 disabled:bg-blue-300"
+              sx={{ mt: 3, mb: 2, py: 1.5 }}
             >
-              {loading ? "ログイン中..." : "ログイン"}
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
+              {loading ? (
+                <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                  <CircularProgress size={24} sx={{ mr: 1 }} color="inherit" />
+                  ログイン中...
+                </Box>
+              ) : (
+                "ログイン"
+              )}
+            </Button>
+          </Box>
+        </Paper>
+      </Box>
+    </Container>
   );
 }

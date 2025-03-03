@@ -15,20 +15,18 @@ export interface OperatingHour {
 }
 
 export interface Restaurant {
-  // 必須フィールド
-  restaurant_id: number;
-  name: string;
-  country: string;
-  state: string;
-  city: string;
-  address_line1: string;
-  address_line2: string;
-  latitude: number;
-  longitude: number;
-  created_at: Date;
-  updated_at: Date;
+  restaurant_id?: number;
+  name?: string;
+  country?: string;
+  state?: string;
+  city?: string;
+  address_line1?: string;
+  address_line2?: string;
+  latitude?: number;
+  longitude?: number;
+  created_at?: Date;
+  updated_at?: Date;
 
-  // オプショナルフィールド
   phone_number?: string;
   capacity?: number;
   home_page?: string;
@@ -59,7 +57,6 @@ export interface Restaurant {
   chuhai_price?: number;
   deleted_at?: Date;
 
-  // リレーション
   operating_hours?: OperatingHour[];
 }
 

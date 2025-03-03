@@ -70,7 +70,6 @@ type Restaurant = {
   chinchiro_description?: string;
   outside_available: boolean;
   outside_description?: string;
-  is_cash_only: boolean;
   has_charge: boolean;
   charge_description?: string;
   has_tv: boolean;

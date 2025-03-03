@@ -109,7 +109,6 @@ export async function PUT(request, { params }) {
         // 支払い情報
         credit_card: data.credit_card || false,
         credit_card_description: data.credit_card_description || null,
-        is_cash_only: data.is_cash_only || false,
         has_charge: data.has_charge || false,
         charge_description: data.charge_description || null,
 

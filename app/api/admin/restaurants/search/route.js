@@ -57,7 +57,6 @@ export async function POST(request) {
     const featureFilters = [
       'is_kakuuchi',
       'is_standing',
-      'is_cash_only',
       'has_set',
       'has_happy_hour',
       'has_chinchiro',
@@ -139,7 +138,6 @@ export async function POST(request) {
         capacity: true,
         is_kakuuchi: true,
         is_standing: true,
-        is_cash_only: true,
         has_set: true,
         has_happy_hour: true,
         outside_available: true,
