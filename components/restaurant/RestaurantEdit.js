@@ -21,7 +21,6 @@ import {
   TextField,
   Typography,
 } from '@mui/material';
-import React from 'react';
 
 const FeatureEditItem = ({ icon: Icon, label, isActive, description, onChangeActive, onChangeDescription }) => (
   <Box sx={{ display: 'flex', alignItems: 'flex-start', mb: 2 }}>

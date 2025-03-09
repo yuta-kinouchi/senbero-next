@@ -1,3 +1,5 @@
+import OperatingHours from '@/components/restaurant/OperationgHour';
+import { useAppNavigation } from '@/hooks/useAppNavigation';
 import { Edit } from '@mui/icons-material';
 import ChatBubbleOutlineIcon from '@mui/icons-material/ChatBubbleOutline';
 import SportsBarRoundedIcon from "@mui/icons-material/SportsBarRounded";
@@ -5,21 +7,16 @@ import {
   Box, Card, CardContent, CardMedia, Container, Divider, Grid,
   IconButton, Tab, Tabs, Typography
 } from '@mui/material';
-import { useRouter } from 'next/router';
-import React, { useState } from 'react';
-import OperatingHours from './OperatingHours';
+import { useState } from 'react';
 import RestaurantFeatures from './RestaurantFeatures';
 
+
 const RestaurantDetail = ({ restaurant }) => {
-  const router = useRouter();
+  const { restaurant: navigationFunctions } = useAppNavigation();
   const [tabIndex, setTabIndex] = useState(0);
 
   const handleTabChange = (event, newValue) => {
     setTabIndex(newValue);
-  };
-
-  const handleEditClick = (restaurant_id) => {
-    router.push(`/restaurants/${restaurant_id}/edit`);
   };
 
   return (
@@ -39,7 +36,7 @@ const RestaurantDetail = ({ restaurant }) => {
                 '&:hover': { backgroundColor: 'action.hover' },
               }}
               aria-label="edit"
-              onClick={() => handleEditClick(restaurant.restaurant_id)}
+              onClick={() => navigationFunctions.toEdit(restaurant.restaurant_id)}
             >
               <Edit />
             </IconButton>

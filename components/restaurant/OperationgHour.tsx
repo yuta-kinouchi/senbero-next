@@ -1,32 +1,43 @@
-import {
-  Box,
-  Divider,
-  Grid,
-  Typography
-} from '@mui/material';
-import React from 'react';
+import { Box, Divider, Grid, Typography } from '@mui/material';
 
-const OperatingHours = ({ restaurant }) => {
+interface OperatingHour {
+  id: string;
+  day_of_week: number;
+  open_time: string;
+  close_time: string;
+  drink_last_order_time?: string;
+  food_last_order_time?: string;
+  happy_hour_start?: string;
+  happy_hour_end?: string;
+}
+
+interface Restaurant {
+  operating_hours: OperatingHour[];
+}
+
+interface OperatingHoursProps {
+  restaurant: Restaurant;
+}
+
+const OperatingHours: React.FC<OperatingHoursProps> = ({ restaurant }) => {
   const groupedHours = restaurant.operating_hours.reduce((acc, hour) => {
     if (!acc[hour.day_of_week]) {
       acc[hour.day_of_week] = [];
     }
     acc[hour.day_of_week].push(hour);
     return acc;
-  }, {});
+  }, {} as Record<string, OperatingHour[]>);
 
-  const getDayName = (dayNumber) => {
+  const getDayName = (dayNumber: number): string => {
     const days = ['日', '月', '火', '水', '木', '金', '土'];
     return days[dayNumber] + '曜日';
   };
 
-  const formatTime = (timeString) => {
+  const formatTime = (timeString: string): string => {
     if (!timeString) return "";
     try {
       const jstOffset = 9 * 60 * 60 * 1000;
-
       const date = new Date(new Date(timeString).getTime() - jstOffset);
-
       return date.toLocaleTimeString('ja-JP', {
         hour: '2-digit',
         minute: '2-digit',
