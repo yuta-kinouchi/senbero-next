@@ -1,5 +1,11 @@
 'use client';
 
+import BasicInfoTab from '@/components/admin/restaurants/BasicInfoTab';
+import DrinkInfoTab from '@/components/admin/restaurants/DrinkInfoTab';
+import OperatingHoursTab from '@/components/admin/restaurants/OperatingHoursTab';
+import PaymentInfoTab from '@/components/admin/restaurants/PaymentInfoTab';
+import RestaurantDetailsTab from '@/components/admin/restaurants/RestaurantDetailsTab';
+import { OperatingHour, Restaurant } from '@/types/restaurant';
 import {
   ArrowBack as ArrowBackIcon,
   Info as InfoIcon,
@@ -7,75 +13,19 @@ import {
   Payment as PaymentIcon,
   Restaurant as RestaurantIcon,
   Save as SaveIcon,
+  Schedule as ScheduleIcon,
 } from '@mui/icons-material';
 import {
   Alert,
   Box,
   Button,
-  Card,
-  CardContent,
-  CardHeader,
-  Checkbox,
   CircularProgress,
-  Divider,
-  FormControlLabel,
-  FormGroup,
-  Grid,
-  InputAdornment,
   Tab,
   Tabs,
-  TextField,
   Typography
 } from '@mui/material';
 import { useParams, useRouter } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
-
-// レストランの型定義
-type Restaurant = {
-  restaurant_id?: number;
-  name: string;
-  phone_number: string;
-  country: string;
-  state: string;
-  city: string;
-  address_line1: string;
-  address_line2: string;
-  description: string;
-  special_rule: string;
-  capacity: number | null;
-  home_page: string;
-  latitude: number | null;
-  longitude: number | null;
-  restaurant_image: string;
-
-  // 店舗詳細
-  morning_available: boolean;
-  daytime_available: boolean;
-  has_set: boolean;
-  senbero_description: string;
-  has_chinchiro: boolean;
-  chinchiro_description: string;
-  outside_available: boolean;
-  outside_description: string;
-  is_standing: boolean;
-  standing_description: string;
-  is_kakuuchi: boolean;
-  is_cash_on: boolean;
-  has_tv: boolean;
-  smoking_allowed: boolean;
-  has_happy_hour: boolean;
-
-  // ドリンク情報
-  beer_price: number | null;
-  beer_types: string;
-  chuhai_price: number | null;
-
-  // 支払い情報
-  credit_card: boolean;
-  credit_card_description: string;
-  has_charge: boolean;
-  charge_description: string;
-};
 
 // タブパネルのプロパティ
 interface TabPanelProps {
@@ -116,10 +66,10 @@ const emptyRestaurant: Restaurant = {
   address_line2: '',
   description: '',
   special_rule: '',
-  capacity: null,
+  capacity: undefined,
   home_page: '',
-  latitude: null,
-  longitude: null,
+  latitude: undefined,
+  longitude: undefined,
   restaurant_image: '',
 
   // 店舗詳細
@@ -140,18 +90,21 @@ const emptyRestaurant: Restaurant = {
   has_happy_hour: false,
 
   // ドリンク情報
-  beer_price: null,
+  beer_price: undefined,
   beer_types: '',
-  chuhai_price: null,
+  chuhai_price: undefined,
 
   // 支払い情報
   credit_card: false,
   credit_card_description: '',
   has_charge: false,
   charge_description: '',
+
+  // 営業時間
+  operating_hours: [],
 };
 
-export default function RestaurantEdit() {
+export default function RestaurantEditPage() {
   const params = useParams();
   const router = useRouter();
   const isNewRestaurant = params?.id === 'create';
@@ -160,6 +113,7 @@ export default function RestaurantEdit() {
   // 状態の定義
   const [tabValue, setTabValue] = useState(0);
   const [restaurant, setRestaurant] = useState<Restaurant>(emptyRestaurant);
+  const [operatingHours, setOperatingHours] = useState<OperatingHour[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -171,6 +125,7 @@ export default function RestaurantEdit() {
     const fetchRestaurant = async () => {
       if (isNewRestaurant) {
         setRestaurant(emptyRestaurant);
+        setOperatingHours([]);
         setLoading(false);
         return;
       }
@@ -195,6 +150,11 @@ export default function RestaurantEdit() {
         };
 
         setRestaurant(formattedRestaurant);
+
+        // 営業時間データを設定
+        if (data.operating_hours && Array.isArray(data.operating_hours)) {
+          setOperatingHours(data.operating_hours);
+        }
       } catch (err) {
         console.error('Error fetching restaurant:', err);
         setError(err instanceof Error ? err.message : 'エラーが発生しました');
@@ -230,6 +190,11 @@ export default function RestaurantEdit() {
     setRestaurant({ ...restaurant, [name]: checked });
   };
 
+  // 営業時間の変更ハンドラー
+  const handleOperatingHoursChange = (hours: OperatingHour[]) => {
+    setOperatingHours(hours);
+  };
+
   // 保存処理
   const handleSave = async () => {
     setSaving(true);
@@ -248,6 +213,12 @@ export default function RestaurantEdit() {
         throw new Error('市区町村は必須項目です');
       }
 
+      // 送信データの準備
+      const dataToSend = {
+        ...restaurant,
+        operating_hours: operatingHours
+      };
+
       // APIエンドポイントの選択
       const url = isNewRestaurant
         ? '/api/admin/restaurants'
@@ -261,7 +232,7 @@ export default function RestaurantEdit() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(restaurant),
+        body: JSON.stringify(dataToSend),
       });
 
       if (!response.ok) {
@@ -282,6 +253,11 @@ export default function RestaurantEdit() {
           ...emptyRestaurant,
           ...savedData
         });
+
+        // 営業時間データを更新
+        if (savedData.operating_hours && Array.isArray(savedData.operating_hours)) {
+          setOperatingHours(savedData.operating_hours);
+        }
       }
     } catch (err) {
       console.error('Error saving restaurant:', err);
@@ -369,517 +345,60 @@ export default function RestaurantEdit() {
           value={tabValue}
           onChange={handleTabChange}
           aria-label="restaurant edit tabs"
+          variant="scrollable"
+          scrollButtons="auto"
         >
           <Tab icon={<InfoIcon />} label="基本情報" />
           <Tab icon={<RestaurantIcon />} label="店舗詳細" />
           <Tab icon={<LocalBarIcon />} label="ドリンク情報" />
           <Tab icon={<PaymentIcon />} label="支払い情報" />
+          <Tab icon={<ScheduleIcon />} label="営業時間" />
         </Tabs>
       </Box>
 
       {/* 基本情報タブ */}
       <TabPanel value={tabValue} index={0}>
-        <Grid container spacing={3}>
-          <Grid item xs={12}>
-            <Card>
-              <CardHeader title="基本情報" />
-              <Divider />
-              <CardContent>
-                <Grid container spacing={2}>
-                  <Grid item xs={12}>
-                    <TextField
-                      required
-                      fullWidth
-                      label="店舗名"
-                      name="name"
-                      value={restaurant.name}
-                      onChange={handleInputChange}
-                    />
-                  </Grid>
-
-                  <Grid item xs={12} md={6}>
-                    <TextField
-                      fullWidth
-                      label="電話番号"
-                      name="phone_number"
-                      value={restaurant.phone_number || ''}
-                      onChange={handleInputChange}
-                    />
-                  </Grid>
-
-                  <Grid item xs={12} md={6}>
-                    <TextField
-                      fullWidth
-                      label="ホームページ"
-                      name="home_page"
-                      value={restaurant.home_page || ''}
-                      onChange={handleInputChange}
-                    />
-                  </Grid>
-
-                  <Grid item xs={12}>
-                    <TextField
-                      required
-                      fullWidth
-                      label="国"
-                      name="country"
-                      value={restaurant.country}
-                      onChange={handleInputChange}
-                    />
-                  </Grid>
-
-                  <Grid item xs={12} md={6}>
-                    <TextField
-                      required
-                      fullWidth
-                      label="都道府県"
-                      name="state"
-                      value={restaurant.state}
-                      onChange={handleInputChange}
-                    />
-                  </Grid>
-
-                  <Grid item xs={12} md={6}>
-                    <TextField
-                      required
-                      fullWidth
-                      label="市区町村"
-                      name="city"
-                      value={restaurant.city}
-                      onChange={handleInputChange}
-                    />
-                  </Grid>
-
-                  <Grid item xs={12}>
-                    <TextField
-                      required
-                      fullWidth
-                      label="住所1（番地など）"
-                      name="address_line1"
-                      value={restaurant.address_line1}
-                      onChange={handleInputChange}
-                    />
-                  </Grid>
-
-                  <Grid item xs={12}>
-                    <TextField
-                      fullWidth
-                      label="住所2（建物名など）"
-                      name="address_line2"
-                      value={restaurant.address_line2 || ''}
-                      onChange={handleInputChange}
-                    />
-                  </Grid>
-
-                  <Grid item xs={12} md={6}>
-                    <TextField
-                      fullWidth
-                      label="緯度"
-                      name="latitude"
-                      type="number"
-                      value={restaurant.latitude || ''}
-                      onChange={handleNumberChange}
-                      InputProps={{
-                        inputProps: { step: 'any' }
-                      }}
-                    />
-                  </Grid>
-
-                  <Grid item xs={12} md={6}>
-                    <TextField
-                      fullWidth
-                      label="経度"
-                      name="longitude"
-                      type="number"
-                      value={restaurant.longitude || ''}
-                      onChange={handleNumberChange}
-                      InputProps={{
-                        inputProps: { step: 'any' }
-                      }}
-                    />
-                  </Grid>
-
-                  <Grid item xs={12}>
-                    <TextField
-                      fullWidth
-                      label="店舗画像URL"
-                      name="restaurant_image"
-                      value={restaurant.restaurant_image || ''}
-                      onChange={handleInputChange}
-                    />
-                  </Grid>
-
-                  <Grid item xs={12}>
-                    <TextField
-                      fullWidth
-                      label="説明"
-                      name="description"
-                      value={restaurant.description || ''}
-                      onChange={handleInputChange}
-                      multiline
-                      rows={4}
-                    />
-                  </Grid>
-
-                  <Grid item xs={12}>
-                    <TextField
-                      fullWidth
-                      label="特別ルール"
-                      name="special_rule"
-                      value={restaurant.special_rule || ''}
-                      onChange={handleInputChange}
-                      multiline
-                      rows={2}
-                    />
-                  </Grid>
-                </Grid>
-              </CardContent>
-            </Card>
-          </Grid>
-        </Grid>
+        <BasicInfoTab
+          restaurant={restaurant}
+          handleInputChange={handleInputChange}
+          handleNumberChange={handleNumberChange}
+        />
       </TabPanel>
 
       {/* 店舗詳細タブ */}
       <TabPanel value={tabValue} index={1}>
-        <Grid container spacing={3}>
-          <Grid item xs={12}>
-            <Card>
-              <CardHeader title="店舗の特徴" />
-              <Divider />
-              <CardContent>
-                <Grid container spacing={2}>
-                  <Grid item xs={12} md={6}>
-                    <TextField
-                      fullWidth
-                      label="収容人数"
-                      name="capacity"
-                      type="number"
-                      value={restaurant.capacity || ''}
-                      onChange={handleNumberChange}
-                      InputProps={{
-                        inputProps: { min: 0 }
-                      }}
-                    />
-                  </Grid>
-
-                  <Grid item xs={12} md={6}>
-                    <FormGroup>
-                      <FormControlLabel
-                        control={
-                          <Checkbox
-                            checked={restaurant.morning_available || false}
-                            onChange={handleCheckboxChange}
-                            name="morning_available"
-                          />
-                        }
-                        label="朝営業あり"
-                      />
-                      <FormControlLabel
-                        control={
-                          <Checkbox
-                            checked={restaurant.daytime_available || false}
-                            onChange={handleCheckboxChange}
-                            name="daytime_available"
-                          />
-                        }
-                        label="昼営業あり"
-                      />
-                    </FormGroup>
-                  </Grid>
-
-                  <Grid item xs={12}>
-                    <Divider sx={{ my: 2 }} />
-                  </Grid>
-
-                  <Grid item xs={12} md={6}>
-                    <FormControlLabel
-                      control={
-                        <Checkbox
-                          checked={restaurant.is_standing || false}
-                          onChange={handleCheckboxChange}
-                          name="is_standing"
-                        />
-                      }
-                      label="立ち飲み可"
-                    />
-                    {restaurant.is_standing && (
-                      <TextField
-                        fullWidth
-                        label="立ち飲み詳細"
-                        name="standing_description"
-                        value={restaurant.standing_description || ''}
-                        onChange={handleInputChange}
-                        sx={{ mt: 1 }}
-                      />
-                    )}
-                  </Grid>
-
-                  <Grid item xs={12} md={6}>
-                    <FormGroup>
-                      <FormControlLabel
-                        control={
-                          <Checkbox
-                            checked={restaurant.is_kakuuchi || false}
-                            onChange={handleCheckboxChange}
-                            name="is_kakuuchi"
-                          />
-                        }
-                        label="角打ち可"
-                      />
-                      <FormControlLabel
-                        control={
-                          <Checkbox
-                            checked={restaurant.is_cash_on || false}
-                            onChange={handleCheckboxChange}
-                            name="is_cash_on"
-                          />
-                        }
-                        label="現金オン可"
-                      />
-                    </FormGroup>
-                  </Grid>
-
-                  <Grid item xs={12}>
-                    <Divider sx={{ my: 2 }} />
-                  </Grid>
-
-                  <Grid item xs={12} md={6}>
-                    <FormControlLabel
-                      control={
-                        <Checkbox
-                          checked={restaurant.has_set || false}
-                          onChange={handleCheckboxChange}
-                          name="has_set"
-                        />
-                      }
-                      label="セットメニューあり"
-                    />
-                    {restaurant.has_set && (
-                      <TextField
-                        fullWidth
-                        label="せんべろセット詳細"
-                        name="senbero_description"
-                        value={restaurant.senbero_description || ''}
-                        onChange={handleInputChange}
-                        sx={{ mt: 1 }}
-                      />
-                    )}
-                  </Grid>
-
-                  <Grid item xs={12} md={6}>
-                    <FormControlLabel
-                      control={
-                        <Checkbox
-                          checked={restaurant.has_chinchiro || false}
-                          onChange={handleCheckboxChange}
-                          name="has_chinchiro"
-                        />
-                      }
-                      label="ちんちろゲームあり"
-                    />
-                    {restaurant.has_chinchiro && (
-                      <TextField
-                        fullWidth
-                        label="ちんちろ詳細"
-                        name="chinchiro_description"
-                        value={restaurant.chinchiro_description || ''}
-                        onChange={handleInputChange}
-                        sx={{ mt: 1 }}
-                      />
-                    )}
-                  </Grid>
-
-                  <Grid item xs={12}>
-                    <Divider sx={{ my: 2 }} />
-                  </Grid>
-
-                  <Grid item xs={12} md={6}>
-                    <FormControlLabel
-                      control={
-                        <Checkbox
-                          checked={restaurant.outside_available || false}
-                          onChange={handleCheckboxChange}
-                          name="outside_available"
-                        />
-                      }
-                      label="外席あり"
-                    />
-                    {restaurant.outside_available && (
-                      <TextField
-                        fullWidth
-                        label="外席詳細"
-                        name="outside_description"
-                        value={restaurant.outside_description || ''}
-                        onChange={handleInputChange}
-                        sx={{ mt: 1 }}
-                      />
-                    )}
-                  </Grid>
-
-                  <Grid item xs={12} md={6}>
-                    <FormGroup>
-                      <FormControlLabel
-                        control={
-                          <Checkbox
-                            checked={restaurant.has_tv || false}
-                            onChange={handleCheckboxChange}
-                            name="has_tv"
-                          />
-                        }
-                        label="テレビあり"
-                      />
-                      <FormControlLabel
-                        control={
-                          <Checkbox
-                            checked={restaurant.smoking_allowed || false}
-                            onChange={handleCheckboxChange}
-                            name="smoking_allowed"
-                          />
-                        }
-                        label="喫煙可"
-                      />
-                      <FormControlLabel
-                        control={
-                          <Checkbox
-                            checked={restaurant.has_happy_hour || false}
-                            onChange={handleCheckboxChange}
-                            name="has_happy_hour"
-                          />
-                        }
-                        label="ハッピーアワーあり"
-                      />
-                    </FormGroup>
-                  </Grid>
-                </Grid>
-              </CardContent>
-            </Card>
-          </Grid>
-        </Grid>
+        <RestaurantDetailsTab
+          restaurant={restaurant}
+          handleInputChange={handleInputChange}
+          handleNumberChange={handleNumberChange}
+          handleCheckboxChange={handleCheckboxChange}
+        />
       </TabPanel>
 
       {/* ドリンク情報タブ */}
       <TabPanel value={tabValue} index={2}>
-        <Grid container spacing={3}>
-          <Grid item xs={12}>
-            <Card>
-              <CardHeader title="ドリンク情報" />
-              <Divider />
-              <CardContent>
-                <Grid container spacing={2}>
-                  <Grid item xs={12} md={6}>
-                    <TextField
-                      fullWidth
-                      label="ビール価格"
-                      name="beer_price"
-                      type="number"
-                      value={restaurant.beer_price || ''}
-                      onChange={handleNumberChange}
-                      InputProps={{
-                        inputProps: { min: 0 },
-                        endAdornment: <InputAdornment position="end">円</InputAdornment>,
-                      }}
-                    />
-                  </Grid>
-
-                  <Grid item xs={12} md={6}>
-                    <TextField
-                      fullWidth
-                      label="チューハイ価格"
-                      name="chuhai_price"
-                      type="number"
-                      value={restaurant.chuhai_price || ''}
-                      onChange={handleNumberChange}
-                      InputProps={{
-                        inputProps: { min: 0 },
-                        endAdornment: <InputAdornment position="end">円</InputAdornment>,
-                      }}
-                    />
-                  </Grid>
-
-                  <Grid item xs={12}>
-                    <TextField
-                      fullWidth
-                      label="ビールの種類"
-                      name="beer_types"
-                      value={restaurant.beer_types || ''}
-                      onChange={handleInputChange}
-                      multiline
-                      rows={2}
-                      placeholder="例: アサヒスーパードライ, エビス, サッポロ黒ラベルなど"
-                    />
-                  </Grid>
-                </Grid>
-              </CardContent>
-            </Card>
-          </Grid>
-        </Grid>
+        <DrinkInfoTab
+          restaurant={restaurant}
+          handleInputChange={handleInputChange}
+          handleNumberChange={handleNumberChange}
+        />
       </TabPanel>
 
       {/* 支払い情報タブ */}
       <TabPanel value={tabValue} index={3}>
-        <Grid container spacing={3}>
-          <Grid item xs={12}>
-            <Card>
-              <CardHeader title="支払い情報" />
-              <Divider />
-              <CardContent>
-                <Grid container spacing={2}>
-                  <Grid item xs={12} md={6}>
-                    <FormControlLabel
-                      control={
-                        <Checkbox
-                          checked={restaurant.credit_card || false}
-                          onChange={handleCheckboxChange}
-                          name="credit_card"
-                        />
-                      }
-                      label="クレジットカード決済可"
-                    />
-                    {restaurant.credit_card && (
-                      <TextField
-                        fullWidth
-                        label="クレジットカード詳細"
-                        name="credit_card_description"
-                        value={restaurant.credit_card_description || ''}
-                        onChange={handleInputChange}
-                        sx={{ mt: 1 }}
-                        placeholder="例: VISA, Mastercard, JCB"
-                      />
-                    )}
-                  </Grid>
+        <PaymentInfoTab
+          restaurant={restaurant}
+          handleInputChange={handleInputChange}
+          handleCheckboxChange={handleCheckboxChange}
+        />
+      </TabPanel>
 
-                  <Grid item xs={12}>
-                    <Divider sx={{ my: 2 }} />
-                  </Grid>
-
-                  <Grid item xs={12} md={6}>
-                    <FormControlLabel
-                      control={
-                        <Checkbox
-                          checked={restaurant.has_charge || false}
-                          onChange={handleCheckboxChange}
-                          name="has_charge"
-                        />
-                      }
-                      label="席料/チャージあり"
-                    />
-                    {restaurant.has_charge && (
-                      <TextField
-                        fullWidth
-                        label="席料/チャージ詳細"
-                        name="charge_description"
-                        value={restaurant.charge_description || ''}
-                        onChange={handleInputChange}
-                        sx={{ mt: 1 }}
-                        placeholder="例: 1人500円、飲食代に含む"
-                      />
-                    )}
-                  </Grid>
-                </Grid>
-              </CardContent>
-            </Card>
-          </Grid>
-        </Grid>
+      {/* 営業時間タブ */}
+      <TabPanel value={tabValue} index={4}>
+        <OperatingHoursTab
+          operatingHours={operatingHours}
+          onChange={handleOperatingHoursChange}
+        />
       </TabPanel>
     </Box>
   );
