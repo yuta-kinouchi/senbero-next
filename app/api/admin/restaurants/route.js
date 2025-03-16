@@ -82,6 +82,9 @@ export async function POST(request) {
     // リクエストボディを取得
     const data = await request.json();
 
+    // operating_hoursを取得
+    const { operating_hours } = data;
+
     // 基本的なバリデーション
     if (!data.name || !data.address_line1 || !data.city || !data.state || !data.country) {
       return NextResponse.json(
@@ -90,9 +93,15 @@ export async function POST(request) {
       );
     }
 
+    const maxRecord = await prisma.restaurant.findFirst({
+      orderBy: { restaurant_id: 'desc' }
+    });
+    const nextId = (maxRecord?.restaurant_id || 0) + 1;
+
     // レストラン情報を作成
     const newRestaurant = await prisma.restaurant.create({
       data: {
+        restaurant_id: nextId,
         name: data.name,
         phone_number: data.phone_number || null,
         country: data.country,
@@ -104,8 +113,8 @@ export async function POST(request) {
         special_rule: data.special_rule || null,
         capacity: data.capacity || null,
         home_page: data.home_page || null,
-        latitude: data.latitude || null,
-        longitude: data.longitude || null,
+        latitude: data.latitude || 0,
+        longitude: data.longitude || 0,
         restaurant_image: data.restaurant_image || null,
 
         // 店舗詳細
@@ -141,6 +150,27 @@ export async function POST(request) {
         updated_at: new Date(),
       },
     });
+
+    if (operating_hours && Array.isArray(operating_hours) && operating_hours.length > 0) {
+      await Promise.all(operating_hours.map(hour => {
+        // IDを削除して自動生成にする
+        const { id, ...hourData } = hour;
+        return prisma.operatingHour.create({
+          data: {
+            ...hourData,
+            restaurant_id: newRestaurant.restaurant_id
+          }
+        });
+      }));
+
+      // 作成した営業時間情報を含めたレストラン情報を再取得
+      const updatedRestaurant = await prisma.restaurant.findUnique({
+        where: { restaurant_id: newRestaurant.restaurant_id },
+        include: { operating_hours: true }
+      });
+
+      return NextResponse.json(updatedRestaurant, { status: 201 });
+    }
 
     return NextResponse.json(newRestaurant, { status: 201 });
   } catch (error) {
