@@ -1,14 +1,22 @@
 'use client';
 
-import { Edit as EditIcon, Search as SearchIcon } from '@mui/icons-material';
+import { Delete as DeleteIcon, Edit as EditIcon, Search as SearchIcon } from '@mui/icons-material';
+import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import CircularProgress from '@mui/material/CircularProgress';
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogContentText from '@mui/material/DialogContentText';
+import DialogTitle from '@mui/material/DialogTitle';
 import FormControl from '@mui/material/FormControl';
 import Grid from '@mui/material/Grid';
 import InputAdornment from '@mui/material/InputAdornment';
 import MenuItem from '@mui/material/MenuItem';
 import Paper from '@mui/material/Paper';
+import Snackbar from '@mui/material/Snackbar';
+import Stack from '@mui/material/Stack';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
@@ -17,6 +25,7 @@ import TableHead from '@mui/material/TableHead';
 import TablePagination from '@mui/material/TablePagination';
 import TableRow from '@mui/material/TableRow';
 import TextField from '@mui/material/TextField';
+import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -54,6 +63,18 @@ export default function RestaurantsList() {
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [locationFilter, setLocationFilter] = useState<string>('');
   const [searchingNow, setSearchingNow] = useState(false);
+
+  // 削除確認ダイアログ用の状態
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [restaurantToDelete, setRestaurantToDelete] = useState<Restaurant | null>(null);
+  const [deleteLoading, setDeleteLoading] = useState(false);
+
+  // スナックバー通知用の状態
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: '',
+    severity: 'success' as 'success' | 'error' | 'info' | 'warning'
+  });
 
   // 市区町村のリスト
   const [locations, setLocations] = useState<string[]>([]);
@@ -148,6 +169,61 @@ export default function RestaurantsList() {
   // 行クリック時の処理
   const handleRowClick = (restaurantId: number) => {
     router.push(`/admin/restaurants/${restaurantId}`);
+  };
+
+  // 削除ボタンクリック時の処理
+  const handleDeleteClick = (e: React.MouseEvent, restaurant: Restaurant) => {
+    e.stopPropagation(); // 行のクリックイベントが発火しないようにする
+    setRestaurantToDelete(restaurant);
+    setDeleteDialogOpen(true);
+  };
+
+  // 削除確認ダイアログを閉じる
+  const handleCloseDeleteDialog = () => {
+    setDeleteDialogOpen(false);
+    setRestaurantToDelete(null);
+  };
+
+  // 削除実行処理
+  const handleConfirmDelete = async () => {
+    if (!restaurantToDelete) return;
+
+    setDeleteLoading(true);
+    try {
+      // 修正：/delete/ 部分を削除
+      const response = await fetch(`/api/admin/restaurants/${restaurantToDelete.restaurant_id}`, {
+        method: 'DELETE',
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to delete restaurant');
+      }
+
+      // 削除成功後の処理
+      setSnackbar({
+        open: true,
+        message: `「${restaurantToDelete.name}」を削除しました`,
+        severity: 'success'
+      });
+
+      // 現在のページのデータを再取得
+      fetchRestaurants(pagination.page, pagination.limit, searchTerm, locationFilter);
+    } catch (err) {
+      console.error('Error deleting restaurant:', err);
+      setSnackbar({
+        open: true,
+        message: 'レストランの削除中にエラーが発生しました',
+        severity: 'error'
+      });
+    } finally {
+      setDeleteLoading(false);
+      setDeleteDialogOpen(false);
+      setRestaurantToDelete(null);
+    }
+  };
+  // スナックバーを閉じる
+  const handleCloseSnackbar = () => {
+    setSnackbar({ ...snackbar, open: false });
   };
 
   if (loading && restaurants.length === 0 && !searchingNow) {
@@ -284,15 +360,28 @@ export default function RestaurantsList() {
                   <TableCell>{formatDate(restaurant.created_at)}</TableCell>
                   <TableCell>{formatDate(restaurant.updated_at)}</TableCell>
                   <TableCell align="center" onClick={(e) => e.stopPropagation()}>
-                    <Button
-                      variant="outlined"
-                      size="small"
-                      startIcon={<EditIcon />}
-                      component={Link}
-                      href={`/admin/restaurants/${restaurant.restaurant_id}/edit`}
-                    >
-                      編集
-                    </Button>
+                    <Stack direction="row" spacing={1} justifyContent="center">
+                      <Button
+                        variant="outlined"
+                        size="small"
+                        startIcon={<EditIcon />}
+                        component={Link}
+                        href={`/admin/restaurants/${restaurant.restaurant_id}/edit`}
+                      >
+                        編集
+                      </Button>
+                      <Tooltip title="削除">
+                        <Button
+                          variant="outlined"
+                          color="error"
+                          size="small"
+                          startIcon={<DeleteIcon />}
+                          onClick={(e) => handleDeleteClick(e, restaurant)}
+                        >
+                          削除
+                        </Button>
+                      </Tooltip>
+                    </Stack>
                   </TableCell>
                 </TableRow>
               ))}
@@ -320,6 +409,53 @@ export default function RestaurantsList() {
           }
         />
       </Paper>
+
+      {/* 削除確認ダイアログ */}
+      <Dialog
+        open={deleteDialogOpen}
+        onClose={handleCloseDeleteDialog}
+        aria-labelledby="alert-dialog-title"
+        aria-describedby="alert-dialog-description"
+      >
+        <DialogTitle id="alert-dialog-title">
+          レストランを削除
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText id="alert-dialog-description">
+            「{restaurantToDelete?.name}」を削除してもよろしいですか？この操作は取り消せません。
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseDeleteDialog} disabled={deleteLoading}>
+            キャンセル
+          </Button>
+          <Button
+            onClick={handleConfirmDelete}
+            color="error"
+            variant="contained"
+            disabled={deleteLoading}
+            autoFocus
+          >
+            {deleteLoading ? <CircularProgress size={24} /> : '削除'}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* 通知用スナックバー */}
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={6000}
+        onClose={handleCloseSnackbar}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+      >
+        <Alert
+          onClose={handleCloseSnackbar}
+          severity={snackbar.severity}
+          sx={{ width: '100%' }}
+        >
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </>
   );
 }

@@ -19,13 +19,12 @@ import {
   Alert,
   Box,
   Button,
-  CircularProgress,
   Tab,
   Tabs,
   Typography
 } from '@mui/material';
-import { useParams, useRouter } from 'next/navigation';
-import React, { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import React, { useState } from 'react';
 
 // タブパネルのプロパティ
 interface TabPanelProps {
@@ -104,67 +103,16 @@ const emptyRestaurant: Restaurant = {
   operating_hours: [],
 };
 
-export default function RestaurantEditPage() {
-  const params = useParams();
+export default function CreateRestaurantPage() {
   const router = useRouter();
-  const isNewRestaurant = params?.id === 'create';
-  const restaurantId = isNewRestaurant ? null : Number(params?.id);
 
   // 状態の定義
   const [tabValue, setTabValue] = useState(0);
   const [restaurant, setRestaurant] = useState<Restaurant>(emptyRestaurant);
   const [operatingHours, setOperatingHours] = useState<OperatingHour[]>([]);
-  const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [saveSuccess, setSaveSuccess] = useState(false);
-
-  // レストラン情報の取得
-  useEffect(() => {
-    const fetchRestaurant = async () => {
-      if (isNewRestaurant) {
-        setRestaurant(emptyRestaurant);
-        setOperatingHours([]);
-        setLoading(false);
-        return;
-      }
-
-      setLoading(true);
-      try {
-        const response = await fetch(`/api/admin/restaurants/${restaurantId}`);
-
-        if (!response.ok) {
-          if (response.status === 404) {
-            throw new Error('レストランが見つかりません');
-          }
-          throw new Error('レストラン情報の取得に失敗しました');
-        }
-
-        const data = await response.json();
-
-        // 取得したデータを変換
-        const formattedRestaurant = {
-          ...emptyRestaurant, // デフォルト値を設定
-          ...data, // APIからのデータで上書き
-        };
-
-        setRestaurant(formattedRestaurant);
-
-        // 営業時間データを設定
-        if (data.operating_hours && Array.isArray(data.operating_hours)) {
-          setOperatingHours(data.operating_hours);
-        }
-      } catch (err) {
-        console.error('Error fetching restaurant:', err);
-        setError(err instanceof Error ? err.message : 'エラーが発生しました');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchRestaurant();
-  }, [restaurantId, isNewRestaurant]);
 
   // タブの変更ハンドラー
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
@@ -195,40 +143,53 @@ export default function RestaurantEditPage() {
     setOperatingHours(hours);
   };
 
+  // バリデーションチェック
+  const validateForm = (): string | null => {
+    if (!restaurant.name) {
+      return '店舗名は必須項目です';
+    }
+    if (!restaurant.country) {
+      return '国は必須項目です';
+    }
+    if (!restaurant.city) {
+      return '市区町村は必須項目です';
+    }
+    if (!restaurant.address_line1) {
+      return '住所は必須項目です';
+    }
+    return null;
+  };
+
   // 保存処理
   const handleSave = async () => {
+    // バリデーションチェック
+    const validationError = validateForm();
+    if (validationError) {
+      setSaveError(validationError);
+      // エラーがあるタブに移動
+      if (validationError.includes('店舗名') ||
+        validationError.includes('国') ||
+        validationError.includes('住所') ||
+        validationError.includes('市区町村')) {
+        setTabValue(0); // 基本情報タブへ
+      }
+      return;
+    }
+
     setSaving(true);
     setSaveError(null);
     setSaveSuccess(false);
 
     try {
-      // フォームバリデーション
-      if (!restaurant.name) {
-        throw new Error('店舗名は必須項目です');
-      }
-      if (!restaurant.address_line1) {
-        throw new Error('住所は必須項目です');
-      }
-      if (!restaurant.city) {
-        throw new Error('市区町村は必須項目です');
-      }
-
       // 送信データの準備
       const dataToSend = {
         ...restaurant,
         operating_hours: operatingHours
       };
 
-      // APIエンドポイントの選択
-      const url = isNewRestaurant
-        ? '/api/admin/restaurants'
-        : `/api/admin/restaurants/${restaurantId}`;
-
-      const method = isNewRestaurant ? 'POST' : 'PUT';
-
       // APIリクエスト
-      const response = await fetch(url, {
-        method,
+      const response = await fetch('/api/admin/restaurants', {
+        method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
@@ -241,65 +202,21 @@ export default function RestaurantEditPage() {
       }
 
       const savedData = await response.json();
-
       setSaveSuccess(true);
 
-      // 新規作成の場合は保存後に編集ページにリダイレクト
-      if (isNewRestaurant && savedData.restaurant_id) {
-        router.push(`/admin/restaurants/${savedData.restaurant_id}/edit`);
-      } else {
-        // 既存データ編集の場合は状態を更新
-        setRestaurant({
-          ...emptyRestaurant,
-          ...savedData
-        });
-
-        // 営業時間データを更新
-        if (savedData.operating_hours && Array.isArray(savedData.operating_hours)) {
-          setOperatingHours(savedData.operating_hours);
-        }
+      // 成功したら編集ページにリダイレクト
+      if (savedData.restaurant_id) {
+        setTimeout(() => {
+          router.push(`/admin/restaurants/${savedData.restaurant_id}/edit`);
+        }, 1000);
       }
     } catch (err) {
       console.error('Error saving restaurant:', err);
       setSaveError(err instanceof Error ? err.message : '保存に失敗しました');
     } finally {
       setSaving(false);
-
-      // 成功メッセージを数秒後に消す
-      if (saveSuccess) {
-        setTimeout(() => {
-          setSaveSuccess(false);
-        }, 3000);
-      }
     }
   };
-
-  // ローディング中の表示
-  if (loading) {
-    return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '50vh' }}>
-        <CircularProgress />
-      </Box>
-    );
-  }
-
-  // エラー時の表示
-  if (error) {
-    return (
-      <Box sx={{ p: 3 }}>
-        <Typography color="error" variant="h6">
-          {error}
-        </Typography>
-        <Button
-          startIcon={<ArrowBackIcon />}
-          onClick={() => router.back()}
-          sx={{ mt: 2 }}
-        >
-          戻る
-        </Button>
-      </Box>
-    );
-  }
 
   return (
     <Box sx={{ p: 3 }}>
@@ -308,13 +225,13 @@ export default function RestaurantEditPage() {
         <Box sx={{ display: 'flex', alignItems: 'center' }}>
           <Button
             startIcon={<ArrowBackIcon />}
-            onClick={() => router.back()}
+            onClick={() => router.push('/admin/restaurants')}
             sx={{ mr: 2 }}
           >
             戻る
           </Button>
           <Typography variant="h4" component="h1">
-            {isNewRestaurant ? 'レストラン新規登録' : `${restaurant.name} の編集`}
+            レストラン新規登録
           </Typography>
         </Box>
         <Button
@@ -330,7 +247,7 @@ export default function RestaurantEditPage() {
       {/* 保存成功/エラーメッセージ */}
       {saveSuccess && (
         <Alert severity="success" sx={{ mb: 2 }}>
-          レストラン情報を保存しました
+          レストラン情報を保存しました。編集ページにリダイレクトします...
         </Alert>
       )}
       {saveError && (
@@ -344,7 +261,7 @@ export default function RestaurantEditPage() {
         <Tabs
           value={tabValue}
           onChange={handleTabChange}
-          aria-label="restaurant edit tabs"
+          aria-label="restaurant create tabs"
           variant="scrollable"
           scrollButtons="auto"
         >
