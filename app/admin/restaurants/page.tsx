@@ -190,8 +190,8 @@ export default function RestaurantsList() {
 
     setDeleteLoading(true);
     try {
-      // 削除用APIエンドポイントを呼び出し
-      const response = await fetch(`/api/admin/restaurants/delete/${restaurantToDelete.restaurant_id}`, {
+      // 修正：/delete/ 部分を削除
+      const response = await fetch(`/api/admin/restaurants/${restaurantToDelete.restaurant_id}`, {
         method: 'DELETE',
       });
 
@@ -221,7 +221,6 @@ export default function RestaurantsList() {
       setRestaurantToDelete(null);
     }
   };
-
   // スナックバーを閉じる
   const handleCloseSnackbar = () => {
     setSnackbar({ ...snackbar, open: false });
