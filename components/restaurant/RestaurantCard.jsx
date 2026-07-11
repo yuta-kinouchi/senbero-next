@@ -1,10 +1,14 @@
 import { AccessTime, DirectionsRun, Place } from "@mui/icons-material";
-import { Box, Card, CardContent, Fab, Typography } from '@mui/material';
+import { Box, Card, CardContent, Chip, Fab, Typography } from '@mui/material';
 import Image from 'next/image';
+import { palette } from '../../styles/theme';
 import { getTodayOperatingHours } from '../../utils/dateUtils';
+import { FEATURE_TAGS, walkMinutes } from '../../utils/features';
 
 
 export const RestaurantCard = ({ restaurant, onClick }) => {
+  const activeTags = FEATURE_TAGS.filter((tag) => restaurant[tag.key]);
+
   const handleMapClick = (e) => {
     e.stopPropagation();
   };
@@ -27,7 +31,7 @@ export const RestaurantCard = ({ restaurant, onClick }) => {
       }}
     >
       {/* Restaurant Image */}
-      <Box sx={{ position: 'relative', width: 112, height: 144, flexShrink: 0 }}>
+      <Box sx={{ position: 'relative', width: 112, minHeight: 144, flexShrink: 0, alignSelf: 'stretch' }}>
         <Image
           src={restaurant.restaurant_image || '/default-restaurant-image.jpg'}
           alt={restaurant.name}
@@ -57,8 +61,26 @@ export const RestaurantCard = ({ restaurant, onClick }) => {
             <Box display="flex" alignItems="center" mt={0.5} sx={{ color: 'text.secondary' }}>
               <DirectionsRun sx={{ mr: 0.75, fontSize: 18 }} />
               <Typography variant="body2">
-                {restaurant.distance.toFixed(2)} km
+                徒歩{walkMinutes(restaurant.distance)}分（{restaurant.distance.toFixed(1)}km）
               </Typography>
+            </Box>
+          )}
+          {activeTags.length > 0 && (
+            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, mt: 1 }}>
+              {activeTags.map((tag) => (
+                <Chip
+                  key={tag.key}
+                  label={tag.label}
+                  size="small"
+                  sx={{
+                    bgcolor: palette.amberSoft,
+                    color: 'text.primary',
+                    fontWeight: 700,
+                    fontSize: '0.7rem',
+                    height: 22,
+                  }}
+                />
+              ))}
             </Box>
           )}
         </CardContent>

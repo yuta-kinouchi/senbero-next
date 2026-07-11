@@ -56,6 +56,9 @@ export default async function handler(req, res) {
         whereClause.chuhai_price = { lte: parseInt(maxChuhaiPrice) };
       }
 
+      // ソフトデリート済み(=閉店扱い)の店舗は検索結果に出さない
+      whereClause.deleted_at = null;
+
       console.log('Final where clause:', JSON.stringify(whereClause, null, 2));
 
       console.log('Executing database query...');
