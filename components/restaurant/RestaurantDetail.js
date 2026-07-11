@@ -4,9 +4,10 @@ import { Edit } from '@mui/icons-material';
 import ChatBubbleOutlineIcon from '@mui/icons-material/ChatBubbleOutline';
 import SportsBarRoundedIcon from "@mui/icons-material/SportsBarRounded";
 import {
-  Box, Card, CardContent, CardMedia, Container, Divider, Grid,
+  Box, Card, CardContent, Container, Divider, Grid,
   IconButton, Tab, Tabs, Typography
 } from '@mui/material';
+import Image from 'next/image';
 import { useState } from 'react';
 import RestaurantFeatures from './RestaurantFeatures';
 
@@ -44,12 +45,15 @@ const RestaurantDetail = ({ restaurant }) => {
             <Grid container spacing={2}>
               {/* Image section */}
               <Grid item xs={12}>
-                <CardMedia
-                  component="img"
-                  sx={{ width: '100%', borderRadius: 2, maxHeight: 400, objectFit: 'cover' }}
-                  image={restaurant.restaurant_image}
-                  alt="Restaurant Image"
-                />
+                <Box sx={{ position: 'relative', width: '100%', height: 400, borderRadius: 2, overflow: 'hidden' }}>
+                  <Image
+                    src={restaurant.restaurant_image || '/default-restaurant-image.jpg'}
+                    alt={restaurant.name || 'Restaurant Image'}
+                    fill
+                    sizes="(max-width: 900px) 100vw, 900px"
+                    style={{ objectFit: 'cover' }}
+                  />
+                </Box>
               </Grid>
 
               {/* Tabs section */}

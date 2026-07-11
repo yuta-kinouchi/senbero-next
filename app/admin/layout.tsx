@@ -1,5 +1,6 @@
 // app/admin/layout.tsx
 "use client";
+import BarChartIcon from "@mui/icons-material/BarChart";
 import DashboardIcon from "@mui/icons-material/Dashboard";
 import LogoutIcon from "@mui/icons-material/Logout";
 import RestaurantIcon from "@mui/icons-material/Restaurant";
@@ -38,6 +39,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const menuItems = [
     { text: "ダッシュボード", icon: <DashboardIcon />, path: "/admin" },
     { text: "レストラン管理", icon: <RestaurantIcon />, path: "/admin/restaurants" },
+    { text: "アクセス状況", icon: <BarChartIcon />, path: "/admin/analytics" },
   ];
 
   const isPathSelected = (menuPath: string) => {
@@ -49,6 +51,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       return pathname === "/admin";
     }
     if (menuPath === "/admin/restaurants" && pathname?.startsWith("/admin/restaurants")) {
+      return true;
+    }
+    if (menuPath === "/admin/analytics" && pathname?.startsWith("/admin/analytics")) {
       return true;
     }
 
