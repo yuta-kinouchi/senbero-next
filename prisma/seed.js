@@ -30,6 +30,12 @@ function processBooleanAsInteger(value) {
   return value.toLowerCase() === 'true' || value === '1' ? 1 : 0
 }
 
+function parseDayOfWeek(day) {
+  const days = ['日', '月', '火', '水', '木', '金', '土']
+  const index = days.indexOf(day)
+  return index !== -1 ? index : parseInt(day, 10)
+}
+
 async function main() {
   console.log("Seeding process started")
 
@@ -124,7 +130,7 @@ async function main() {
         await prisma.operatingHour.create({
           data: {
             restaurant_id: restaurantId,
-            day_of_week: row.day_of_week || undefined,
+            day_of_week: parseDayOfWeek(row.day_of_week),
             open_time: row.open_time ? new Date(formatDateTime(row.open_time) || '') : undefined,
             close_time: row.close_time ? new Date(formatDateTime(row.close_time) || '') : undefined,
             drink_last_order_time: row.drink_last_order_time ? new Date(formatDateTime(row.drink_last_order_time) || '') : undefined,
