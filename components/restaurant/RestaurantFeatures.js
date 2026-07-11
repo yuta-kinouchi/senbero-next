@@ -15,10 +15,11 @@ import {
   Typography,
 } from '@mui/material';
 import React from 'react';
+import { palette } from '@/styles/theme';
 
 const FeatureItem = ({ icon: Icon, label, isActive, description }) => (
   <Box sx={{ display: 'flex', alignItems: 'center', m: 2 }}>
-    <Box sx={{ mr: 2, color: isActive ? '#ffc107' : 'action.disabled' }}>
+    <Box sx={{ mr: 2, color: isActive ? 'primary.main' : 'action.disabled' }}>
       <Icon fontSize="large" />
     </Box>
     <Box sx={{ flexGrow: 1 }}>
@@ -35,12 +36,34 @@ const FeatureItem = ({ icon: Icon, label, isActive, description }) => (
 );
 
 const PriceItem = ({ icon: Icon, label, price }) => (
-  <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', m: 2 }}>
-    <Icon fontSize="large" sx={{ color: '#ffc107', mb: 1 }} />
-    <Typography variant="subtitle1" component="div">
+  <Box
+    sx={{
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      flexDirection: 'column',
+      p: 2,
+    }}
+  >
+    <Box
+      sx={{
+        bgcolor: palette.amberSoft,
+        color: 'primary.main',
+        borderRadius: '50%',
+        width: 56,
+        height: 56,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        mb: 1,
+      }}
+    >
+      <Icon fontSize="medium" />
+    </Box>
+    <Typography variant="body2" color="text.secondary">
       {label}
     </Typography>
-    <Typography variant="h6" component="div" sx={{ mt: 1 }}>
+    <Typography variant="h6" component="div" sx={{ mt: 0.5, fontWeight: 700 }}>
       ¥{price}
     </Typography>
   </Box>
