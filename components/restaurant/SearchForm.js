@@ -141,115 +141,129 @@ const SearchForm = () => {
   };
 
   return (
-    <Container fixed>
-      <Typography
-        align="center"
-        variant="h5"
+    <Container maxWidth="sm" sx={{ pt: isMobile ? 6 : 10, pb: 8 }}>
+      <Box
         sx={{
-          color: "white",
-          margin: "48px 0px 24px 0px",
-          fontSize: isMobile ? "20px" : "24px",
+          textAlign: 'center',
+          px: { xs: 1, sm: 0 },
         }}
       >
-        せんべろ好きのための検索サイト
-      </Typography>
-      <Box
-        display="flex"
-        flexDirection={isMobile ? "column" : "row"}
-        justifyContent="center"
-        alignItems="center"
-      >
-        <SportsBarRoundedIcon style={{ fontSize: 80, color: "white" }} />
-        <Typography
-          variant="h2"
+        <Box
           sx={{
-            color: "white",
-            fontSize: isMobile ? "28px" : "48px",
-            marginLeft: isMobile ? "0px" : "10px",
-            marginTop: isMobile ? "10px" : "0px",
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: 1,
+            px: 2,
+            py: 0.5,
+            mb: 3,
+            borderRadius: 999,
+            bgcolor: 'primary.main',
+            color: 'primary.contrastText',
           }}
         >
-          せんべろCheers
+          <Typography variant="body2" sx={{ fontWeight: 700, letterSpacing: 0.5 }}>
+            せんべろ好きのための検索サイト
+          </Typography>
+        </Box>
+
+        <Box
+          display="flex"
+          flexDirection={isMobile ? 'column' : 'row'}
+          justifyContent="center"
+          alignItems="center"
+          gap={isMobile ? 1 : 2}
+        >
+          <SportsBarRoundedIcon sx={{ fontSize: isMobile ? 56 : 72, color: 'primary.main' }} />
+          <Typography
+            variant="h2"
+            sx={{
+              color: 'text.primary',
+              fontWeight: 900,
+              fontSize: isMobile ? '30px' : '48px',
+            }}
+          >
+            せんべろCheers
+          </Typography>
+        </Box>
+
+        <Typography
+          variant="h5"
+          sx={{
+            color: 'text.primary',
+            fontWeight: 700,
+            mt: 6,
+            mb: 2,
+            fontSize: isMobile ? '19px' : '26px',
+          }}
+        >
+          イマココ検索とは？
+        </Typography>
+        <Typography
+          sx={{
+            color: 'text.secondary',
+            fontSize: isMobile ? '14px' : '16px',
+            lineHeight: 1.9,
+          }}
+        >
+          次のお店はどこにしようか？
+          <br />
+          お店探しもはしご酒の醍醐味。
+          <br />
+          そんなあなたへ送るはしご酒専用検索機能。
+          <br />
+          「イマ」営業中の居酒屋を「ココ」から近い順に表示します。
+          <br />
+          <br />
+          新しいお店との出会いに乾杯。
         </Typography>
       </Box>
-      <Typography
-        align="center"
-        variant="h4"
-        sx={{
-          color: "white",
-          margin: "60px 0px 12px 0px",
-          fontSize: isMobile ? "20px" : "32px",
-        }}
-      >
-        イマココ検索とは？
-      </Typography>
-      <Typography
-        align="center"
-        sx={{
-          color: "white",
-          fontSize: isMobile ? "14px" : "18px",
-          margin: "0px 0px 48px 0px",
-        }}
-      >
-        次のお店はどこにしようか？
-        <br />
-        お店探しもはしご酒の醍醐味
-        <br />
-        そんなあなたへ送るはしご酒専用検索機能
-        <br />
-        「イマ」営業中の居酒屋を
-        <br />
-        「ココ」から近い順に表示します。
-        <br />
-        <br />
-        新しいお店との出会いに乾杯
-      </Typography>
+
       <Box
         sx={{
-          backgroundColor: "lightyellow",
-          border: "1px solid yellow",
-          padding: "16px",
-          marginTop: "20px",
-          marginBottom: "20px",
-          borderRadius: "8px",
+          bgcolor: 'background.paper',
+          border: '1px solid',
+          borderColor: 'primary.main',
+          borderRadius: 3,
+          px: 2,
+          py: 1.5,
+          mt: 4,
+          mb: 4,
         }}
       >
         <Typography
           align="center"
           sx={{
-            fontSize: isMobile ? "12px" : "16px",
+            color: 'text.secondary',
+            fontSize: isMobile ? '12px' : '14px',
           }}
         >
           ※このアプリは位置情報を使用します。機能を利用する際には位置情報の使用許可が必要になります。
         </Typography>
       </Box>
+
       <Box
         display="flex"
+        flexDirection={isMobile ? 'column' : 'row'}
         justifyContent="center"
-        sx={{ marginTop: "20px" }}
+        gap={1.5}
       >
         <Button
           variant="contained"
           color="primary"
           onClick={handleSearch}
-          sx={{
-            fontSize: isMobile ? "14px" : "16px",
-            padding: isMobile ? "8px 16px" : "12px 24px",
-            borderRadius: "8px",
-            marginRight: "10px",
-          }}
+          fullWidth={isMobile}
+          size="large"
+          sx={{ px: 4 }}
         >
           イマココ検索
         </Button>
         <Button
           variant="outlined"
-          color="primary"
+          color="secondary"
           onClick={handleFeatureDialogOpen}
-          sx={{
-            fontSize: isMobile ? "14px" : "16px",
-            padding: isMobile ? "8px 16px" : "12px 24px",
-            borderRadius: "8px",
-          }}
+          fullWidth={isMobile}
+          size="large"
+          sx={{ px: 4 }}
         >
           特徴から検索
         </Button>
