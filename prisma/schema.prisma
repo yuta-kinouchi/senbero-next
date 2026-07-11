@@ -120,3 +120,15 @@ model Photo {
   
   post          Post      @relation(fields: [post_id], references: [post_id])
 }
+
+model PageView {
+  id          Int      @id @default(autoincrement())
+  path        String
+  visitor_id  String   @map("visitor_id")
+  referrer    String?
+  user_agent  String?  @map("user_agent")
+  created_at  DateTime @default(now()) @map("created_at")
+
+  @@index([created_at])
+  @@index([visitor_id])
+}

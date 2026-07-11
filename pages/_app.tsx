@@ -4,13 +4,17 @@ import { useRouter } from 'next/router';
 import Script from 'next/script';
 import { useEffect } from 'react';
 import * as gtag from '../lib/gtag'; // gtagモジュールのインポートを確認してください
+import { trackPageview } from '../lib/track';
 
 export default function App({ Component, pageProps: { session, ...pageProps } }: AppProps) {
   const router = useRouter();
 
   useEffect(() => {
+    trackPageview(router.asPath);
+
     const handleRouterChange = (url: string) => {
       gtag.pageview(url);
+      trackPageview(url);
     };
     router.events.on("routeChangeComplete", handleRouterChange);
     return () => {
