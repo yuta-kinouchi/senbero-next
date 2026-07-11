@@ -1,31 +1,6 @@
 // hooks/useImageUpload.ts
-import { S3Client } from '@aws-sdk/client-s3';
-import { Upload } from '@aws-sdk/lib-storage';
 import imageCompression from 'browser-image-compression';
 import { useState } from 'react';
-
-const getS3Client = () => {
-  if (typeof window === 'undefined') return null;
-  
-  const region = process.env.NEXT_PUBLIC_AWS_REGION;
-  const accessKeyId = process.env.NEXT_PUBLIC_AWS_ACCESS_KEY_ID;
-  const secretAccessKey = process.env.NEXT_PUBLIC_AWS_SECRET_ACCESS_KEY;
-
-  if (!region || !accessKeyId || !secretAccessKey) {
-    throw new Error('AWS credentials are not properly configured');
-  }
-
-  return new S3Client({
-    region,
-    credentials: {
-      accessKeyId,
-      secretAccessKey
-    }
-  });
-};
-
-// S3Clientのインスタンスを作成
-const s3Client = getS3Client();
 
 export const useImageUpload = () => {
   const [uploadProgress, setUploadProgress] = useState(0);
@@ -46,10 +21,6 @@ export const useImageUpload = () => {
 
   const uploadImage = async (file: File, id: string): Promise<string> => {
     try {
-      if (!s3Client) {
-        throw new Error('S3 client is not initialized');
-      }
-
       setUploadProgress(0);
 
       const compressedFile = await imageCompression(file, {
@@ -59,36 +30,22 @@ export const useImageUpload = () => {
         preserveExif: false,
       });
 
-      const bucketName = process.env.NEXT_PUBLIC_S3_BUCKET_NAME;
-      if (!bucketName) {
-        throw new Error('S3 bucket name is not configured');
+      const formData = new FormData();
+      formData.append('image', compressedFile, compressedFile.name);
+
+      const response = await fetch(`/api/restaurants/${id}/upload-image`, {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!response.ok) {
+        const body = await response.json().catch(() => null);
+        throw new Error(body?.error || '画像のアップロードに失敗しました');
       }
 
-      const fileExtension = compressedFile.name.split('.').pop() || 'jpg';
-      const fileName = `restaurant_${id}_${Date.now()}.${fileExtension}`;
-
-      const upload = new Upload({
-        client: s3Client,
-        params: {
-          Bucket: bucketName,
-          Key: fileName,
-          Body: compressedFile,
-          ContentType: compressedFile.type
-        },
-      });
-
-      upload.on("httpUploadProgress", (progress) => {
-        if (progress.loaded && progress.total) {
-          const percentUploaded = Math.round((progress.loaded / progress.total) * 100);
-          setUploadProgress(percentUploaded);
-        }
-      });
-
-      const result = await upload.done();
+      const { url } = await response.json();
       setUploadProgress(100);
-      
-      // Location プロパティがない場合のフォールバック
-      return result.Location || `https://${bucketName}.s3.${process.env.NEXT_PUBLIC_AWS_REGION}.amazonaws.com/${fileName}`;
+      return url;
     } catch (error: any) { // any型の使用は避けたいですが、エラーの型が不明確な場合があります
       console.error("Upload error:", error);
       throw new Error(`画像のアップロードに失敗しました: ${error.message}`);

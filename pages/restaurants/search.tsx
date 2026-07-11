@@ -4,6 +4,7 @@ import RestaurantList from '@/components/restaurant/RestaurantList';
 import { useRestaurantSearch } from '@/hooks/restaurant/useRestaurantSearch';
 import styles from '@/styles/HomePage.module.css';
 
+import Head from 'next/head';
 import { useRouter } from 'next/router';
 import { useMemo } from 'react';
 
@@ -19,12 +20,19 @@ const RestaurantListPage = () => {
     if (loading) {
       return <LoadingState />;
     }
-  
+
     return <RestaurantList restaurants={restaurants} />;
   }, [restaurants, loading]);
-  
+
   return (
     <div className={styles.container}>
+      <Head>
+        <title>お店を探す | せんべろCheers</title>
+        <meta
+          name="description"
+          content="エリアや立ち飲み・角打ち・せんべろセット・昼飲みなどの条件から大衆酒場を検索できます。"
+        />
+      </Head>
       <Navbar />
       {restaurantListComponent}
     </div>
