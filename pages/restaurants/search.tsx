@@ -1,6 +1,7 @@
 import { LoadingState } from '@/components/common/LoadingState';
 import Navbar from '@/components/common/Navbar';
 import RestaurantList from '@/components/restaurant/RestaurantList';
+import SearchFilterChips from '@/components/restaurant/SearchFilterChips';
 import { useRestaurantSearch } from '@/hooks/restaurant/useRestaurantSearch';
 import styles from '@/styles/HomePage.module.css';
 import { Alert, Container } from '@mui/material';
@@ -35,6 +36,7 @@ const RestaurantListPage = () => {
         />
       </Head>
       <Navbar />
+      <SearchFilterChips />
       {error && (
         <Container maxWidth="sm" sx={{ pt: 2 }}>
           <Alert severity="warning">{error}</Alert>
