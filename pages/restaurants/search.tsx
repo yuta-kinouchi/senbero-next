@@ -3,6 +3,7 @@ import Navbar from '@/components/common/Navbar';
 import RestaurantList from '@/components/restaurant/RestaurantList';
 import { useRestaurantSearch } from '@/hooks/restaurant/useRestaurantSearch';
 import styles from '@/styles/HomePage.module.css';
+import { Alert, Container } from '@mui/material';
 
 import Head from 'next/head';
 import { useRouter } from 'next/router';
@@ -34,6 +35,11 @@ const RestaurantListPage = () => {
         />
       </Head>
       <Navbar />
+      {error && (
+        <Container maxWidth="sm" sx={{ pt: 2 }}>
+          <Alert severity="warning">{error}</Alert>
+        </Container>
+      )}
       {restaurantListComponent}
     </div>
   );
