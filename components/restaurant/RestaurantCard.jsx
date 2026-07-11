@@ -1,5 +1,6 @@
 import { AccessTime, DirectionsRun, Place } from "@mui/icons-material";
-import { Box, Card, CardContent, CardMedia, Fab, Typography } from '@mui/material';
+import { Box, Card, CardContent, Fab, Typography } from '@mui/material';
+import Image from 'next/image';
 import { getTodayOperatingHours } from '../../utils/dateUtils';
 
 
@@ -19,13 +20,15 @@ export const RestaurantCard = ({ restaurant, onClick }) => {
       sx={{ position: 'relative'}}
     >
       {/* Restaurant Image */}
-      <CardMedia
-        component="img"
-        className="w-32 h-48"
-        sx={{ height: 200 }}
-        image={restaurant.restaurant_image || '/default-restaurant-image.jpg'}
-        alt={restaurant.name}
-      />
+      <Box className="w-32" sx={{ position: 'relative', width: 128, height: 200, flexShrink: 0 }}>
+        <Image
+          src={restaurant.restaurant_image || '/default-restaurant-image.jpg'}
+          alt={restaurant.name}
+          fill
+          sizes="128px"
+          style={{ objectFit: 'cover' }}
+        />
+      </Box>
 
       {/* Restaurant Details */}
       <Box className="flex-1">
