@@ -17,28 +17,22 @@ const Navbar = () => {
   };
 
   return (
-    <AppBar position="static" style={{ backgroundColor: 'white' }}>
+    <AppBar position="static" sx={{ bgcolor: 'background.paper' }}>
       <Toolbar>
-        <IconButton href="/" edge="start" color="inherit" aria-label="menu" onClick={handleMenuToggle}>
-          <SportsBarIcon style={{ color: 'black' }} />
+        <IconButton href="/" edge="start" aria-label="menu" onClick={handleMenuToggle}>
+          <SportsBarIcon sx={{ color: 'primary.main' }} />
         </IconButton>
-        <Typography variant="h6" style={{ flexGrow: 1, color: 'black' }}>
+        <Typography variant="h6" sx={{ flexGrow: 1, color: 'text.primary', fontWeight: 700 }}>
           せんべろCheers
         </Typography>
-        
+
         {/* レストラン追加ボタン */}
         <Button
           href="/restaurants/new"  // 新規追加ページへのリンク
-          color="inherit"
+          variant="outlined"
+          color="secondary"
           startIcon={<AddIcon />}
-          style={{ 
-            color: 'black',
-            marginRight: '1rem',
-            backgroundColor: '#f5f5f5',
-            '&:hover': {
-              backgroundColor: '#e0e0e0'
-            }
-          }}
+          size="small"
         >
           店舗を追加
         </Button>

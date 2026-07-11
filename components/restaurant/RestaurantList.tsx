@@ -30,8 +30,8 @@ export const RestaurantList: React.FC<RestaurantListProps> = ({ restaurants }) =
   }
 
   return (
-    <Container sx={{ p: 0 }}>
-      <Stack spacing={1} sx={{ pb: 5 }}>
+    <Container maxWidth="sm" sx={{ px: { xs: 1.5, sm: 2 }, pt: 2 }}>
+      <Stack spacing={1.5} sx={{ pb: 5 }}>
         {restaurants.map((restaurant) => (
           <RestaurantCard
             key={restaurant.restaurant_id}

@@ -1,11 +1,22 @@
+import CssBaseline from '@mui/material/CssBaseline';
+import { ThemeProvider } from '@mui/material/styles';
 import { SessionProvider } from 'next-auth/react';
 import { AppProps } from 'next/app';
+import { Noto_Sans_JP } from 'next/font/google';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
 import Script from 'next/script';
 import { useEffect } from 'react';
 import * as gtag from '../lib/gtag'; // gtagモジュールのインポートを確認してください
+import theme from '../styles/theme';
 import { trackPageview } from '../lib/track';
+
+const notoSansJP = Noto_Sans_JP({
+  subsets: ['latin'],
+  weight: ['400', '500', '700', '900'],
+  variable: '--font-sans',
+  display: 'swap',
+});
 
 export default function App({ Component, pageProps: { session, ...pageProps } }: AppProps) {
   const router = useRouter();
@@ -50,9 +61,14 @@ export default function App({ Component, pageProps: { session, ...pageProps } }:
           `,
         }}
       />
-      <SessionProvider session={session}>
-        <Component {...pageProps} />
-      </SessionProvider>
+      <ThemeProvider theme={theme}>
+        <CssBaseline />
+        <div className={notoSansJP.variable}>
+          <SessionProvider session={session}>
+            <Component {...pageProps} />
+          </SessionProvider>
+        </div>
+      </ThemeProvider>
     </>
   );
 }
