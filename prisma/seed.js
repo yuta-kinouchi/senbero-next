@@ -9,10 +9,6 @@ function isValidDate(dateString) {
   return !isNaN(Date.parse(dateString))
 }
 
-function getCurrentMySQLDateTime() {
-  return new Date().toISOString().slice(0, 19).replace('T', ' ')
-}
-
 function formatDateTime(timeString) {
   const defaultDate = '1970-01-01'
   const dateTimeString = `${defaultDate}T${timeString}.000Z`
@@ -22,12 +18,12 @@ function formatDateTime(timeString) {
     return null
   }
 
-  return date.toISOString().slice(0, 19).replace('T', ' ')
+  return date
 }
 
-function processBooleanAsInteger(value) {
-  if (value === null || value === undefined) return 0
-  return value.toLowerCase() === 'true' || value === '1' ? 1 : 0
+function parseBoolean(value) {
+  if (value === null || value === undefined) return false
+  return value.toLowerCase() === 'true' || value === '1'
 }
 
 function parseDayOfWeek(day) {
@@ -36,8 +32,64 @@ function parseDayOfWeek(day) {
   return index !== -1 ? index : parseInt(day, 10)
 }
 
+function parseIntOrNull(value) {
+  if (!value) return null
+  const num = parseInt(value, 10)
+  return isNaN(num) ? null : num
+}
+
+function buildRestaurantData(row, now) {
+  return {
+    name: row.name || undefined,
+    phone_number: row.phone_number || null,
+    country: row.country || '日本',
+    state: row.state || '',
+    city: row.city || '',
+    address_line1: row.address_line1 || '',
+    address_line2: row.address_line2 || '',
+    latitude: row.latitude ? parseFloat(row.latitude) : 0,
+    longitude: row.longitude ? parseFloat(row.longitude) : 0,
+    capacity: parseIntOrNull(row.capacity),
+    home_page: row.home_page || null,
+    description: row.description || null,
+    special_rule: row.special_rule || null,
+    morning_available: parseBoolean(row.morning_available),
+    daytime_available: parseBoolean(row.daytime_available),
+    has_set: parseBoolean(row.has_set),
+    senbero_description: row.senbero_description || null,
+    has_chinchiro: parseBoolean(row.has_chinchiro),
+    chinchiro_description: row.chinchiro_description || null,
+    outside_available: parseBoolean(row.outside_available),
+    outside_description: row.outside_description || null,
+    is_standing: parseBoolean(row.is_standing),
+    standing_description: row.standing_description || null,
+    is_kakuuchi: parseBoolean(row.is_kakuuchi),
+    is_cash_on: parseBoolean(row.is_cash_on),
+    has_charge: parseBoolean(row.has_charge),
+    charge_description: row.charge_description || null,
+    has_tv: parseBoolean(row.has_tv),
+    smoking_allowed: parseBoolean(row.smoking_allowed),
+    has_happy_hour: parseBoolean(row.has_happy_hour),
+    restaurant_image: row.restaurant_image || null,
+    credit_card: parseBoolean(row.credit_card),
+    credit_card_description: row.credit_card_description || null,
+    beer_price: parseIntOrNull(row.beer_price),
+    beer_types: row.beer_types || null,
+    chuhai_price: parseIntOrNull(row.chuhai_price),
+    set_price: parseIntOrNull(row.set_price),
+    signature_menu: row.signature_menu || null,
+    has_hoppy: parseBoolean(row.has_hoppy),
+    solo_friendly: parseBoolean(row.solo_friendly),
+    nearest_station: row.nearest_station || null,
+    happy_hour_description: row.happy_hour_description || null,
+    qr_payment: parseBoolean(row.qr_payment),
+    created_at: isValidDate(row.created_at) ? new Date(row.created_at) : now,
+    updated_at: now,
+  }
+}
+
 async function main() {
-  console.log("Seeding process started")
+  console.log('Seeding process started')
 
   const filePath = path.join(process.cwd(), 'data', 'restaurants.csv')
 
@@ -60,93 +112,64 @@ async function main() {
 
   console.log(`CSV parsing completed. ${results.length} rows found.`)
 
+  // CSVは「1店舗 x 営業曜日」で複数行になっているため、店舗ごとにまとめる
+  const restaurantRows = new Map()
   for (const row of results) {
-    const currentDateTime = getCurrentMySQLDateTime()
+    const id = parseInt(row.restaurant_id, 10)
+    if (isNaN(id)) continue
+    if (!restaurantRows.has(id)) {
+      restaurantRows.set(id, [])
+    }
+    restaurantRows.get(id).push(row)
+  }
 
-    let restaurantId = parseInt(row.restaurant_id)
-    let restaurantExists = false
+  console.log(`${restaurantRows.size} unique restaurants found.`)
 
-    if (!isNaN(restaurantId)) {
-      const existingRestaurant = await prisma.restaurant.findUnique({
-        where: { restaurant_id: restaurantId }
+  const now = new Date()
+
+  for (const [restaurantId, rows] of restaurantRows) {
+    const data = buildRestaurantData(rows[0], now)
+
+    try {
+      // 冪等にするため upsert: 既存店舗は属性を更新、新規は作成
+      await prisma.restaurant.upsert({
+        where: { restaurant_id: restaurantId },
+        update: data,
+        create: { restaurant_id: restaurantId, ...data },
       })
 
-      if (existingRestaurant) {
-        restaurantExists = true
-        console.log(`Restaurant ID ${restaurantId} already exists.`)
+      // 営業時間は洗い替え(全削除→再作成)。重複登録を防ぐ
+      await prisma.operatingHour.deleteMany({
+        where: { restaurant_id: restaurantId },
+      })
+
+      const hoursData = rows
+        .filter((row) => row.day_of_week !== undefined && row.day_of_week !== '')
+        .map((row) => ({
+          restaurant_id: restaurantId,
+          day_of_week: parseDayOfWeek(row.day_of_week),
+          open_time: row.open_time ? formatDateTime(row.open_time) : null,
+          close_time: row.close_time ? formatDateTime(row.close_time) : null,
+          drink_last_order_time: row.drink_last_order_time ? formatDateTime(row.drink_last_order_time) : null,
+          food_last_order_time: row.food_last_order_time ? formatDateTime(row.food_last_order_time) : null,
+          happy_hour_start: row.happy_hour_start ? formatDateTime(row.happy_hour_start) : null,
+          happy_hour_end: row.happy_hour_end ? formatDateTime(row.happy_hour_end) : null,
+          created_at: now,
+          updated_at: now,
+        }))
+        .filter((h) => h.open_time && h.close_time)
+
+      if (hoursData.length > 0) {
+        await prisma.operatingHour.createMany({ data: hoursData })
       }
-    }
 
-    if (!restaurantExists) {
-      try {
-        const restaurant = await prisma.restaurant.create({
-          data: {
-            restaurant_id: isNaN(restaurantId) ? undefined : restaurantId,
-            name: row.name || undefined,
-            phone_number: row.phone_number || undefined,
-            country: row.country || undefined,
-            state: row.state || undefined,
-            city: row.city || undefined,
-            address_line1: row.address_line1 || undefined,
-            address_line2: row.address_line2 || undefined,
-            latitude: row.latitude ? parseFloat(row.latitude) : undefined,
-            longitude: row.longitude ? parseFloat(row.longitude) : undefined,
-            capacity: row.capacity ? parseInt(row.capacity) : undefined,
-            home_page: row.home_page || undefined,
-            description: row.description || undefined,
-            special_rule: row.special_rule || undefined,
-            morning_available: !!processBooleanAsInteger(row.morning_available),
-            daytime_available: !!processBooleanAsInteger(row.daytime_available),
-            has_set: !!processBooleanAsInteger(row.has_set),
-            senbero_description: row.senbero_description || undefined,
-            has_chinchiro: !!processBooleanAsInteger(row.has_chinchiro),
-            chinchiro_description: row.chinchiro_description || undefined,
-            outside_available: !!processBooleanAsInteger(row.outside_available),
-            outside_description: row.outside_description || undefined,
-            is_standing: !!processBooleanAsInteger(row.is_standing),
-            standing_description: row.standing_description || undefined,
-            is_kakuuchi: !!processBooleanAsInteger(row.is_kakuuchi),
-            is_cash_on: !!processBooleanAsInteger(row.is_cash_on),
-            has_charge: !!processBooleanAsInteger(row.has_charge),
-            charge_description: row.charge_description || undefined,
-            has_tv: !!processBooleanAsInteger(row.has_tv),
-            smoking_allowed: !!processBooleanAsInteger(row.smoking_allowed),
-            has_happy_hour: !!processBooleanAsInteger(row.has_happy_hour),
-            created_at: isValidDate(row.created_at) ? new Date(row.created_at) : new Date(currentDateTime),
-            updated_at: isValidDate(row.updated_at) ? new Date(row.updated_at) : new Date(currentDateTime)
-          }
-        })
-
-        restaurantId = restaurant.restaurant_id
-        console.log(`Inserted restaurant: ${restaurant.name} (ID: ${restaurantId})`)
-      } catch (dbError) {
-        console.error(`Database error inserting restaurant ${row.name}:`, dbError)
-        continue
-      }
-    }
-
-    if (row.day_of_week && restaurantId) {
-      try {
-        await prisma.operatingHour.create({
-          data: {
-            restaurant_id: restaurantId,
-            day_of_week: parseDayOfWeek(row.day_of_week),
-            open_time: row.open_time ? new Date(formatDateTime(row.open_time) || '') : undefined,
-            close_time: row.close_time ? new Date(formatDateTime(row.close_time) || '') : undefined,
-            drink_last_order_time: row.drink_last_order_time ? new Date(formatDateTime(row.drink_last_order_time) || '') : undefined,
-            food_last_order_time: row.food_last_order_time ? new Date(formatDateTime(row.food_last_order_time) || '') : undefined,
-            created_at: isValidDate(row.created_at) ? new Date(row.created_at) : new Date(currentDateTime),
-            updated_at: isValidDate(row.updated_at) ? new Date(row.updated_at) : new Date(currentDateTime)
-          }
-        })
-
-        console.log(`Inserted operating hours for restaurantID: ${restaurantId}, day: ${row.day_of_week}`)
-      } catch (dbError) {
-        console.error(`Database error inserting operating hours for restaurantID: ${restaurantId}:`, dbError)
-      }
+      console.log(`Upserted restaurant ${restaurantId} (${data.name}) with ${hoursData.length} operating hours`)
+    } catch (dbError) {
+      console.error(`Database error for restaurant ${restaurantId} (${rows[0].name}):`, dbError)
     }
   }
-  console.log("Seeding completed successfully")
+
+  console.log('Seeding completed successfully')
 }
 
 main()

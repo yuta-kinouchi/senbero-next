@@ -1,4 +1,4 @@
-import { AccessTime, DirectionsRun, Place } from "@mui/icons-material";
+import { AccessTime, DirectionsRun, Place, RestaurantMenu } from "@mui/icons-material";
 import { Box, Card, CardContent, Chip, Fab, Typography } from '@mui/material';
 import Image from 'next/image';
 import { palette } from '../../styles/theme';
@@ -57,6 +57,14 @@ export const RestaurantCard = ({ restaurant, onClick }) => {
               {getTodayOperatingHours(restaurant.operating_hours)}
             </Typography>
           </Box>
+          {restaurant.signature_menu && (
+            <Box display="flex" alignItems="center" mt={0.5} sx={{ color: 'text.secondary' }}>
+              <RestaurantMenu sx={{ mr: 0.75, fontSize: 18 }} />
+              <Typography variant="body2" noWrap>
+                名物: {restaurant.signature_menu}
+              </Typography>
+            </Box>
+          )}
           {restaurant.distance != null && (
             <Box display="flex" alignItems="center" mt={0.5} sx={{ color: 'text.secondary' }}>
               <DirectionsRun sx={{ mr: 0.75, fontSize: 18 }} />

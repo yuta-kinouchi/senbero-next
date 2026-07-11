@@ -102,6 +102,12 @@ const RestaurantDetail = ({ restaurant }) => {
                       {`${restaurant.state}${restaurant.city}${restaurant.address_line1}${restaurant.address_line2}`}
                     </Typography>
                   </Grid>
+                  {restaurant.nearest_station && (
+                    <Grid item xs={12} sm={6}>
+                      <Typography variant="subtitle2" sx={{ fontWeight: 'bold' }}>最寄り駅</Typography>
+                      <Typography variant="body2">{restaurant.nearest_station}</Typography>
+                    </Grid>
+                  )}
                   {/* Operating Hours section */}
                   <Grid item xs={12}>
                     <Divider sx={{ my: 2 }} />
