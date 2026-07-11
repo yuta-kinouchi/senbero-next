@@ -39,6 +39,8 @@ const SearchForm = () => {
     has_tv: false,
     smoking_allowed: false,
     has_happy_hour: false,
+    has_hoppy: false,
+    solo_friendly: false,
   });
   const [beerPrice, setBeerPrice] = useState(null);
   const [chuhaiPrice, setChuhaiPrice] = useState(null);
@@ -50,6 +52,7 @@ const SearchForm = () => {
         { name: 'has_set', label: 'せんべろセット', icon: <SportsBarRoundedIcon /> },
         { name: 'has_happy_hour', label: 'ハッピーアワー', icon: <SportsBarRoundedIcon /> },
         { name: 'has_chinchiro', label: 'チンチロ', icon: <CasinoIcon /> },
+        { name: 'has_hoppy', label: 'ホッピー', icon: <SportsBarRoundedIcon /> },
       ]
     },
     {
@@ -65,6 +68,7 @@ const SearchForm = () => {
         { name: 'outside_available', label: '外飲み', icon: <DeckRoundedIcon /> },
         { name: 'is_standing', label: '立ち飲み', icon: <SportsBarRoundedIcon /> },
         { name: 'is_kakuuchi', label: '角打ち', icon: <SportsBarRoundedIcon /> },
+        { name: 'solo_friendly', label: '一人飲み歓迎', icon: <SportsBarRoundedIcon /> },
       ]
     },
     {

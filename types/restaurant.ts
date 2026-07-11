@@ -55,6 +55,13 @@ export interface Restaurant {
   beer_price?: number;
   beer_types?: string;
   chuhai_price?: number;
+  set_price?: number;
+  signature_menu?: string;
+  has_hoppy?: boolean;
+  solo_friendly?: boolean;
+  nearest_station?: string;
+  happy_hour_description?: string;
+  qr_payment?: boolean;
   deleted_at?: Date;
 
   operating_hours?: OperatingHour[];

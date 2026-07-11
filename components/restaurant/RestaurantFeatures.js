@@ -73,9 +73,10 @@ const featureCategories = [
   {
     category: "楽しみ方",
     items: [
-      { name: 'has_set', label: 'せんべろセット', icon: SportsBar },
-      { name: 'has_happy_hour', label: 'ハッピーアワー', icon: SportsBar },
-      { name: 'has_chinchiro', label: 'チンチロ', icon: Casino },
+      { name: 'has_set', label: 'せんべろセット', icon: SportsBar, descriptionKey: 'senbero_description' },
+      { name: 'has_happy_hour', label: 'ハッピーアワー', icon: SportsBar, descriptionKey: 'happy_hour_description' },
+      { name: 'has_chinchiro', label: 'チンチロ', icon: Casino, descriptionKey: 'chinchiro_description' },
+      { name: 'has_hoppy', label: 'ホッピー', icon: SportsBar },
     ]
   },
   {
@@ -88,17 +89,19 @@ const featureCategories = [
   {
     category: "雰囲気",
     items: [
-      { name: 'outside_available', label: '外飲み', icon: Deck },
-      { name: 'is_standing', label: '立ち飲み', icon: SportsBar },
+      { name: 'outside_available', label: '外飲み', icon: Deck, descriptionKey: 'outside_description' },
+      { name: 'is_standing', label: '立ち飲み', icon: SportsBar, descriptionKey: 'standing_description' },
       { name: 'is_kakuuchi', label: '角打ち', icon: SportsBar },
+      { name: 'solo_friendly', label: '一人飲み歓迎', icon: SportsBar },
     ]
   },
   {
     category: "支払い",
     items: [
       { name: 'is_cash_on', label: 'キャッシュオン', icon: Payments },
-      { name: 'has_charge', label: 'チャージ', icon: Payments },
-      { name: 'credit_card', label: 'クレカ利用可能', icon: CreditCardIcon },
+      { name: 'has_charge', label: 'チャージ', icon: Payments, descriptionKey: 'charge_description' },
+      { name: 'credit_card', label: 'クレカ利用可能', icon: CreditCardIcon, descriptionKey: 'credit_card_description' },
+      { name: 'qr_payment', label: 'QRコード決済', icon: Payments },
     ]
   },
   {
@@ -117,22 +120,41 @@ const RestaurantFeatures = ({ restaurant }) => (
         料金
       </Typography>
       <Grid container spacing={2}>
-        <Grid item xs={6}>
+        <Grid item xs={4}>
           <PriceItem
             icon={SportsBar}
             label="ビール"
             price={restaurant.beer_price || "未設定"}
           />
         </Grid>
-        <Grid item xs={6}>
+        <Grid item xs={4}>
           <PriceItem
             icon={LocalDrink}
             label="酎ハイ"
             price={restaurant.chuhai_price || "未設定"}
           />
         </Grid>
+        <Grid item xs={4}>
+          <PriceItem
+            icon={SportsBar}
+            label="せんべろセット"
+            price={restaurant.set_price || "未設定"}
+          />
+        </Grid>
       </Grid>
     </Box>
+
+    {restaurant.signature_menu && (
+      <>
+        <Divider sx={{ my: 3 }} />
+        <Box>
+          <Typography variant="h6" sx={{ mb: 1 }}>名物</Typography>
+          <Typography variant="body1" sx={{ fontWeight: 700 }}>
+            {restaurant.signature_menu}
+          </Typography>
+        </Box>
+      </>
+    )}
 
     <Divider sx={{ my: 3 }} />
 
@@ -147,7 +169,7 @@ const RestaurantFeatures = ({ restaurant }) => (
               icon={item.icon}
               label={item.label}
               isActive={Boolean(restaurant[item.name])}
-              description={restaurant[`${item.name}_description`]}
+              description={item.descriptionKey ? restaurant[item.descriptionKey] : undefined}
             />
             <Divider />
           </React.Fragment>

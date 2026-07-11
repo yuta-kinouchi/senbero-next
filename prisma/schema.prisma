@@ -66,6 +66,13 @@ model Restaurant {
   beer_price          Int?
   beer_types          String?
   chuhai_price        Int?
+  set_price           Int?
+  signature_menu      String?
+  has_hoppy           Boolean?
+  solo_friendly       Boolean?
+  nearest_station     String?
+  happy_hour_description String?
+  qr_payment          Boolean?
   deleted_at     DateTime? @map("deleted_at")
   created_at     DateTime  @default(now()) @map("created_at")
   updated_at     DateTime  @updatedAt @map("updated_at")

@@ -9,6 +9,8 @@ export const FEATURE_TAGS: { key: string; label: string }[] = [
   { key: 'has_happy_hour', label: 'ハッピーアワー' },
   { key: 'has_chinchiro', label: 'チンチロ' },
   { key: 'outside_available', label: '外飲み' },
+  { key: 'has_hoppy', label: 'ホッピー' },
+  { key: 'solo_friendly', label: '一人飲み歓迎' },
 ];
 
 // 距離(km)を徒歩分数に換算する（不動産表示で使われる80m/分基準）
