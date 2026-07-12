@@ -64,6 +64,9 @@ export interface Restaurant {
   qr_payment?: boolean;
   deleted_at?: Date;
 
+  // イマココ検索時に検索APIが付与する現在地からの距離(km)
+  distance?: number;
+
   operating_hours?: OperatingHour[];
 }
 

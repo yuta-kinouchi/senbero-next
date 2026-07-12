@@ -17,3 +17,11 @@ export const FEATURE_TAGS: { key: string; label: string }[] = [
 export const walkMinutes = (distanceKm: number): number => {
   return Math.max(1, Math.ceil((distanceKm * 1000) / 80));
 };
+
+// はしご酒で「歩いて行ける」と見なす上限(分)。
+// イマココ検索の結果リストはこの境界で区切って表示する。
+export const WALKABLE_LIMIT_MINUTES = 15;
+
+export const isWalkable = (distanceKm: number): boolean => {
+  return walkMinutes(distanceKm) <= WALKABLE_LIMIT_MINUTES;
+};

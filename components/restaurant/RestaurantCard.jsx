@@ -72,7 +72,9 @@ export const RestaurantCard = ({ restaurant, onClick }) => {
             <Box display="flex" alignItems="center" mt={0.5} sx={{ color: 'text.secondary' }}>
               <DirectionsRun sx={{ mr: 0.75, fontSize: 18 }} />
               <Typography variant="body2">
-                徒歩{walkMinutes(restaurant.distance)}分（{restaurant.distance.toFixed(1)}km）
+                {walkMinutes(restaurant.distance) <= 60
+                  ? `徒歩${walkMinutes(restaurant.distance)}分（${restaurant.distance.toFixed(1)}km）`
+                  : `${restaurant.distance.toFixed(1)}km`}
               </Typography>
             </Box>
           )}
