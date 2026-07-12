@@ -1,18 +1,23 @@
-import { PrismaClient } from '@prisma/client';
+import { AREAS } from '@/lib/areas';
+import prisma from '@/lib/prisma';
+import { getSiteUrl } from '@/lib/siteUrl';
 import type { MetadataRoute } from 'next';
 
-const prisma = new PrismaClient();
-
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
+  const baseUrl = getSiteUrl();
 
   const restaurants = await prisma.restaurant.findMany({
+    where: { deleted_at: null },
     select: { restaurant_id: true, updated_at: true },
   });
 
   const staticRoutes: MetadataRoute.Sitemap = [
     { url: baseUrl, lastModified: new Date() },
     { url: `${baseUrl}/restaurants/search`, lastModified: new Date() },
+    ...AREAS.map((area) => ({
+      url: `${baseUrl}/areas/${area.slug}`,
+      lastModified: new Date(),
+    })),
   ];
 
   const restaurantRoutes: MetadataRoute.Sitemap = restaurants.map((restaurant) => ({
