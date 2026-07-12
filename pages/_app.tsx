@@ -43,6 +43,10 @@ export default function App({ Component, pageProps: { session, ...pageProps } }:
           content="大衆酒場・立ち飲み・せんべろ・角打ち・昼飲みが好きな人のための飲食店検索アプリ。せんべろセットや昼飲み・朝飲みの可否など、こだわり条件からお店を探せます。"
         />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta
+          name="google-site-verification"
+          content="bjXi7Bv1l1GI-xO_rDClhhwBZ_sAPPQIeaqEiUzzbO8"
+        />
       </Head>
       <Script
         strategy="afterInteractive"
