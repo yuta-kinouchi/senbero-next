@@ -45,7 +45,7 @@ export default function App({ Component, pageProps: { session, ...pageProps } }:
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <meta
           name="google-site-verification"
-          content="bjXi7Bv1l1GI-xO_rDClhhwBZ_sAPPQIeaqEiUzzbO8"
+          content="Qxffro3ZPpbQwduDpTvQ1NbU1kSEOZoes-CM3B2Mnc8"
         />
       </Head>
       <Script
