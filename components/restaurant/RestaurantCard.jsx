@@ -6,7 +6,8 @@ import { getTodayOperatingHours } from '../../utils/dateUtils';
 import { FEATURE_TAGS, walkMinutes } from '../../utils/features';
 
 
-export const RestaurantCard = ({ restaurant, onClick }) => {
+// href を渡すと店名が実リンク(<a>)になり、クローラーが詳細ページを辿れる
+export const RestaurantCard = ({ restaurant, onClick, href = '' }) => {
   const activeTags = FEATURE_TAGS.filter((tag) => restaurant[tag.key]);
 
   const handleMapClick = (e) => {
@@ -49,8 +50,16 @@ export const RestaurantCard = ({ restaurant, onClick }) => {
         <CardContent sx={{ py: 1.5, pr: 8 }}>
           <Typography
             variant="subtitle1"
-            component="div"
-            sx={{ fontWeight: 700, lineHeight: 1.3, mb: 1 }}
+            component={href ? 'a' : 'div'}
+            href={href || undefined}
+            sx={{
+              display: 'block',
+              fontWeight: 700,
+              lineHeight: 1.3,
+              mb: 1,
+              color: 'inherit',
+              textDecoration: 'none',
+            }}
           >
             {restaurant.name}
           </Typography>

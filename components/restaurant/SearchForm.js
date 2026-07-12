@@ -17,8 +17,10 @@ import {
   Typography, useMediaQuery
 } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
+import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { useState } from 'react';
+import { AREAS } from '@/lib/areas';
 
 const SearchForm = () => {
   const router = useRouter();
@@ -271,6 +273,21 @@ const SearchForm = () => {
         >
           特徴から検索
         </Button>
+      </Box>
+
+      <Box sx={{ mt: 6, textAlign: 'center' }}>
+        <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1.5, color: 'text.secondary' }}>
+          エリアから探す
+        </Typography>
+        <Box sx={{ display: 'flex', justifyContent: 'center', gap: 3, flexWrap: 'wrap' }}>
+          {AREAS.map((area) => (
+            <Link key={area.slug} href={`/areas/${area.slug}`} style={{ textDecoration: 'none' }}>
+              <Typography variant="body1" sx={{ fontWeight: 700, color: 'primary.dark' }}>
+                {area.label}
+              </Typography>
+            </Link>
+          ))}
+        </Box>
       </Box>
 
       <Dialog open={openFeatureDialog} onClose={handleFeatureDialogClose} maxWidth="md" fullWidth>
