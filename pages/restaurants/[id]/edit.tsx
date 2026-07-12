@@ -22,6 +22,7 @@ const RestaurantEditPage = () => {
     handleInputChange,
     handleCheckboxChange,
     handleSubmit,
+    applyFields,
     setError,
     setSuccessMessage
   } = useRestaurantEdit(id as string);
@@ -84,6 +85,7 @@ const RestaurantEditPage = () => {
           handleSubmit={handleFormSubmit}
           handleCheckboxChange={handleCheckboxChange}
           handleFileChange={handleFileChange}
+          applyFields={applyFields}
           imagePreview={imagePreview}
         />
         <Snackbar
@@ -112,6 +114,7 @@ const RestaurantEditPage = () => {
     handleFormSubmit,
     handleCheckboxChange,
     handleFileChange,
+    applyFields,
     setSuccessMessage
   ]);
 

@@ -24,6 +24,11 @@ export const useRestaurantForm = () => {
     setRestaurant((prev) => ({ ...prev, operating_hours: operatingHours }));
   };
 
+  // GPS取得結果など、複数フィールドをまとめて反映する
+  const applyFields = (fields: Partial<Restaurant>) => {
+    setRestaurant((prev) => ({ ...prev, ...fields }));
+  };
+
   const handleCheckboxChange = (name: string) => (
     e: React.ChangeEvent<HTMLInputElement>
   ) => {
@@ -68,6 +73,7 @@ export const useRestaurantForm = () => {
     handleOperatingHoursChange,
     handleCheckboxChange,
     handleFileChange,
-    handleSubmit
+    handleSubmit,
+    applyFields
   };
 };
