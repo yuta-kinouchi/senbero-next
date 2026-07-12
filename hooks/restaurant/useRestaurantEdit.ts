@@ -42,6 +42,11 @@ export const useRestaurantEdit = (id: string) => {
     setRestaurant((prev) => (prev ? { ...prev, [name]: checked } : null));
   }, []);
 
+  // GPS取得結果など、複数フィールドをまとめて反映する
+  const applyFields = useCallback((fields: Partial<Restaurant>) => {
+    setRestaurant((prev) => (prev ? { ...prev, ...fields } : null));
+  }, []);
+
   const handleSubmit = async (updatedData: Partial<Restaurant>) => {
     setLoading(true);
     setError(null);
@@ -49,11 +54,11 @@ export const useRestaurantEdit = (id: string) => {
     try {
       const updatedRestaurant = await updateRestaurant(parseInt(id), updatedData);
       setRestaurant(updatedRestaurant);
-      setSuccessMessage('レストランの編集に成功しました。詳細ページへ移動します。');
+      setSuccessMessage('保存しました。詳細ページへ移動します。');
 
       setTimeout(() => {
         router.push(`/restaurants/${id}`);
-      }, 3000);
+      }, 1200);
     } catch (error) {
       setError(error instanceof Error ? error.message : '更新に失敗しました');
     } finally {
@@ -69,6 +74,7 @@ export const useRestaurantEdit = (id: string) => {
     handleInputChange,
     handleCheckboxChange,
     handleSubmit,
+    applyFields,
     setError,
     setSuccessMessage
   };

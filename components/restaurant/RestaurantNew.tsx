@@ -23,6 +23,7 @@ import {
   Typography,
 } from '@mui/material';
 import React from 'react';
+import LocationSection from './LocationSection';
 import { OperatingHoursFields } from './OperatingHoursFields';
 
 
@@ -31,11 +32,12 @@ const FeatureEditItem: React.FC<FeatureEditItemProps> = ({
   label,
   isActive = false,
   description,
+  descriptionName,
   onChangeActive,
   onChangeDescription
 }) => (
   <Box sx={{ display: 'flex', alignItems: 'flex-start', mb: 2 }}>
-    <Box sx={{ m: 2, color: isActive ? 'warning.main' : 'action.disabled' }}>
+    <Box sx={{ m: 2, color: isActive ? 'primary.main' : 'action.disabled' }}>
       <Icon fontSize="large" />
     </Box>
     <Box sx={{ flexGrow: 1 }}>
@@ -47,11 +49,13 @@ const FeatureEditItem: React.FC<FeatureEditItemProps> = ({
         />
         <Typography variant="subtitle1">{label}</Typography>
       </Box>
-      {description !== undefined && (
+      {descriptionName !== undefined && (
         <TextField
           fullWidth
           margin="dense"
           variant="outlined"
+          name={descriptionName}
+          placeholder="詳細(任意)"
           value={description || ''}
           onChange={onChangeDescription}
           disabled={!isActive}
@@ -68,6 +72,7 @@ export const RestaurantNew: React.FC<RestaurantFormProps> = ({
   handleSubmit,
   handleCheckboxChange,
   handleFileChange,
+  applyFields,
   imagePreview,
   loading,
 }) => {
@@ -115,6 +120,16 @@ export const RestaurantNew: React.FC<RestaurantFormProps> = ({
               <TextField
                 fullWidth
                 margin="normal"
+                name="signature_menu"
+                label="名物メニュー(例: ハムカツ)"
+                value={restaurant.signature_menu || ''}
+                onChange={(e) => handleInputChange(e)}
+              />
+            </Grid>
+            <Grid item xs={12}>
+              <TextField
+                fullWidth
+                margin="normal"
                 name="description"
                 label="詳細"
                 multiline
@@ -141,7 +156,7 @@ export const RestaurantNew: React.FC<RestaurantFormProps> = ({
                   component="span"
                   startIcon={<CloudUpload />}
                 >
-                  Upload Image
+                  画像を選択
                 </Button>
               </label>
               {imagePreview && (
@@ -152,49 +167,12 @@ export const RestaurantNew: React.FC<RestaurantFormProps> = ({
             </Grid>
           </Grid>
 
-          {/* 住所情報を追加 */}
-          <Grid container spacing={2}>
-            <Grid item xs={12} sm={6}>
-              <TextField
-                fullWidth
-                margin="normal"
-                name="state"
-                label="都道府県"
-                value={restaurant.state || ''}
-                onChange={handleInputChange}
-              />
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <TextField
-                fullWidth
-                margin="normal"
-                name="city"
-                label="市区町村"
-                value={restaurant.city || ''}
-                onChange={handleInputChange}
-              />
-            </Grid>
-            <Grid item xs={12}>
-              <TextField
-                fullWidth
-                margin="normal"
-                name="address_line1"
-                label="住所1"
-                value={restaurant.address_line1 || ''}
-                onChange={handleInputChange}
-              />
-            </Grid>
-            <Grid item xs={12}>
-              <TextField
-                fullWidth
-                margin="normal"
-                name="address_line2"
-                label="住所2"
-                value={restaurant.address_line2 || ''}
-                onChange={handleInputChange}
-              />
-            </Grid>
-          </Grid>
+          {/* 場所(GPS取得つき) */}
+          <LocationSection
+            restaurant={restaurant}
+            onInputChange={handleInputChange}
+            onApplyFields={applyFields}
+          />
           <Grid item xs={12}>
             <OperatingHoursFields
               operatingHours={restaurant.operating_hours || []}
@@ -228,7 +206,18 @@ export const RestaurantNew: React.FC<RestaurantFormProps> = ({
                 onChange={(e) => handleInputChange(e)}
               />
             </Grid>
-            <Grid item xs={12}>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                fullWidth
+                margin="normal"
+                name="set_price"
+                label="せんべろセット価格"
+                type="number"
+                value={restaurant.set_price || ''}
+                onChange={(e) => handleInputChange(e)}
+              />
+            </Grid>
+            <Grid item xs={12} sm={6}>
               <TextField
                 fullWidth
                 margin="normal"
@@ -256,6 +245,7 @@ export const RestaurantNew: React.FC<RestaurantFormProps> = ({
             label="せんべろセット"
             isActive={restaurant.has_set}
             description={restaurant.senbero_description}
+            descriptionName="senbero_description"
             onChangeActive={handleCheckboxChange('has_set')}
             onChangeDescription={(e) => handleInputChange(e)}
           />
@@ -263,15 +253,25 @@ export const RestaurantNew: React.FC<RestaurantFormProps> = ({
             icon={SportsBar}
             label="ハッピーアワー"
             isActive={restaurant.has_happy_hour}
+            description={restaurant.happy_hour_description}
+            descriptionName="happy_hour_description"
             onChangeActive={handleCheckboxChange('has_happy_hour')}
+            onChangeDescription={(e) => handleInputChange(e)}
           />
           <FeatureEditItem
             icon={Casino}
             label="チンチロ"
             isActive={restaurant.has_chinchiro}
             description={restaurant.chinchiro_description}
+            descriptionName="chinchiro_description"
             onChangeActive={handleCheckboxChange('has_chinchiro')}
             onChangeDescription={(e) => handleInputChange(e)}
+          />
+          <FeatureEditItem
+            icon={SportsBar}
+            label="ホッピーあり"
+            isActive={restaurant.has_hoppy}
+            onChangeActive={handleCheckboxChange('has_hoppy')}
           />
 
           <Divider sx={{ my: 2 }} />
@@ -304,6 +304,7 @@ export const RestaurantNew: React.FC<RestaurantFormProps> = ({
             label="外飲み"
             isActive={restaurant.outside_available}
             description={restaurant.outside_description}
+            descriptionName="outside_description"
             onChangeActive={handleCheckboxChange('outside_available')}
             onChangeDescription={(e) => handleInputChange(e)}
           />
@@ -312,6 +313,7 @@ export const RestaurantNew: React.FC<RestaurantFormProps> = ({
             label="立ち飲み"
             isActive={restaurant.is_standing}
             description={restaurant.standing_description}
+            descriptionName="standing_description"
             onChangeActive={handleCheckboxChange('is_standing')}
             onChangeDescription={(e) => handleInputChange(e)}
           />
@@ -320,6 +322,12 @@ export const RestaurantNew: React.FC<RestaurantFormProps> = ({
             label="角打ち"
             isActive={restaurant.is_kakuuchi}
             onChangeActive={handleCheckboxChange('is_kakuuchi')}
+          />
+          <FeatureEditItem
+            icon={SportsBar}
+            label="一人飲み歓迎"
+            isActive={restaurant.solo_friendly}
+            onChangeActive={handleCheckboxChange('solo_friendly')}
           />
 
           <Divider sx={{ my: 2 }} />
@@ -339,6 +347,7 @@ export const RestaurantNew: React.FC<RestaurantFormProps> = ({
             label="チャージあり"
             isActive={restaurant.has_charge}
             description={restaurant.charge_description}
+            descriptionName="charge_description"
             onChangeActive={handleCheckboxChange('has_charge')}
             onChangeDescription={(e) => handleInputChange(e)}
           />
@@ -347,8 +356,15 @@ export const RestaurantNew: React.FC<RestaurantFormProps> = ({
             label="クレジットカード利用可"
             isActive={restaurant.credit_card}
             description={restaurant.credit_card_description}
+            descriptionName="credit_card_description"
             onChangeActive={handleCheckboxChange('credit_card')}
             onChangeDescription={(e) => handleInputChange(e)}
+          />
+          <FeatureEditItem
+            icon={Payments}
+            label="QRコード決済可"
+            isActive={restaurant.qr_payment}
+            onChangeActive={handleCheckboxChange('qr_payment')}
           />
 
           <Divider sx={{ my: 2 }} />
@@ -379,15 +395,30 @@ export const RestaurantNew: React.FC<RestaurantFormProps> = ({
             onChange={(e) => handleInputChange(e)}
           />
 
-          <Button
-            type="submit"
-            variant="contained"
-            color="primary"
-            sx={{ mt: 3 }}
-            disabled={loading}
+          {/* スマホで長いフォームでも常に保存できるよう画面下部に固定 */}
+          <Box
+            sx={{
+              position: 'sticky',
+              bottom: 0,
+              bgcolor: 'background.paper',
+              py: 1.5,
+              mt: 2,
+              borderTop: '1px solid',
+              borderColor: 'divider',
+              zIndex: 1,
+            }}
           >
-            {loading ? 'Sending...' : 'Create Restaurant'}
-          </Button>
+            <Button
+              type="submit"
+              variant="contained"
+              color="primary"
+              fullWidth
+              size="large"
+              disabled={loading}
+            >
+              {loading ? '保存中...' : 'この内容で店舗を追加'}
+            </Button>
+          </Box>
         </Box>
       </CardContent>
     </Card>

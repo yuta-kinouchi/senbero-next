@@ -35,6 +35,8 @@ export default async function handler(req, res) {
         city,
         state,
         country,
+        latitude,
+        longitude,
         phone_number,
         description,
         capacity,
@@ -47,7 +49,9 @@ export default async function handler(req, res) {
         has_set,
         senbero_description,
         has_chinchiro,
+        chinchiro_description,
         has_happy_hour,
+        happy_hour_description,
         outside_available,
         outside_description,
         has_charge,
@@ -61,7 +65,25 @@ export default async function handler(req, res) {
         beer_price,
         beer_types,
         chuhai_price,
+        set_price,
+        signature_menu,
+        has_hoppy,
+        solo_friendly,
+        nearest_station,
+        qr_payment,
       } = req.body;
+
+      // TextField(type=number)経由でも文字列で届くため数値系は必ず変換する
+      const toIntOrNull = (value) => {
+        if (value === undefined || value === null || value === '') return null;
+        const num = parseInt(value, 10);
+        return isNaN(num) ? null : num;
+      };
+      const toFloatOrUndefined = (value) => {
+        if (value === undefined || value === null || value === '') return undefined;
+        const num = parseFloat(value);
+        return isNaN(num) ? undefined : num;
+      };
 
       const updatedRestaurant = await prisma.restaurant.update({
         where: { restaurant_id: parseInt(id) },
@@ -72,9 +94,11 @@ export default async function handler(req, res) {
           city,
           state,
           country,
+          latitude: toFloatOrUndefined(latitude),
+          longitude: toFloatOrUndefined(longitude),
           phone_number,
           description,
-          capacity: capacity ? parseInt(capacity) : null,
+          capacity: toIntOrNull(capacity),
           is_standing,
           standing_description,
           is_kakuuchi,
@@ -84,7 +108,9 @@ export default async function handler(req, res) {
           has_set,
           senbero_description,
           has_chinchiro,
+          chinchiro_description,
           has_happy_hour,
+          happy_hour_description,
           outside_available,
           outside_description,
           has_charge,
@@ -95,9 +121,15 @@ export default async function handler(req, res) {
           restaurant_image,
           credit_card,
           credit_card_description,
-          beer_price,
+          beer_price: toIntOrNull(beer_price),
           beer_types,
-          chuhai_price,
+          chuhai_price: toIntOrNull(chuhai_price),
+          set_price: toIntOrNull(set_price),
+          signature_menu,
+          has_hoppy,
+          solo_friendly,
+          nearest_station,
+          qr_payment,
           updated_at: new Date(),
         },
       });

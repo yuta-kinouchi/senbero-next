@@ -169,6 +169,14 @@ async function main() {
     }
   }
 
+  // CSVはrestaurant_idを明示して投入するため、autoincrementのシーケンスが
+  // 進まない。このままだと新規店舗の作成が既存IDと衝突して失敗するので、
+  // シーケンスを現在の最大IDに合わせる
+  await prisma.$executeRawUnsafe(
+    `SELECT setval(pg_get_serial_sequence('"Restaurant"', 'restaurant_id'), (SELECT COALESCE(MAX(restaurant_id), 1) FROM "Restaurant"))`
+  )
+  console.log('Restaurant id sequence synced')
+
   console.log('Seeding completed successfully')
 }
 

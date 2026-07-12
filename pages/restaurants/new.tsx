@@ -16,7 +16,8 @@ const NewRestaurantPage: React.FC = () => {
     handleOperatingHoursChange,
     handleCheckboxChange,
     handleFileChange,
-    handleSubmit
+    handleSubmit,
+    applyFields
   } = useRestaurantForm();
 
 
@@ -31,6 +32,7 @@ const NewRestaurantPage: React.FC = () => {
           handleSubmit={handleSubmit}
           handleCheckboxChange={handleCheckboxChange}
           handleFileChange={handleFileChange}
+          applyFields={applyFields}
           imagePreview={imagePreview}
           loading={loading}
           error={error}

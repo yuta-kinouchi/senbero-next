@@ -75,6 +75,8 @@ export interface FeatureEditItemProps {
   label: string;
   isActive?: boolean;
   description?: string;
+  // 説明文TextFieldのname属性。これがないとhandleInputChangeで保存されない
+  descriptionName?: string;
   onChangeActive: (event: React.ChangeEvent<HTMLInputElement>) => void;
   onChangeDescription?: (event: React.ChangeEvent<HTMLInputElement>) => void;
 }
@@ -86,6 +88,7 @@ export interface RestaurantFormProps {
   handleSubmit: (e: React.FormEvent<HTMLFormElement>) => Promise<void>; // Promise<void>に変更
   handleCheckboxChange: (name: string) => (event: React.ChangeEvent<HTMLInputElement>) => void;
   handleFileChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
+  applyFields: (fields: Partial<Restaurant>) => void;
   imagePreview: string | null;
   loading: boolean; // 追加
   error: string | null; // 追加
