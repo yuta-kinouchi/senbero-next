@@ -19,10 +19,13 @@ export const RestaurantCard = ({ restaurant, onClick }) => {
 
   return (
     <Card
-      className="flex flex-row overflow-hidden cursor-pointer"
       onClick={() => onClick(restaurant.restaurant_id)}
       sx={{
         position: 'relative',
+        display: 'flex',
+        flexDirection: 'row',
+        overflow: 'hidden',
+        cursor: 'pointer',
         transition: 'box-shadow 0.15s ease, transform 0.15s ease',
         '&:hover': {
           boxShadow: '0 6px 20px rgba(42, 32, 25, 0.14)',
@@ -42,7 +45,7 @@ export const RestaurantCard = ({ restaurant, onClick }) => {
       </Box>
 
       {/* Restaurant Details */}
-      <Box className="flex-1" sx={{ minWidth: 0 }}>
+      <Box sx={{ flexGrow: 1, minWidth: 0 }}>
         <CardContent sx={{ py: 1.5, pr: 8 }}>
           <Typography
             variant="subtitle1"
